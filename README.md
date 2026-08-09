@@ -322,7 +322,7 @@ The complete history is available in [`changelog.md`](changelog.md).
 
 - Makes Delete the only removal key and keeps Backspace unbound.
 - Remembers FREE MOVE separately for each block during the current editor session.
-- Adds custom white Reset/View artwork and removes the orange 1.00 slider marker.
+- Adds custom white artwork to both Reset controls and View, and removes the orange 1.00 slider marker.
 - Captures real object sprite frames for Trash, repairs old Trash previews, and separates REN/COPY.
 
 ### v3.0.1

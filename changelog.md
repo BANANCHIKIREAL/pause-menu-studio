@@ -2,7 +2,7 @@
 
 - Delete is now the only keyboard shortcut that moves a selected block to Trash; Backspace no longer removes blocks.
 - FREE MOVE now remembers its enabled or disabled state separately for each selected block while the editor is open.
-- Replaced RESET and VIEW with custom white reset and eye artwork.
+- Replaced both RESET controls and VIEW with custom white reset and eye artwork.
 - Removed the orange 1.00 line and label from the scale slider.
 - Trash now captures the actual cached sprite frame from each removed object instead of choosing an icon from its name; objects without a reusable frame get one neutral info icon.
 - Re-captures icons for existing Trash entries when Hidden Blocks opens.

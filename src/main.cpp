@@ -1701,7 +1701,7 @@ private:
             m_moveLabel = typeinfo_cast<CCLabelBMFont*>(visual->getChildByID("move-hint-button-label"));
         }
         makeControl(
-            m_scaleMenu, "GJ_resetBtn_001.png", contextWidth / 2.f - 75.f,
+            m_scaleMenu, resetIconFrame.c_str(), contextWidth / 2.f - 75.f,
             menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 23.f
         );
         m_hideButton = makeControl(
