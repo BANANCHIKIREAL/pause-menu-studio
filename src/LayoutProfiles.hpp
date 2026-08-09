@@ -16,8 +16,6 @@ struct Transform {
     std::optional<std::string> hiddenID;
     std::optional<std::string> hiddenLabel;
     std::optional<std::string> hiddenIcon;
-    std::optional<std::string> previewIcon;
-    std::optional<cocos2d::CCPoint> previewPosition;
 };
 
 using Snapshot = std::map<std::string, Transform>;

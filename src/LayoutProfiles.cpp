@@ -85,17 +85,6 @@ std::optional<Snapshot> load(std::string const& name) {
         if (auto hiddenIcon = entry["hidden-icon"].asString(); hiddenIcon.isOk()) {
             transform.hiddenIcon = hiddenIcon.unwrap();
         }
-        if (auto previewIcon = entry["preview-icon"].asString(); previewIcon.isOk()) {
-            transform.previewIcon = previewIcon.unwrap();
-        }
-        auto previewX = entry["preview-x"].asDouble();
-        auto previewY = entry["preview-y"].asDouble();
-        if (previewX.isOk() && previewY.isOk()) {
-            transform.previewPosition = CCPoint {
-                static_cast<float>(previewX.unwrap()),
-                static_cast<float>(previewY.unwrap()),
-            };
-        }
         snapshot[*key] = transform;
     }
     return snapshot;
@@ -114,11 +103,6 @@ void save(std::string const& name, Snapshot const& snapshot) {
         if (transform.hiddenID) point.set("hidden-id", *transform.hiddenID);
         if (transform.hiddenLabel) point.set("hidden-label", *transform.hiddenLabel);
         if (transform.hiddenIcon) point.set("hidden-icon", *transform.hiddenIcon);
-        if (transform.previewIcon) point.set("preview-icon", *transform.previewIcon);
-        if (transform.previewPosition) {
-            point.set("preview-x", transform.previewPosition->x);
-            point.set("preview-y", transform.previewPosition->y);
-        }
         encoded.set(path, std::move(point));
     }
     storage.set(name, std::move(encoded));

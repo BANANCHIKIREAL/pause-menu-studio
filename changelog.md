@@ -1,3 +1,8 @@
+# v3.1.0
+
+- Removed saved-layout thumbnail previews completely: no guessed icons, dots, or empty preview box.
+- Expanded the layout-name area into the freed space for a cleaner Saved Layouts card.
+
 # v3.0.3
 
 - Saved-layout previews now store each block's normalized world-space center instead of its parent-local coordinates, preventing icons from piling up in the lower-left corner on any aspect ratio.

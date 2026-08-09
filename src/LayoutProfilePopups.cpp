@@ -37,36 +37,6 @@ std::string savedDate(std::string const& name) {
     return buffer;
 }
 
-CCNode* createPreview(std::string const& name, ccColor3B color) {
-    auto preview = CCNode::create();
-    preview->setContentSize({74.f, 44.f});
-    auto snapshot = profiles::load(name);
-    if (!snapshot || snapshot->empty()) return preview;
-    size_t drawn = 0;
-    for (auto const& [path, transform] : *snapshot) {
-        if (transform.hidden.value_or(false) || !transform.previewPosition) continue;
-        auto x = std::clamp(transform.previewPosition->x, 0.f, 1.f);
-        auto y = std::clamp(transform.previewPosition->y, 0.f, 1.f);
-        CCSprite* icon = nullptr;
-        if (transform.previewIcon) {
-            icon = CCSprite::createWithSpriteFrameName(transform.previewIcon->c_str());
-        }
-        auto position = CCPoint {7.f + x * 60.f, 5.f + y * 32.f};
-        if (icon) {
-            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
-            if (largest > .001f) icon->setScale(9.f / largest);
-            icon->setPosition(position);
-            preview->addChild(icon);
-        } else {
-            auto marker = CCDrawNode::create();
-            auto markerColor = ccc4FFromccc3B(color);
-            marker->drawCircle(position, 1.7f, markerColor, 0.f, markerColor, 12);
-            preview->addChild(marker);
-        }
-        if (++drawn >= 10) break;
-    }
-    return preview;
-}
 }
 
 LayoutNamePopup* LayoutNamePopup::create(
@@ -198,29 +168,17 @@ void LayoutListPopup::rebuildList() {
         card->setOpacity(235);
         row->addChild(card, -2);
 
-        auto previewBG = CCScale9Sprite::create("GJ_square01.png");
-        previewBG->setContentSize({74.f, 44.f});
-        previewBG->setPosition({45.f, y});
-        previewBG->setColor({10, 10, 28});
-        previewBG->setOpacity(225);
-        row->addChild(previewBG, -1);
-        auto preview = createPreview(
-            name, name == m_activeName ? ccColor3B {90, 255, 170} : ccColor3B {90, 220, 255}
-        );
-        preview->setPosition({8.f, y - 22.f});
-        row->addChild(preview);
-
         auto label = CCLabelBMFont::create(name.c_str(), "bigFont.fnt");
         label->setAnchorPoint({0.f, .5f});
-        label->setPosition({92.f, y + 12.f});
+        label->setPosition({18.f, y + 12.f});
         label->setScale(.44f);
-        label->limitLabelWidth(170.f, .44f, .2f);
+        label->limitLabelWidth(220.f, .44f, .2f);
         if (name == m_activeName) label->setColor({100, 255, 170});
         row->addChild(label);
 
         auto date = CCLabelBMFont::create(savedDate(name).c_str(), "chatFont.fnt");
         date->setAnchorPoint({0.f, .5f});
-        date->setPosition({92.f, y - 9.f});
+        date->setPosition({18.f, y - 9.f});
         date->setScale(.42f);
         date->setOpacity(150);
         row->addChild(date);

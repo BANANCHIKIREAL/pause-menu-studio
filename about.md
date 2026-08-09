@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v3.0.3</c>
+# <cy>Pause Menu Studio</c> <cg>v3.1.0</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -54,7 +54,7 @@ Multi-selection uses an <co>orange</c> outline. A single selected block uses a <
 - Cards from the active layout remain available after reopening the pause menu.
 - A full <cr>RESET</c> removes layout-only cards and restores the normal card settings.
 - Temporarily unavailable blocks from other mods remain in saved data instead of being deleted.
-- Layout cards show a miniature position preview and saved date.
+- Layout cards show the layout name, saved date, and management actions without a thumbnail.
 - Use <cy>REN</c> to rename a layout or <cy>COPY</c> to duplicate it.
 
 Old layouts may not contain card-presence data if they were saved before v2.1.0 and those cards had never been moved.

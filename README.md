@@ -66,7 +66,7 @@
 - Keep active-layout cards available after reopening the pause menu.
 - Preserve temporarily unavailable dynamic blocks instead of deleting their records.
 - A full Reset removes layout-only cards and restores the normal card settings.
-- Browse visual layout cards with miniature position previews and saved dates.
+- Browse clean layout cards with names, saved dates, and management actions.
 - Rename or duplicate a layout without overwriting its original snapshot.
 
 ### 🗑️ Hidden Blocks
@@ -306,7 +306,7 @@ pause-menu-studio/
 │   ├── HiddenBlocksPopup.*       # Hidden-block restoration UI
 │   ├── LayoutProfiles.*          # Named-layout serialization
 │   ├── LayoutProfilePopups.*     # SAVE and LAYOUTS popups
-│   └── BlockIcons.*              # Native GD icon selection for previews and Trash
+│   └── BlockIcons.*              # Native GD icon capture for Trash
 ├── mod.json                      # Manifest, dependencies, and settings
 ├── CMakeLists.txt                # Build configuration
 ├── changelog.md                  # Version history
@@ -317,6 +317,11 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v3.1.0
+
+- Removes Saved Layout thumbnail previews, including all icons, dots, and the preview box.
+- Gives layout names more horizontal room in the simplified cards.
 
 ### v3.0.3
 
