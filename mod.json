@@ -8,6 +8,10 @@
     "version": "v2.1.0",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
+    "links": {
+        "source": "https://github.com/BANANCHIKIREAL/pause-menu-studio",
+        "community": "https://discord.gg/Knh3YUUR3"
+    },
     "tags": [
         "interface",
         "customization",
