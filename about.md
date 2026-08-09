@@ -10,7 +10,7 @@ Move, resize, group, and hide pause-menu elements. Save multiple named layouts a
 
 Pause Menu Studio is currently <co>experimental</c>. Other mods and texture packs can modify the pause menu at the same time, so some combinations may cause visual glitches, shifted controls, or unmatched saved blocks.
 
-<cy>Save a named layout before making a large redesign.</c> If you find a reproducible bug, attach your crashlog, latest.log, mod list, and exact reproduction steps on GitHub.
+<cy>Save a named layout before making a large redesign.</c> If you find a reproducible bug, keep your crashlog, latest.log, mod list, and exact reproduction steps ready.
 
 ## <cg>QUICK START</c>
 
@@ -136,15 +136,6 @@ Attach:
 - your texture-pack name;
 - a screenshot or video;
 - the exact actions immediately before the problem.
-
-## <cg>LINKS</c>
-
-- [GitHub repository](https://github.com/BANANCHIKIREAL/pause-menu-studio)
-- [Download the latest release](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest)
-- [Report a bug](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml)
-- [Full README](https://github.com/BANANCHIKIREAL/pause-menu-studio#readme)
-
----
 
 Developed by <cy>BANANCHIKIREAL</c>
 
