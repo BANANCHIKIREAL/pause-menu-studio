@@ -14,7 +14,7 @@
   <a href="https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/BANANCHIKIREAL/pause-menu-studio?display_name=tag&style=for-the-badge&color=8b5cf6"></a>
   <img alt="Geometry Dash 2.2081" src="https://img.shields.io/badge/Geometry%20Dash-2.2081-22c55e?style=for-the-badge">
   <img alt="Geode 5.8.2" src="https://img.shields.io/badge/Geode-5.8.2-38bdf8?style=for-the-badge">
-  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-2563eb?style=for-the-badge&logo=windows11">
+  <img alt="Windows and Android" src="https://img.shields.io/badge/platform-Windows%20%7C%20Android-2563eb?style=for-the-badge&logo=android">
   <img alt="Experimental" src="https://img.shields.io/badge/status-experimental-f97316?style=for-the-badge">
 </p>
 
@@ -34,7 +34,7 @@
 
 ### 🎨 Visual editor
 
-- Move almost any reachable pause-menu element with the mouse.
+- Move almost any reachable pause-menu element with a mouse or touchscreen.
 - A click only selects an element; movement starts after a real drag.
 - Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
 - Resize selected buttons and logical blocks.
@@ -88,7 +88,9 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 
 1. Install [Geode](https://geode-sdk.org/) for Geometry Dash.
 2. Download the `.geode` file from [Releases](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest).
-3. Place the file in `Geometry Dash/geode/mods`.
+3. Install the package for your platform:
+   - **Windows:** place it in `Geometry Dash/geode/mods`.
+   - **Android:** place it in `/storage/emulated/0/Android/media/com.geode.launcher/game/geode/mods/`, or import it through Geode's mod installer.
 4. Make sure the required **NONGD/Jukebox** dependency (`fleym.nongd >= 3.6.2`) is installed.
 5. Fully restart Geometry Dash.
 6. Open any level and pause the game.
@@ -105,14 +107,14 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 |---|---|---|
 | Enter Edit Mode | **EDIT** | The button itself can also be moved |
 | Leave Edit Mode | **DONE** | Applies the current editing session |
-| Select a block | Left click | A single click does not move it |
-| Drag a block | Left click + movement | Dragging starts after a small movement threshold |
-| Select the next overlapping block | Repeated click at the same point | No object movement is required |
-| Add a block to selection | `Ctrl + click` | Multi-selection uses an orange outline |
-| Precise movement | `←` `↑` `↓` `→` | Moves by 1 game unit |
-| Faster movement | `Shift + arrow` | Moves by 5 game units |
-| Undo | `Ctrl + Z` / **UNDO** | Available in Edit Mode |
-| Redo | `Ctrl + Y` / **REDO** | Restores an undone action |
+| Select a block | Click / tap | A single press does not move it |
+| Drag a block | Click / touch + movement | Dragging starts after a small movement threshold |
+| Select the next overlapping block | Repeated click / tap at the same point | No object movement is required |
+| Add a block to selection | `Ctrl + click` | Requires a keyboard; multi-selection uses an orange outline |
+| Precise movement | `←` `↑` `↓` `→` | Optional physical-keyboard shortcut; moves by 1 game unit |
+| Faster movement | `Shift + arrow` | Optional physical-keyboard shortcut; moves by 5 game units |
+| Undo | `Ctrl + Z` / **UNDO** | Android users can use the visible button |
+| Redo | `Ctrl + Y` / **REDO** | Android users can use the visible button |
 | Reset selected block | `R` | Restores its original position and size |
 | Hide selected block | `Delete` / `Backspace` | Sends it to Hidden Blocks |
 | Resize | **SIZE− / SIZE+** | Resizes the selected logical block |
@@ -201,8 +203,9 @@ Pause Menu Studio is intentionally marked **experimental**.
 2. **Dynamic controls can be recreated.** Jukebox, Better Volume, and some texture packs rebuild UI after opening the pause menu or changing a song. Known controls are stabilized repeatedly, but a rare brief jump or a new incompatibility may still occur.
 3. **Old layouts may contain unavailable paths.** This is expected when a layout was saved with a mod that is currently disabled. The record is kept and may become available when that mod returns.
 4. **Technical invisible nodes are not recovered without evidence.** Automatic Hidden Blocks recovery only uses controls previously managed by Pause Menu Studio or marked hidden in the active layout. This avoids adding unrelated service nodes from other mods.
-5. **Only the declared platform is supported.** The current manifest targets Geometry Dash `2.2081`, Geode `5.8.2`, and Windows.
-6. **Extreme scale and overlap remain the user's choice.** The editor helps select overlapping blocks but intentionally does not prohibit unusual designs.
+5. **Only the declared platforms are supported.** The current manifest targets Geometry Dash `2.2081` and Geode `5.8.2` on Windows, Android32, and Android64. iOS and macOS are not declared or built.
+6. **Android runtime coverage is limited.** Android32 and Android64 packages compile successfully, but the current release has not been tested on every phone, Android version, launcher version, or touch configuration.
+7. **Extreme scale and overlap remain the user's choice.** The editor helps select overlapping blocks but intentionally does not prohibit unusual designs.
 
 ## 🧯 Troubleshooting
 
@@ -248,12 +251,12 @@ Before creating an issue:
 
 ### Requirements
 
-- Windows;
 - Geometry Dash `2.2081`;
 - [Geode SDK](https://docs.geode-sdk.org/getting-started/);
 - CMake `3.21` or newer, as declared in [`CMakeLists.txt`](CMakeLists.txt);
-- Visual Studio 2022 Build Tools with the C++ toolchain;
 - a `GEODE_SDK` environment variable pointing to the SDK directory.
+
+For **Windows**, install Visual Studio 2022 Build Tools with the C++ toolchain. For **Android**, install a recent Android NDK supported by the current Geode SDK; this project was verified with NDK `30.0.15729638` and Clang `21.0.0`.
 
 ### Commands
 
@@ -272,6 +275,15 @@ build-local/bananchikireal.pause-menu-studio.geode
 ```
 
 The project uses C++23 and `setup_geode_mod`.
+
+For Android, use the Geode CLI from the project root:
+
+```powershell
+geode build -p android32 --ndk 'C:\path\to\Android\Sdk\ndk\30.0.15729638' --config Release
+geode build -p android64 --ndk 'C:\path\to\Android\Sdk\ndk\30.0.15729638' --config Release
+```
+
+The packages are created in `build-android32` and `build-android64`. The repository's GitHub Actions workflow also builds Windows, Android32, and Android64 and combines the platform artifacts.
 
 ## 🧱 Project structure
 
@@ -293,6 +305,12 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v2.2.0
+
+- Adds Android32 and Android64 support for Geometry Dash 2.2081.
+- Uses the existing touch editor for tap-to-select and drag-to-move controls.
+- Adds automated Windows and Android builds through GitHub Actions.
 
 ### v2.1.0
 

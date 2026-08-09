@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v2.1.0</c>
+# <cy>Pause Menu Studio</c> <cg>v2.2.0</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -17,7 +17,7 @@ Pause Menu Studio is currently <co>experimental</c>. Other mods and texture pack
 1. Open any level and pause the game.
 2. Press <cy>EDIT</c>.
 3. Click an element to select it.
-4. Drag it with the mouse or move it with the arrow keys.
+4. Drag it with a mouse or touchscreen, or move it with the arrow keys.
 5. Press <cg>DONE</c> to apply the current editing session.
 6. Use <cp>SAVE</c> to store the layout under your own name.
 
@@ -25,9 +25,9 @@ The first click only selects a block. It starts moving only after the cursor act
 
 ## <cb>CONTROLS</c>
 
-- <cy>Left click</c> - select a block.
-- <cy>Left click + drag</c> - move the selected block.
-- <cy>Repeated click at the same point</c> - select the next overlapping block.
+- <cy>Click / tap</c> - select a block.
+- <cy>Click / touch + drag</c> - move the selected block.
+- <cy>Repeated click / tap at the same point</c> - select the next overlapping block.
 - <cy>Ctrl + click</c> - add another block to the selection.
 - <cy>Arrow keys</c> - move by 1 unit.
 - <cy>Shift + arrow keys</c> - move by 5 units.
@@ -72,7 +72,7 @@ Before the list opens, the mod audits the active layout and invisible elements p
 - <cy>Difficulty</c> - difficulty face and star count. Disabled by default.
 - <cy>Demonlist position</c> - an available AREDL/Pemonlist rank when Integrated Demonlist provides it.
 
-In v2.1.0, the original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <cg>Stereo Madness</c> with the active NONG/cover title from Jukebox.
+The original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <cg>Stereo Madness</c> with the active NONG/cover title from Jukebox.
 
 ## <cj>MENU STYLES</c>
 
@@ -108,7 +108,9 @@ Integrations depend on internal node IDs from other mods. I cannot confirm every
 - A texture pack that moves an entire button container can compete with the editor for its position.
 - A layout saved with a currently disabled mod may contain temporarily unavailable paths.
 - Extremely large controls and heavy overlap are intentionally not blocked.
-- The current build targets <cy>Geometry Dash 2.2081</c>, <cy>Geode 5.8.2</c>, and <cy>Windows</c>.
+- The current build targets <cy>Geometry Dash 2.2081</c> and <cy>Geode 5.8.2</c> on <cy>Windows, Android32, and Android64</c>.
+- Android touch editing uses the same tap and drag controls as the desktop editor. Keyboard shortcuts require a physical keyboard; the visible editor buttons remain available without one.
+- Android packages compile successfully, but not every phone, Android version, or touch configuration has been tested.
 
 ## <cr>TROUBLESHOOTING</c>
 

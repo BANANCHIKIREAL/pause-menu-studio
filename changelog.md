@@ -1,3 +1,9 @@
+# v2.2.0
+
+- Added official Android support for Geometry Dash 2.2081 on both Android32 and Android64.
+- Added a multi-platform GitHub Actions workflow that builds Windows, Android32, and Android64 packages and combines their artifacts.
+- Documented Android installation, touch controls, architecture selection, and Android build commands.
+
 # v2.1.0
 
 - Level cards now keep the original level name captured when PlayLayer starts, so reopening the pause menu cannot replace an official level title with Jukebox's active NONG/cover title.
