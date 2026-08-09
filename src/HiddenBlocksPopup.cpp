@@ -51,10 +51,37 @@ bool HiddenBlocksPopup::init(
     m_restoreCallback = std::move(restoreCallback);
     setTitle("Hidden blocks");
 
-    m_scroll = ScrollLayer::create({390.f, 235.f});
-    m_scroll->setPosition({25.f, 25.f});
+    m_scroll = ScrollLayer::create({390.f, 220.f});
+    m_scroll->setPosition({25.f, 31.f});
     m_scroll->setID("hidden-blocks-list");
     m_mainLayer->addChild(m_scroll);
+
+    m_pageMenu = CCMenu::create();
+    m_pageMenu->setPosition({m_size.width / 2.f, 16.f});
+    m_pageMenu->setID("hidden-blocks-pages");
+    auto previousSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+    previousSprite->setScale(.38f);
+    auto previous = CCMenuItemSpriteExtra::create(
+        previousSprite, this, menu_selector(HiddenBlocksPopup::onPage)
+    );
+    previous->setTag(-1);
+    previous->setPositionX(-62.f);
+    m_pageMenu->addChild(previous);
+    auto nextSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+    nextSprite->setFlipX(true);
+    nextSprite->setScale(.38f);
+    auto next = CCMenuItemSpriteExtra::create(
+        nextSprite, this, menu_selector(HiddenBlocksPopup::onPage)
+    );
+    next->setTag(1);
+    next->setPositionX(62.f);
+    m_pageMenu->addChild(next);
+    m_mainLayer->addChild(m_pageMenu, 3);
+
+    m_pageLabel = CCLabelBMFont::create("", "chatFont.fnt");
+    m_pageLabel->setPosition({m_size.width / 2.f, 16.f});
+    m_pageLabel->setScale(.42f);
+    m_mainLayer->addChild(m_pageLabel, 3);
     rebuildList();
     return true;
 }
@@ -65,10 +92,23 @@ void HiddenBlocksPopup::rebuildList() {
     constexpr float cardWidth = 185.f;
     constexpr float cardHeight = 104.f;
     constexpr size_t columns = 2;
-    auto rows = (m_entries.size() + columns - 1) / columns;
-    auto height = std::max(235.f, static_cast<float>(rows) * cardHeight);
+    constexpr size_t pageSize = 4;
+    auto pageCount = std::max<size_t>(1, (m_entries.size() + pageSize - 1) / pageSize);
+    m_page = std::min(m_page, pageCount - 1);
+    auto start = m_page * pageSize;
+    auto end = std::min(start + pageSize, m_entries.size());
+    constexpr float height = 220.f;
     content->setContentSize({390.f, height});
-    content->setPositionY(235.f - height);
+    content->setPositionY(0.f);
+
+    if (m_pageMenu) m_pageMenu->setVisible(pageCount > 1);
+    if (m_pageLabel) {
+        m_pageLabel->setString(
+            pageCount > 1
+                ? fmt::format("{} / {}  -  {} BLOCKS", m_page + 1, pageCount, m_entries.size()).c_str()
+                : fmt::format("{} BLOCKS", m_entries.size()).c_str()
+        );
+    }
 
     if (m_entries.empty()) {
         auto empty = CCLabelBMFont::create("Trash is empty", "bigFont.fnt");
@@ -79,10 +119,11 @@ void HiddenBlocksPopup::rebuildList() {
         return;
     }
 
-    for (size_t index = 0; index < m_entries.size(); ++index) {
+    for (size_t index = start; index < end; ++index) {
         auto const& entry = m_entries[index];
-        auto column = index % columns;
-        auto rowIndex = index / columns;
+        auto pageIndex = index - start;
+        auto column = pageIndex % columns;
+        auto rowIndex = pageIndex / columns;
         auto x = 4.f + static_cast<float>(column) * 193.f;
         auto y = height - 50.f - static_cast<float>(rowIndex) * cardHeight;
         auto row = CCMenu::create();
@@ -128,6 +169,18 @@ void HiddenBlocksPopup::rebuildList() {
         row->runAction(CCEaseBackOut::create(CCScaleTo::create(.18f, 1.f)));
     }
     m_scroll->scrollToTop();
+}
+
+void HiddenBlocksPopup::onPage(CCObject* sender) {
+    auto node = typeinfo_cast<CCNode*>(sender);
+    if (!node) return;
+    if (node->getTag() < 0) {
+        if (m_page > 0) --m_page;
+    } else {
+        auto pageCount = std::max<size_t>(1, (m_entries.size() + 3) / 4);
+        if (m_page + 1 < pageCount) ++m_page;
+    }
+    rebuildList();
 }
 
 void HiddenBlocksPopup::onRestore(CCObject* sender) {

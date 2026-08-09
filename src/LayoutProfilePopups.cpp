@@ -44,9 +44,9 @@ CCNode* createPreview(std::string const& name, ccColor3B color) {
     if (!snapshot || snapshot->empty()) return preview;
     size_t drawn = 0;
     for (auto const& [path, transform] : *snapshot) {
-        if (transform.hidden.value_or(false)) continue;
-        auto x = std::clamp(transform.position.x / 568.f, 0.f, 1.f);
-        auto y = std::clamp(transform.position.y / 320.f, 0.f, 1.f);
+        if (transform.hidden.value_or(false) || !transform.previewPosition) continue;
+        auto x = std::clamp(transform.previewPosition->x, 0.f, 1.f);
+        auto y = std::clamp(transform.previewPosition->y, 0.f, 1.f);
         CCSprite* icon = nullptr;
         if (transform.previewIcon) {
             icon = CCSprite::createWithSpriteFrameName(transform.previewIcon->c_str());

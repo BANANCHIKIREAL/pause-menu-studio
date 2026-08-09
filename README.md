@@ -318,6 +318,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v3.0.3
+
+- Stores normalized world-space block centers for layout thumbnails, so icons appear in their real pause-menu positions on every aspect ratio.
+- Stops legacy layouts without preview coordinates from drawing broken lower-left icon piles; resave them to generate a new preview.
+- Paginates Hidden Blocks four entries at a time so a large Trash remains usable.
+
 ### v3.0.2
 
 - Makes Delete the only removal key and keeps Backspace unbound.

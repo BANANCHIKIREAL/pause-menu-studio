@@ -1,3 +1,9 @@
+# v3.0.3
+
+- Saved-layout previews now store each block's normalized world-space center instead of its parent-local coordinates, preventing icons from piling up in the lower-left corner on any aspect ratio.
+- Legacy layouts without preview coordinates no longer draw misleading piled-up icons; resaving them creates a correct preview.
+- Hidden Blocks now renders four entries per page with page controls, preventing a large Trash from producing an empty or overloaded popup.
+
 # v3.0.2
 
 - Delete is now the only keyboard shortcut that moves a selected block to Trash; Backspace no longer removes blocks.

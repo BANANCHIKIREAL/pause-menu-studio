@@ -19,6 +19,9 @@ private:
     std::vector<hidden_blocks::Entry> m_entries;
     geode::Function<bool(std::string)> m_restoreCallback;
     geode::ScrollLayer* m_scroll = nullptr;
+    cocos2d::CCMenu* m_pageMenu = nullptr;
+    cocos2d::CCLabelBMFont* m_pageLabel = nullptr;
+    size_t m_page = 0;
 
     bool init(
         std::vector<hidden_blocks::Entry> entries,
@@ -26,5 +29,6 @@ private:
     );
     void rebuildList();
     void onRestore(cocos2d::CCObject* sender);
+    void onPage(cocos2d::CCObject* sender);
 };
 }

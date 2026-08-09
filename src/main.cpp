@@ -181,6 +181,23 @@ struct HiddenSnapshotInfo {
     std::string iconFrame;
 };
 
+CCPoint normalizedPreviewPosition(CCNode* node) {
+    if (!node) return CCPointZero;
+    CCPoint world;
+    if (node->getContentWidth() > 1.f && node->getContentHeight() > 1.f) {
+        world = node->convertToWorldSpace(node->getContentSize() / 2.f);
+    } else if (node->getParent()) {
+        world = node->getParent()->convertToWorldSpace(node->getPosition());
+    } else {
+        world = node->getPosition();
+    }
+    auto size = CCDirector::sharedDirector()->getWinSize();
+    return {
+        size.width > .001f ? world.x / size.width : 0.f,
+        size.height > .001f ? world.y / size.height : 0.f,
+    };
+}
+
 void captureResetPositions(CCNode* node, CCNode* owner, std::vector<InitialPosition>& positions) {
     if (!node || node->getID() == EDITOR_ID) return;
     // RESET must only touch nodes moved by this mod. Capturing every child also
@@ -219,6 +236,7 @@ void captureCurrentSnapshot(
         };
         auto previewIcon = pause_menu_studio::block_icons::frameForNode(node);
         if (!previewIcon.empty()) transform.previewIcon = std::move(previewIcon);
+        transform.previewPosition = normalizedPreviewPosition(node);
         auto hidden = hiddenMembership.find(path);
         transform.hidden = hidden != hiddenMembership.end();
         if (hidden != hiddenMembership.end()) {
@@ -2295,6 +2313,7 @@ private:
                 };
                 auto previewIcon = pause_menu_studio::block_icons::frameForNode(card);
                 if (!previewIcon.empty()) transform.previewIcon = std::move(previewIcon);
+                transform.previewPosition = normalizedPreviewPosition(card);
                 if (auto hidden = hiddenMembership.find(path); hidden != hiddenMembership.end()) {
                     transform.hidden = true;
                     transform.hiddenID = hidden->second.id;
