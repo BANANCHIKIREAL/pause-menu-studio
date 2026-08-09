@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v2.2.1</c>
+# <cy>Pause Menu Studio</c> <cg>v3.0.0</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -35,9 +35,11 @@ The first click only selects a block. It starts moving only after the cursor act
 - <cy>Ctrl + Y</c> - redo.
 - <cy>R</c> - reset the selected block.
 - <cy>Delete / Backspace</c> - move a block to Hidden Blocks.
-- <cy>SIZE- / SIZE+</c> - resize the selection.
+- <cy>Scale slider</c> - resize the selection from the contextual panel.
 - <cy>UNDO / REDO</c> - use the visible history buttons.
 - <cy>RESET</c> - reset with a confirmation prompt.
+- <cy>Preview</c> - hide the editor interface for a clean, read-only view.
+- <cy>RETURN</c> - return from Preview without leaving Edit Mode.
 
 Multi-selection uses an <co>orange</c> outline. A single selected block uses a <cb>cyan</c> outline.
 
@@ -50,6 +52,8 @@ Multi-selection uses an <co>orange</c> outline. A single selected block uses a <
 - Cards from the active layout remain available after reopening the pause menu.
 - A full <cr>RESET</c> removes layout-only cards and restores the normal card settings.
 - Temporarily unavailable blocks from other mods remain in saved data instead of being deleted.
+- Layout cards show a miniature position preview and saved date.
+- Use <cy>REN</c> to rename a layout or <cy>COPY</c> to duplicate it.
 
 Old layouts may not contain card-presence data if they were saved before v2.1.0 and those cards had never been moved.
 
@@ -63,6 +67,18 @@ Removing something in Edit Mode works like a recycle bin:
 4. Select an entry to return the block to its saved position and size.
 
 Before the list opens, the mod audits the active layout and invisible elements previously managed by Pause Menu Studio. If a missing record can be recovered reliably, it is returned to Hidden Blocks automatically.
+
+In v3.0.0, Hidden Blocks uses a visual two-column grid with native Geometry Dash icons and larger Restore buttons.
+
+## <cb>V3 EDITOR INTERFACE</c>
+
+- One bottom toolbar contains Undo, Redo, Save, Layouts, Hidden Blocks, Reset, and Preview.
+- A contextual panel follows the selected logical block.
+- Cyan marks one selected block; orange marks a multi-selection.
+- Corner handles and a logical-block label make the active target clear.
+- Four safe shade regions dim everything around the selection without changing another mod's node opacity.
+- Editor panels animate when Edit Mode opens, a selection appears, history changes, or a block enters Trash.
+- Larger hit areas and the scale slider are designed for touchscreen use on Android.
 
 ## <cl>INFORMATION CARDS</c>
 

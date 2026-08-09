@@ -1,12 +1,14 @@
 #include "LayoutProfiles.hpp"
 
 #include <algorithm>
+#include <chrono>
 
 using namespace geode::prelude;
 
 namespace pause_menu_studio::profiles {
 namespace {
 constexpr char const* STORAGE_KEY = "named-layouts-v1";
+constexpr char const* METADATA_KEY = "named-layout-metadata-v1";
 
 matjson::Value readStorage() {
     auto value = Mod::get()->getSavedValue<matjson::Value>(STORAGE_KEY, matjson::Value::object());
@@ -15,6 +17,21 @@ matjson::Value readStorage() {
 
 void writeStorage(matjson::Value const& value) {
     Mod::get()->setSavedValue(STORAGE_KEY, value);
+}
+
+matjson::Value readMetadata() {
+    auto value = Mod::get()->getSavedValue<matjson::Value>(METADATA_KEY, matjson::Value::object());
+    return value.type() == matjson::Type::Object ? value : matjson::Value::object();
+}
+
+void writeMetadata(matjson::Value const& value) {
+    Mod::get()->setSavedValue(METADATA_KEY, value);
+}
+
+int64_t nowUnix() {
+    return std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    ).count();
 }
 }
 
@@ -86,11 +103,53 @@ void save(std::string const& name, Snapshot const& snapshot) {
     }
     storage.set(name, std::move(encoded));
     writeStorage(storage);
+
+    auto metadata = readMetadata();
+    auto item = matjson::Value::object();
+    item.set("saved-at", nowUnix());
+    metadata.set(name, std::move(item));
+    writeMetadata(metadata);
+}
+
+int64_t savedAt(std::string const& name) {
+    auto metadata = readMetadata();
+    auto value = metadata[name]["saved-at"].asInt();
+    return value.isOk() ? value.unwrap() : 0;
+}
+
+bool rename(std::string const& oldName, std::string const& newName) {
+    if (oldName.empty() || newName.empty() || oldName == newName || exists(newName)) return false;
+    auto storage = readStorage();
+    if (!storage.contains(oldName)) return false;
+    auto snapshot = storage[oldName];
+    storage.set(newName, std::move(snapshot));
+    storage.erase(oldName);
+    writeStorage(storage);
+
+    auto metadata = readMetadata();
+    if (metadata.contains(oldName)) {
+        auto item = metadata[oldName];
+        metadata.set(newName, std::move(item));
+        metadata.erase(oldName);
+        writeMetadata(metadata);
+    }
+    return true;
+}
+
+bool duplicate(std::string const& sourceName, std::string const& newName) {
+    if (sourceName.empty() || newName.empty() || exists(newName)) return false;
+    auto snapshot = load(sourceName);
+    if (!snapshot) return false;
+    save(newName, *snapshot);
+    return true;
 }
 
 void erase(std::string const& name) {
     auto storage = readStorage();
     storage.erase(name);
     writeStorage(storage);
+    auto metadata = readMetadata();
+    metadata.erase(name);
+    writeMetadata(metadata);
 }
 }

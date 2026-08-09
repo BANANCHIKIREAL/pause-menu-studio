@@ -1,3 +1,15 @@
+# v3.0.0
+
+- Rebuilt Edit Mode around a single dark bottom toolbar with large touch targets for Undo, Redo, Save, Layouts, Hidden Blocks, Reset, and Preview.
+- Added a contextual selection panel that follows the selected logical block and provides Move guidance, a live scale slider, local scale reset, and Hide.
+- Added Preview Mode, which hides the editor chrome for a clean, read-only view until Return is pressed.
+- Added animated editor entry, selection-panel appearance, undo/redo feedback, trash feedback, and popup-card entry.
+- Added focused selection visuals with thin cyan or orange outlines, corner handles, a logical-block name, and safe dimming around—not over—the selection.
+- Redesigned Saved Layouts as cards with miniature position previews, saved dates, Apply, Rename, Duplicate, and Delete actions.
+- Redesigned Hidden Blocks as a two-column visual grid with native Geometry Dash icons and large Restore buttons.
+- Added a touch-friendly scale slider and enlarged editor hit areas for Android while keeping physical-keyboard shortcuts available.
+- Kept existing named-layout snapshots and Hidden Blocks storage compatible; older layouts appear as Legacy Layout until saved again.
+
 # v2.2.1
 
 - Added the official Pause Menu Studio website to the Geode mod card.

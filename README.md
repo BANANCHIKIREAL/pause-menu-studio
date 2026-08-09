@@ -35,14 +35,18 @@
 ### 🎨 Visual editor
 
 - Move almost any reachable pause-menu element with a mouse or touchscreen.
+- Use one compact bottom toolbar instead of separate controls scattered around the screen.
+- Use the contextual panel beside the selection for Move guidance, touch scaling, local reset, and Hide.
 - A click only selects an element; movement starts after a real drag.
 - Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
-- Resize selected buttons and logical blocks.
+- Resize selected buttons and logical blocks with a touch-friendly slider.
 - Use arrow keys for precise movement.
 - Use `Ctrl` for multi-selection with a shared orange outline.
 - Move multiple selected blocks together.
 - Optional 5-unit grid snapping without a bright overlay.
 - Move the **EDIT / DONE** button itself.
+- Enter **Preview Mode** to inspect a clean, read-only pause menu without editor chrome.
+- Keep the selected block clear while the surrounding pause menu is softly dimmed.
 
 ### ↩️ History and reset
 
@@ -62,12 +66,15 @@
 - Keep active-layout cards available after reopening the pause menu.
 - Preserve temporarily unavailable dynamic blocks instead of deleting their records.
 - A full Reset removes layout-only cards and restores the normal card settings.
+- Browse visual layout cards with miniature position previews and saved dates.
+- Rename or duplicate a layout without overwriting its original snapshot.
 
 ### 🗑️ Hidden Blocks
 
 - `Delete` or `Backspace` sends the selected block to a persistent recycle bin.
 - The recycle bin stores the block's position and scale before hiding it.
 - Restore a hidden block through the **Hidden Blocks** window.
+- Browse hidden controls in a two-column icon grid with large Restore buttons.
 - Before opening the list, v2.0.7+ audits the active layout and invisible controls previously managed by Pause Menu Studio.
 - If a missing record can be linked reliably to a saved layout or managed node, it is returned to the list automatically.
 
@@ -117,12 +124,15 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Redo | `Ctrl + Y` / **REDO** | Android users can use the visible button |
 | Reset selected block | `R` | Restores its original position and size |
 | Hide selected block | `Delete` / `Backspace` | Sends it to Hidden Blocks |
-| Resize | **SIZE− / SIZE+** | Resizes the selected logical block |
-| Reset size | Scale-reset button | Does not delete or hide the block |
+| Resize | Context scale slider | Touch-friendly range from `0.15×` to `3.5×` |
+| Reset size | Context reset button | Does not delete or hide the block |
 | Save a layout | **SAVE** | Uses a custom name |
 | Select a layout | **LAYOUTS** | Applies positions, scale, cards, and Hidden Blocks |
 | Open recycle bin | Trash button | Lists and restores hidden blocks |
 | Full reset | **RESET** with no selection | Always asks for confirmation |
+| Preview the menu | Preview toolbar button | Hides editor UI for a clean, read-only view |
+| Return from Preview | **RETURN** | Restores the current Edit Mode session |
+| Rename / duplicate layout | **REN / COPY** | Available on each Saved Layout card |
 
 ## 🖼️ Menu styles
 
@@ -305,6 +315,14 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v3.0.0
+
+- Rebuilds Edit Mode with a unified bottom toolbar and contextual selection panel.
+- Adds Preview Mode, animated feedback, focused selection shading, corner handles, and logical-block labels.
+- Adds visual Saved Layout cards with previews, dates, Rename, Duplicate, Apply, and Delete.
+- Adds a visual Hidden Blocks grid with native GD icons and larger Restore actions.
+- Adds a touch-friendly scale slider and larger Android hit targets.
 
 ### v2.2.0
 

@@ -23,5 +23,8 @@ std::vector<std::string> names();
 bool exists(std::string const& name);
 std::optional<Snapshot> load(std::string const& name);
 void save(std::string const& name, Snapshot const& snapshot);
+int64_t savedAt(std::string const& name);
+bool rename(std::string const& oldName, std::string const& newName);
+bool duplicate(std::string const& sourceName, std::string const& newName);
 void erase(std::string const& name);
 }

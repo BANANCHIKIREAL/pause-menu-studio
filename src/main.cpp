@@ -226,6 +226,9 @@ void captureCurrentSnapshot(
 
 bool pointInside(CCNode* node, CCPoint world) {
     if (!node || !node->isVisible() || node->getContentWidth() <= 1.f || node->getContentHeight() <= 1.f) return false;
+    for (auto current = node->getParent(); current; current = current->getParent()) {
+        if (!current->isVisible()) return false;
+    }
     auto local = node->convertToNodeSpace(world);
     return CCRect({0.f, 0.f}, node->getContentSize()).containsPoint(local);
 }
@@ -892,7 +895,7 @@ public:
         setTouchPriority(-1000);
         m_undoKey = KeyboardInputEvent(KEY_Z).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing ||
+                !m_editing || m_preview ||
                 input.action != KeyboardInputData::Action::Press ||
                 !(input.modifiers & KeyboardModifier::Control)
             ) return false;
@@ -901,7 +904,7 @@ public:
         });
         m_redoKey = KeyboardInputEvent(KEY_Y).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing ||
+                !m_editing || m_preview ||
                 input.action != KeyboardInputData::Action::Press ||
                 !(input.modifiers & KeyboardModifier::Control)
             ) return false;
@@ -911,7 +914,7 @@ public:
         auto bindArrow = [this](enumKeyCodes key, CCPoint delta) {
             return KeyboardInputEvent(key).listen([this, delta](KeyboardInputData& input) {
                 if (
-                    !m_editing || m_selectedNodes.empty() ||
+                    !m_editing || m_preview || m_selectedNodes.empty() ||
                     (input.action != KeyboardInputData::Action::Press &&
                      input.action != KeyboardInputData::Action::Repeat)
                 ) return false;
@@ -926,7 +929,7 @@ public:
         m_downKey = bindArrow(KEY_Down, {0.f, -1.f});
         m_resetKey = KeyboardInputEvent(KEY_R).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing || m_selectedNodes.empty() ||
+                !m_editing || m_preview || m_selectedNodes.empty() ||
                 input.action != KeyboardInputData::Action::Press
             ) return false;
             requestResetSelection();
@@ -935,7 +938,7 @@ public:
         auto bindRemove = [this](enumKeyCodes key) {
             return KeyboardInputEvent(key).listen([this](KeyboardInputData& input) {
                 if (
-                    !m_editing || m_selectedNodes.empty() ||
+                    !m_editing || m_preview || m_selectedNodes.empty() ||
                     input.action != KeyboardInputData::Action::Press
                 ) return false;
                 hideSelection();
@@ -955,6 +958,12 @@ public:
     bool ccTouchBegan(CCTouch* touch, CCEvent*) override {
         if (!m_editing || !m_owner) return false;
         auto world = touch->getLocation();
+        if (m_preview) {
+            auto returnButton = m_previewReturnMenu
+                ? m_previewReturnMenu->getChildByID("preview-return-button")
+                : nullptr;
+            return returnButton && pointInside(returnButton, world) ? false : true;
+        }
         // In Edit mode the DONE button itself is selectable. A click still
         // exits Edit mode, while a real drag moves the button.
         if (m_toggle && pointInside(m_toggle, world)) {
@@ -965,6 +974,12 @@ public:
         }
         for (auto control : m_controlItems) {
             if (pointInside(control, world)) return false;
+        }
+        if (m_scaleSlider && m_contextPanel && m_contextPanel->isVisible()) {
+            auto onGroove = m_scaleSlider->m_groove && pointInside(m_scaleSlider->m_groove, world);
+            auto thumb = m_scaleSlider->m_touchLogic ? m_scaleSlider->m_touchLogic->m_thumb : nullptr;
+            auto onThumb = thumb && pointInside(thumb, world);
+            if (onGroove || onThumb) return false;
         }
         auto ctrl = CCKeyboardDispatcher::get()->getControlKeyPressed();
         auto selections = logicalSelectionsAt(m_owner, world);
@@ -1063,6 +1078,7 @@ public:
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
+        pulseContextPanel();
     }
 
 private:
@@ -1084,6 +1100,7 @@ private:
     CCPoint m_pressWorld;
     std::vector<NodeState> m_dragStart;
     bool m_editing = false;
+    bool m_preview = false;
     bool m_dragging = false;
     bool m_pendingDrag = false;
     bool m_editControlPressed = false;
@@ -1093,6 +1110,7 @@ private:
     CCLabelBMFont* m_modeLabel = nullptr;
     CCLabelBMFont* m_selectionLabel = nullptr;
     CCMenuItemSpriteExtra* m_toggle = nullptr;
+    CCMenu* m_toggleMenu = nullptr;
     CCMenu* m_historyMenu = nullptr;
     CCMenuItemSpriteExtra* m_undoButton = nullptr;
     CCMenuItemSpriteExtra* m_redoButton = nullptr;
@@ -1103,9 +1121,15 @@ private:
     CCSprite* m_toggleDoneIcon = nullptr;
     CCMenu* m_profileMenu = nullptr;
     CCMenu* m_scaleMenu = nullptr;
+    Slider* m_scaleSlider = nullptr;
+    CCLayerColor* m_bottomPanel = nullptr;
+    CCLayerColor* m_contextPanel = nullptr;
+    CCMenu* m_previewReturnMenu = nullptr;
+    bool m_contextWasVisible = false;
     CCDrawNode* m_selectionOutline = nullptr;
+    std::array<CCLayerColor*, 4> m_focusShade {};
     std::vector<CCDrawNode*> m_gridLines;
-    std::vector<CCMenuItemSpriteExtra*> m_controlItems;
+    std::vector<CCNode*> m_controlItems;
     std::vector<InitialPosition> m_initialPositions;
     std::vector<EditAction> m_undo;
     std::vector<EditAction> m_redo;
@@ -1509,16 +1533,17 @@ private:
         auto size = getContentSize();
         auto makeIcon = [](char const* frame, float maxSize) {
             auto icon = CCSprite::createWithSpriteFrameName(frame);
+            if (!icon) icon = CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png");
             auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
             if (largest > .001f) icon->setScale(maxSize / largest);
             return icon;
         };
 
-        auto menu = CCMenu::create();
-        menu->setID("editor-controls");
-        menu->setPosition({size.width - 38.f, size.height - 22.f});
+        m_toggleMenu = CCMenu::create();
+        m_toggleMenu->setID("editor-controls");
+        m_toggleMenu->setPosition({size.width - 38.f, size.height - 22.f});
         auto toggleVisual = CCNode::create();
-        toggleVisual->setContentSize({34.f, 34.f});
+        toggleVisual->setContentSize({44.f, 44.f});
         m_toggleEditIcon = makeIcon("GJ_editBtn_001.png", 34.f);
         m_toggleDoneIcon = makeIcon("GJ_checkOn_001.png", 31.f);
         for (auto icon : {m_toggleEditIcon, m_toggleDoneIcon}) {
@@ -1527,17 +1552,23 @@ private:
         }
         m_toggle = CCMenuItemSpriteExtra::create(toggleVisual, this, menu_selector(PauseEditor::onToggle));
         m_toggle->setID("editor-toggle-button");
-        menu->addChild(m_toggle);
+        m_toggleMenu->addChild(m_toggle);
         m_controlItems.push_back(m_toggle);
-        addChild(menu, 20);
+        addChild(m_toggleMenu, 20);
         m_initialPositions.push_back({
             WeakRef<CCNode>(m_toggle), m_toggle->getPosition(), m_toggle->getScaleX(), m_toggle->getScaleY()
         });
-        restorePositions(menu);
+        restorePositions(m_toggleMenu);
 
+        auto toolbarWidth = std::min(360.f, size.width - 16.f);
+        m_bottomPanel = CCLayerColor::create({10, 7, 24, 220}, toolbarWidth, 50.f);
+        m_bottomPanel->setID("editor-bottom-toolbar");
+        m_bottomPanel->setPosition({(size.width - toolbarWidth) / 2.f, 4.f});
+        addChild(m_bottomPanel, 20);
         m_historyMenu = CCMenu::create();
         m_historyMenu->setID("editor-history-controls");
-        m_historyMenu->setPosition({size.width / 2.f, 12.f});
+        m_historyMenu->setPosition({toolbarWidth / 2.f, 25.f});
+        m_bottomPanel->addChild(m_historyMenu);
 
         auto makeControl = [this, &makeIcon](
             CCMenu* targetMenu,
@@ -1545,37 +1576,69 @@ private:
             float x,
             SEL_MenuHandler callback,
             char const* id,
-            float maxSize = 28.f
+            float maxSize = 27.f
         ) {
             auto icon = makeIcon(frame, maxSize);
-            auto button = CCMenuItemSpriteExtra::create(icon, this, callback);
+            auto visual = CCNode::create();
+            visual->setContentSize({42.f, 42.f});
+            icon->setPosition({21.f, 24.f});
+            visual->addChild(icon);
+            std::string caption;
+            auto controlID = std::string(id);
+            if (controlID == "undo-button") caption = "UNDO";
+            else if (controlID == "redo-button") caption = "REDO";
+            else if (controlID == "save-layout-button") caption = "SAVE";
+            else if (controlID == "saved-layouts-button") caption = "LAYOUTS";
+            else if (controlID == "hidden-blocks-button") caption = "TRASH";
+            else if (controlID == "reset-button") caption = "RESET";
+            else if (controlID == "preview-button") caption = "VIEW";
+            else if (controlID == "move-hint-button") caption = "MOVE";
+            else if (controlID == "scale-reset-button") caption = "RESET";
+            else if (controlID == "hide-block-button") caption = "HIDE";
+            if (!caption.empty()) {
+                auto label = CCLabelBMFont::create(caption.c_str(), "chatFont.fnt");
+                label->setPosition({21.f, 4.f});
+                label->setScale(.32f);
+                label->setOpacity(210);
+                label->limitLabelWidth(39.f, .32f, .2f);
+                visual->addChild(label);
+            }
+            auto button = CCMenuItemSpriteExtra::create(visual, this, callback);
             button->setID(id);
             button->setPositionX(x);
             targetMenu->addChild(button);
             m_controlItems.push_back(button);
             return button;
         };
-        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", -42.f, menu_selector(PauseEditor::onUndo), "undo-button");
-        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", 0.f, menu_selector(PauseEditor::onRedo), "redo-button");
-        m_resetButton = makeControl(m_historyMenu, "GJ_replayBtn_001.png", 42.f, menu_selector(PauseEditor::onReset), "reset-button");
-        addChild(m_historyMenu, 20);
+        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", -132.f, menu_selector(PauseEditor::onUndo), "undo-button");
+        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", -88.f, menu_selector(PauseEditor::onRedo), "redo-button");
+        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", -44.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
+        makeControl(m_historyMenu, "GJ_viewListsBtn_001.png", 0.f, menu_selector(PauseEditor::onLayouts), "saved-layouts-button");
+        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", 44.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
+        m_resetButton = makeControl(m_historyMenu, "GJ_replayBtn_001.png", 88.f, menu_selector(PauseEditor::onReset), "reset-button");
+        makeControl(m_historyMenu, "GJ_checkOn_001.png", 132.f, menu_selector(PauseEditor::onPreview), "preview-button", 24.f);
 
-        m_profileMenu = CCMenu::create();
-        m_profileMenu->setID("editor-layout-profile-controls");
-        m_profileMenu->setPosition({size.width / 2.f, 45.f});
-        makeControl(m_profileMenu, "GJ_downloadBtn_001.png", -63.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
-        makeControl(m_profileMenu, "GJ_viewListsBtn_001.png", -21.f, menu_selector(PauseEditor::onLayouts), "saved-layouts-button");
-        m_hideButton = makeControl(m_profileMenu, "hideBtn_001.png", 21.f, menu_selector(PauseEditor::onHide), "hide-block-button");
-        m_trashButton = makeControl(m_profileMenu, "GJ_trashBtn_001.png", 63.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
-        addChild(m_profileMenu, 20);
-
+        m_contextPanel = CCLayerColor::create({13, 9, 29, 235}, 300.f, 62.f);
+        m_contextPanel->setID("selection-context-panel");
+        m_contextPanel->setVisible(false);
+        addChild(m_contextPanel, 22);
         m_scaleMenu = CCMenu::create();
         m_scaleMenu->setID("editor-scale-controls");
-        m_scaleMenu->setPosition({size.width / 2.f, size.height - 17.f});
-        makeControl(m_scaleMenu, "GJ_zoomOutBtn_001.png", -42.f, menu_selector(PauseEditor::onScaleDown), "scale-down-button");
-        makeControl(m_scaleMenu, "edit_eResetBtn_001.png", 0.f, menu_selector(PauseEditor::onScaleReset), "scale-reset-button");
-        makeControl(m_scaleMenu, "GJ_zoomInBtn_001.png", 42.f, menu_selector(PauseEditor::onScaleUp), "scale-up-button");
-        addChild(m_scaleMenu, 20);
+        m_scaleMenu->setPosition({150.f, 21.f});
+        makeControl(m_scaleMenu, "GJ_editBtn_001.png", -125.f, menu_selector(PauseEditor::onMoveHint), "move-hint-button", 23.f);
+        makeControl(m_scaleMenu, "edit_eResetBtn_001.png", 92.f, menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 23.f);
+        m_hideButton = makeControl(m_scaleMenu, "hideBtn_001.png", 130.f, menu_selector(PauseEditor::onHide), "hide-block-button", 23.f);
+        m_contextPanel->addChild(m_scaleMenu);
+        m_scaleSlider = Slider::create(this, menu_selector(PauseEditor::onScaleSlider), .62f);
+        m_scaleSlider->setID("selection-scale-slider");
+        m_scaleSlider->setPosition({145.f, 21.f});
+        m_scaleSlider->setLiveDragging(true);
+        m_contextPanel->addChild(m_scaleSlider, 3);
+        auto sizeLabel = CCLabelBMFont::create("SIZE", "chatFont.fnt");
+        sizeLabel->setPosition({145.f, 7.f});
+        sizeLabel->setScale(.32f);
+        sizeLabel->setOpacity(190);
+        m_contextPanel->addChild(sizeLabel, 3);
 
         m_modeLabel = CCLabelBMFont::create("", "bigFont.fnt");
         m_modeLabel->setAnchorPoint({1.f, .5f});
@@ -1586,14 +1649,32 @@ private:
 
         m_selectionLabel = CCLabelBMFont::create("", "chatFont.fnt");
         m_selectionLabel->setAnchorPoint({0.f, .5f});
-        m_selectionLabel->setPosition({6.f, size.height - 8.f});
-        m_selectionLabel->setScale(.4f);
-        m_selectionLabel->setOpacity(190);
-        addChild(m_selectionLabel, 20);
+        m_selectionLabel->setPosition({8.f, 51.f});
+        m_selectionLabel->setScale(.36f);
+        m_selectionLabel->setOpacity(220);
+        m_selectionLabel->limitLabelWidth(284.f, .36f, .2f);
+        m_contextPanel->addChild(m_selectionLabel, 2);
 
         m_selectionOutline = CCDrawNode::create();
         m_selectionOutline->setID("selection-outline");
         addChild(m_selectionOutline, 19);
+        for (size_t index = 0; index < m_focusShade.size(); ++index) {
+            auto shade = CCLayerColor::create({0, 0, 0, 52}, 1.f, 1.f);
+            shade->setID("selection-focus-shade-" + std::to_string(index));
+            shade->setVisible(false);
+            m_focusShade[index] = shade;
+            addChild(shade, 18);
+        }
+
+        m_previewReturnMenu = CCMenu::create();
+        m_previewReturnMenu->setID("preview-return-menu");
+        m_previewReturnMenu->setPosition({size.width - 56.f, size.height - 24.f});
+        auto returnSprite = ButtonSprite::create("RETURN", 92, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .38f);
+        auto returnButton = CCMenuItemSpriteExtra::create(returnSprite, this, menu_selector(PauseEditor::onPreview));
+        returnButton->setID("preview-return-button");
+        m_previewReturnMenu->addChild(returnButton);
+        m_previewReturnMenu->setVisible(false);
+        addChild(m_previewReturnMenu, 30);
     }
 
     void onToggle(CCObject*) { setEditing(!m_editing); }
@@ -1602,7 +1683,36 @@ private:
     void onScaleDown(CCObject*) { scaleSelection(.9f); }
     void onScaleUp(CCObject*) { scaleSelection(1.1f); }
     void onScaleReset(CCObject*) { resetSelectionScale(); }
+    void onScaleSlider(CCObject* sender) {
+        auto slider = typeinfo_cast<Slider*>(sender);
+        if (!slider) slider = m_scaleSlider;
+        if (!slider || !m_editing || m_preview || m_selectedNodes.empty()) return;
+        auto before = captureStates(m_selectedNodes);
+        auto target = .15f + std::clamp(slider->getValue(), 0.f, 1.f) * 3.35f;
+        for (auto node : m_selectedNodes) {
+            rememberInitialPosition(node);
+            auto largest = std::max(std::abs(node->getScaleX()), std::abs(node->getScaleY()));
+            if (largest <= .0001f) largest = 1.f;
+            auto factor = target / largest;
+            node->setScaleX(node->getScaleX() * factor);
+            node->setScaleY(node->getScaleY() * factor);
+            markTransformDirty(node);
+        }
+        keepSelectedGroupsReachable();
+        auto after = captureStates(m_selectedNodes);
+        if (statesDiffer(before, after)) {
+            m_undo.push_back({std::move(before), std::move(after)});
+            m_redo.clear();
+            m_hasEdits = true;
+        }
+        updateHistoryButtons();
+        updateSelectionOutline();
+    }
+    void onMoveHint(CCObject*) {
+        Notification::create("Drag the selected block to move it", NotificationIcon::Info)->show();
+    }
     void onHide(CCObject*) { hideSelection(); }
+    void onPreview(CCObject*) { setPreview(!m_preview); }
     void onTrash(CCObject*) {
         auto recovered = reconcileHiddenBlocks();
         if (recovered > 0) {
@@ -1636,6 +1746,19 @@ private:
             active,
             [self](std::string name) {
                 if (auto editor = self.lock()) editor->applyNamedLayout(name);
+            },
+            [](std::string oldName, std::string newName) {
+                if (!pause_menu_studio::profiles::rename(oldName, newName)) return false;
+                if (Mod::get()->getSavedValue<std::string>("active-named-layout", "") == oldName) {
+                    Mod::get()->setSavedValue<std::string>("active-named-layout", newName);
+                }
+                Notification::create("Layout renamed", NotificationIcon::Success)->show();
+                return true;
+            },
+            [](std::string sourceName, std::string newName) {
+                if (!pause_menu_studio::profiles::duplicate(sourceName, newName)) return false;
+                Notification::create("Layout duplicated", NotificationIcon::Success)->show();
+                return true;
             },
             [self](std::string name) {
                 pause_menu_studio::profiles::erase(name);
@@ -1684,7 +1807,26 @@ private:
         );
     }
 
+    void setPreview(bool preview) {
+        if (preview && !m_editing) return;
+        m_preview = preview;
+        if (m_previewReturnMenu) m_previewReturnMenu->setVisible(preview);
+        if (m_toggleMenu) m_toggleMenu->setVisible(!preview);
+        if (m_bottomPanel) m_bottomPanel->setVisible(m_editing && !preview);
+        if (m_modeLabel) m_modeLabel->setVisible(m_editing && !preview);
+        if (preview) {
+            if (m_contextPanel) m_contextPanel->setVisible(false);
+            for (auto shade : m_focusShade) if (shade) shade->setVisible(false);
+            m_contextWasVisible = false;
+            if (m_selectionOutline) m_selectionOutline->clear();
+        } else {
+            updateSelectionLabel();
+            updateSelectionOutline();
+        }
+    }
+
     void setEditing(bool editing) {
+        if (!editing && m_preview) setPreview(false);
         auto leavingEditor = m_editing && !editing;
         if (leavingEditor) {
             commitDirtyTransforms();
@@ -1696,12 +1838,21 @@ private:
         if (!editing) clearSelection();
         if (!editing) m_hasLastSelectionPoint = false;
         m_modeLabel->setString(editing ? "EDIT MODE" : "");
+        m_modeLabel->setVisible(editing);
         if (m_toggleEditIcon) m_toggleEditIcon->setVisible(!editing);
         if (m_toggleDoneIcon) m_toggleDoneIcon->setVisible(editing);
         for (auto line : m_gridLines) line->setVisible(editing);
-        m_historyMenu->setVisible(editing);
-        m_profileMenu->setVisible(editing);
-        m_scaleMenu->setVisible(editing);
+        if (m_bottomPanel) {
+            m_bottomPanel->setVisible(editing);
+            m_bottomPanel->stopAllActions();
+            if (editing) {
+                auto target = m_bottomPanel->getPosition();
+                m_bottomPanel->setPositionY(-m_bottomPanel->getContentHeight());
+                m_bottomPanel->runAction(CCEaseBackOut::create(CCMoveTo::create(.24f, target)));
+            }
+        }
+        if (m_contextPanel && !editing) m_contextPanel->setVisible(false);
+        m_contextWasVisible = false;
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
@@ -1723,6 +1874,7 @@ private:
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
+        pulseContextPanel();
     }
 
     void redo() {
@@ -1741,6 +1893,7 @@ private:
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
+        pulseContextPanel();
     }
 
     void resetLayout() {
@@ -1849,6 +2002,15 @@ private:
         updateSelectionOutline();
         if (hiddenCount > 0) {
             m_hasEdits = true;
+            if (m_trashButton) {
+                m_trashButton->stopAllActions();
+                m_trashButton->setScale(1.f);
+                m_trashButton->runAction(CCSequence::create(
+                    CCEaseBackOut::create(CCScaleTo::create(.12f, 1.28f)),
+                    CCScaleTo::create(.12f, 1.f),
+                    nullptr
+                ));
+            }
             Notification::create(
                 hiddenCount == 1 ? "Block moved to trash" : "Blocks moved to trash",
                 NotificationIcon::Success
@@ -2084,24 +2246,30 @@ private:
     }
 
     void updateSelectionLabel() {
-        if (!m_editing) { m_selectionLabel->setString(""); return; }
-        if (m_selectedNodes.empty()) { m_selectionLabel->setString("Click to select | Ctrl+click: group"); return; }
+        if (!m_editing || m_preview || m_selectedNodes.empty()) {
+            m_selectionLabel->setString("");
+            return;
+        }
+        if (m_scaleSlider && m_selected) {
+            auto scale = std::max(std::abs(m_selected->getScaleX()), std::abs(m_selected->getScaleY()));
+            m_scaleSlider->setValue(std::clamp((scale - .15f) / 3.35f, 0.f, 1.f));
+        }
         auto const logicalCount = logicalSelectionCount();
         if (logicalCount > 1) {
-            m_selectionLabel->setString(fmt::format("Selected: {} elements", logicalCount).c_str());
+            m_selectionLabel->setString(fmt::format("{} BLOCKS SELECTED", logicalCount).c_str());
             return;
         }
         if (!selectedVolumeGroup("music").empty()) {
-            m_selectionLabel->setString("Selected: music controls");
+            m_selectionLabel->setString("MUSIC CONTROLS");
             return;
         }
         if (!selectedVolumeGroup("sfx").empty()) {
-            m_selectionLabel->setString("Selected: SFX controls");
+            m_selectionLabel->setString("SFX CONTROLS");
             return;
         }
-        auto id = m_selected->getID();
-        auto name = id.empty() ? std::string("unnamed node") : std::string(id);
-        m_selectionLabel->setString(("Selected: " + name).c_str());
+        auto groups = selectedLogicalGroups();
+        auto name = groups.empty() ? std::string("UNNAMED BLOCK") : groupLabel(groups.front());
+        m_selectionLabel->setString(utils::string::toUpper(name).c_str());
     }
 
     struct OutlineBounds {
@@ -2174,7 +2342,19 @@ private:
         }};
         for (size_t index = 0; index < corners.size(); ++index) {
             m_selectionOutline->drawSegment(corners[index], corners[(index + 1) % corners.size()], .8f, color);
+            m_selectionOutline->drawDot(corners[index], 2.4f, color);
         }
+    }
+
+    void pulseContextPanel() {
+        if (!m_contextPanel || !m_contextPanel->isVisible()) return;
+        m_contextPanel->stopAllActions();
+        m_contextPanel->setScale(1.f);
+        m_contextPanel->runAction(CCSequence::create(
+            CCEaseSineOut::create(CCScaleTo::create(.08f, 1.06f)),
+            CCEaseSineIn::create(CCScaleTo::create(.12f, 1.f)),
+            nullptr
+        ));
     }
 
     std::array<CCPoint, 4> selectionCorners(CCNode* node) {
@@ -2189,12 +2369,18 @@ private:
 
     void updateSelectionOutline() {
         m_selectionOutline->clear();
-        if (!m_editing || m_selectedNodes.empty()) return;
+        if (!m_editing || m_preview || m_selectedNodes.empty()) {
+            if (m_contextPanel) m_contextPanel->setVisible(false);
+            for (auto shade : m_focusShade) if (shade) shade->setVisible(false);
+            m_contextWasVisible = false;
+            return;
+        }
         auto const multiple = logicalSelectionCount() > 1;
         ccColor4F const color = multiple
             ? ccColor4F {1.f, .48f, .08f, 1.f}
             : ccColor4F {.15f, 1.f, 1.f, 1.f};
 
+        OutlineBounds contextBounds;
         std::unordered_set<CCNode*> groupedNodes;
         for (auto type : {std::string_view("music"), std::string_view("sfx")}) {
             auto const members = selectedVolumeGroup(type);
@@ -2203,6 +2389,7 @@ private:
             for (auto node : members) {
                 groupedNodes.insert(node);
                 includeVisibleBounds(node, bounds);
+                includeVisibleBounds(node, contextBounds);
             }
             drawOutlineBounds(bounds, color);
         }
@@ -2211,7 +2398,40 @@ private:
             if (groupedNodes.contains(node)) continue;
             OutlineBounds bounds;
             includeVisibleBounds(node, bounds);
+            includeVisibleBounds(node, contextBounds);
             drawOutlineBounds(bounds, color);
+        }
+        if (m_contextPanel && contextBounds.valid) {
+            auto screen = getContentSize();
+            auto minX = std::clamp(contextBounds.minX, 0.f, screen.width);
+            auto maxX = std::clamp(contextBounds.maxX, 0.f, screen.width);
+            auto minY = std::clamp(contextBounds.minY, 0.f, screen.height);
+            auto maxY = std::clamp(contextBounds.maxY, 0.f, screen.height);
+            auto setShade = [](CCLayerColor* shade, CCPoint position, CCSize size) {
+                if (!shade) return;
+                shade->setPosition(position);
+                shade->setContentSize({std::max(0.f, size.width), std::max(0.f, size.height)});
+                shade->setVisible(size.width > .5f && size.height > .5f);
+            };
+            setShade(m_focusShade[0], {0.f, 0.f}, {minX, screen.height});
+            setShade(m_focusShade[1], {maxX, 0.f}, {screen.width - maxX, screen.height});
+            setShade(m_focusShade[2], {minX, 0.f}, {maxX - minX, minY});
+            setShade(m_focusShade[3], {minX, maxY}, {maxX - minX, screen.height - maxY});
+            auto panelSize = m_contextPanel->getContentSize();
+            auto x = (contextBounds.minX + contextBounds.maxX - panelSize.width) / 2.f;
+            x = std::clamp(x, 4.f, std::max(4.f, screen.width - panelSize.width - 4.f));
+            auto y = contextBounds.maxY + 8.f;
+            if (y + panelSize.height > screen.height - 4.f) {
+                y = contextBounds.minY - panelSize.height - 8.f;
+            }
+            y = std::clamp(y, 58.f, std::max(58.f, screen.height - panelSize.height - 4.f));
+            m_contextPanel->setPosition({x, y});
+            m_contextPanel->setVisible(true);
+            if (!m_contextWasVisible) {
+                m_contextPanel->setScale(.88f);
+                m_contextPanel->runAction(CCEaseBackOut::create(CCScaleTo::create(.18f, 1.f)));
+            }
+            m_contextWasVisible = true;
         }
     }
 
