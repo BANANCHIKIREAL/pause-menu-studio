@@ -321,6 +321,7 @@ The complete history is available in [`changelog.md`](changelog.md).
 ### v3.0.2
 
 - Makes Delete the only removal key and keeps Backspace unbound.
+- Keeps the focused scale field editable instead of restoring its formatted value after every Backspace press.
 - Remembers FREE MOVE separately for each block during the current editor session.
 - Adds custom white artwork to both Reset controls and View, and removes the orange 1.00 slider marker.
 - Captures real object sprite frames for Trash, repairs old Trash previews, and separates REN/COPY.

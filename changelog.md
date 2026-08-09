@@ -1,6 +1,7 @@
 # v3.0.2
 
 - Delete is now the only keyboard shortcut that moves a selected block to Trash; Backspace no longer removes blocks.
+- The numeric scale field no longer rewrites its formatted value while focused, so Backspace can edit it normally.
 - FREE MOVE now remembers its enabled or disabled state separately for each selected block while the editor is open.
 - Replaced both RESET controls and VIEW with custom white reset and eye artwork.
 - Removed the orange 1.00 line and label from the scale slider.

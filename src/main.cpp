@@ -2429,7 +2429,12 @@ private:
             auto scale = std::max(std::abs(m_selected->getScaleX()), std::abs(m_selected->getScaleY()));
             m_updatingScaleControls = true;
             m_scaleSlider->setValue(std::clamp((scale - .15f) / 3.35f, 0.f, 1.f));
-            if (m_scaleInput) m_scaleInput->setString(fmt::format("{:.2f}", scale), false);
+            if (
+                m_scaleInput &&
+                (!m_scaleInput->getInputNode() || !m_scaleInput->getInputNode()->m_selected)
+            ) {
+                m_scaleInput->setString(fmt::format("{:.2f}", scale), false);
+            }
             m_updatingScaleControls = false;
         }
         auto const logicalCount = logicalSelectionCount();
