@@ -1,3 +1,8 @@
+# v2.2.1
+
+- Added the official Pause Menu Studio website to the Geode mod card.
+- Added BANANCHIKIREAL Badges API v1.2.4 as a required dependency for the developer badge.
+
 # v2.2.0
 
 - Added official Android support for Geometry Dash 2.2081 on both Android32 and Android64.

@@ -6,10 +6,11 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v2.2.0",
+    "version": "v2.2.1",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
+        "homepage": "https://pause-menu-studio.vercel.app",
         "source": "https://github.com/BANANCHIKIREAL/pause-menu-studio",
         "community": "https://discord.gg/Knh3YUUR3"
     },
@@ -19,6 +20,10 @@
         "online"
     ],
     "dependencies": {
+        "bananchikireal.developer-badges": {
+            "version": ">=v1.2.4",
+            "required": true
+        },
         "fleym.nongd": {
             "version": ">=3.6.2",
             "required": true

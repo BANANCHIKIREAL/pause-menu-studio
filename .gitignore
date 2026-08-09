@@ -1,7 +1,10 @@
 build*/
+dist/
 tmp/
 .vs/
 .cache/
 *.dll
 *.pdb
 logo-chroma-*.png
+.vercel/
+.env*
