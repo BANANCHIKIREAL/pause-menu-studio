@@ -1,94 +1,94 @@
 # <cy>Pause Menu Studio</c> <cg>v2.1.0</c>
 
-<cp>Полноценный визуальный редактор пауз-меню Geometry Dash прямо внутри игры.</c>
+<cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
-Перемещай, масштабируй, группируй и скрывай элементы, сохраняй несколько именованных тем и добавляй информационные карточки уровня, музыки, монет и сложности.
+Move, resize, group, and hide pause-menu elements. Save multiple named layouts and add information cards for the level, music, coins, and difficulty.
 
 ---
 
-## <co>ВАЖНО: EXPERIMENTAL</c>
+## <co>IMPORTANT: EXPERIMENTAL</c>
 
-Pause Menu Studio пока имеет статус <co>experimental</c>. Пауз-меню могут одновременно изменять другие моды и текстур-паки, поэтому некоторые их сочетания способны вызывать визуальные ошибки, смещения или несовпадение сохранённых блоков.
+Pause Menu Studio is currently <co>experimental</c>. Other mods and texture packs can modify the pause menu at the same time, so some combinations may cause visual glitches, shifted controls, or unmatched saved blocks.
 
-<cy>Перед большой перестройкой сохрани именованную тему.</c> Если найдёшь повторяемый баг, приложи crashlog, latest.log, список модов и точные шаги воспроизведения на GitHub.
+<cy>Save a named layout before making a large redesign.</c> If you find a reproducible bug, attach your crashlog, latest.log, mod list, and exact reproduction steps on GitHub.
 
-## <cg>БЫСТРЫЙ СТАРТ</c>
+## <cg>QUICK START</c>
 
-1. Открой любой уровень и поставь игру на паузу.
-2. Нажми <cy>EDIT</c>.
-3. Нажми на нужный элемент, чтобы выбрать его.
-4. Перетащи элемент мышью или используй стрелки.
-5. Нажми <cg>DONE</c>, чтобы применить изменения текущей сессии.
-6. Используй <cp>SAVE</c>, чтобы сохранить тему под своим именем.
+1. Open any level and pause the game.
+2. Press <cy>EDIT</c>.
+3. Click an element to select it.
+4. Drag it with the mouse or move it with the arrow keys.
+5. Press <cg>DONE</c> to apply the current editing session.
+6. Use <cp>SAVE</c> to store the layout under your own name.
 
-Первый клик только выбирает блок. Он начинает двигаться только после реального перемещения курсора.
+The first click only selects a block. It starts moving only after the cursor actually crosses the drag threshold.
 
-## <cb>УПРАВЛЕНИЕ</c>
+## <cb>CONTROLS</c>
 
-- <cy>ЛКМ</c> - выбрать блок.
-- <cy>ЛКМ + движение</c> - перетащить выбранный блок.
-- <cy>Повторный клик в той же точке</c> - выбрать следующий перекрытый блок.
-- <cy>Ctrl + ЛКМ</c> - добавить ещё один блок к выбору.
-- <cy>Стрелки</c> - передвинуть на 1 единицу.
-- <cy>Shift + стрелки</c> - передвинуть на 5 единиц.
-- <cy>Ctrl + Z</c> - отменить действие.
-- <cy>Ctrl + Y</c> - повторить отменённое действие.
-- <cy>R</c> - сбросить выбранный блок.
-- <cy>Delete / Backspace</c> - отправить блок в Hidden Blocks.
-- <cy>SIZE- / SIZE+</c> - изменить размер.
-- <cy>UNDO / REDO</c> - история действий.
-- <cy>RESET</c> - сброс с обязательным подтверждением.
+- <cy>Left click</c> - select a block.
+- <cy>Left click + drag</c> - move the selected block.
+- <cy>Repeated click at the same point</c> - select the next overlapping block.
+- <cy>Ctrl + click</c> - add another block to the selection.
+- <cy>Arrow keys</c> - move by 1 unit.
+- <cy>Shift + arrow keys</c> - move by 5 units.
+- <cy>Ctrl + Z</c> - undo.
+- <cy>Ctrl + Y</c> - redo.
+- <cy>R</c> - reset the selected block.
+- <cy>Delete / Backspace</c> - move a block to Hidden Blocks.
+- <cy>SIZE- / SIZE+</c> - resize the selection.
+- <cy>UNDO / REDO</c> - use the visible history buttons.
+- <cy>RESET</c> - reset with a confirmation prompt.
 
-При мультивыборе общая рамка становится <co>оранжевой</c>. Обычный выбранный блок имеет <cb>голубую</c> рамку.
+Multi-selection uses an <co>orange</c> outline. A single selected block uses a <cb>cyan</c> outline.
 
-## <cp>ТЕМЫ И РАСКЛАДКИ</c>
+## <cp>NAMED LAYOUTS</c>
 
-- <cy>SAVE</c> сохраняет текущую раскладку под выбранным именем.
-- <cy>LAYOUTS</c> открывает список сохранённых тем.
-- Тема хранит позиции, размеры, Hidden Blocks и присутствующие информационные карточки.
-- Карточка из темы появляется даже тогда, когда её обычная настройка выключена.
-- После повторного открытия паузы карточки активной темы сохраняются.
-- Полный <cr>RESET</c> удаляет карточки, созданные только темой, и возвращает обычные настройки.
-- Временно отсутствующие блоки сторонних модов не удаляются из сохранённых данных.
+- <cy>SAVE</c> stores the current layout under a custom name.
+- <cy>LAYOUTS</c> opens the saved-layout list.
+- A layout stores positions, sizes, Hidden Blocks, and the information cards that were present.
+- A card stored in a layout appears even when its normal mod setting is disabled.
+- Cards from the active layout remain available after reopening the pause menu.
+- A full <cr>RESET</c> removes layout-only cards and restores the normal card settings.
+- Temporarily unavailable blocks from other mods remain in saved data instead of being deleted.
 
-Старые темы могут не содержать информацию о карточках, если они были сохранены до v2.1.0 и карточки никогда не перемещались.
+Old layouts may not contain card-presence data if they were saved before v2.1.0 and those cards had never been moved.
 
 ## <cr>HIDDEN BLOCKS</c>
 
-Удаление в редакторе работает как корзина:
+Removing something in Edit Mode works like a recycle bin:
 
-1. Выбери блок.
-2. Нажми <cy>Delete</c>, <cy>Backspace</c> или кнопку скрытия.
-3. Открой кнопку корзины.
-4. Выбери нужную запись, чтобы вернуть блок на сохранённое место.
+1. Select a block.
+2. Press <cy>Delete</c>, <cy>Backspace</c>, or the hide button.
+3. Open the trash button.
+4. Select an entry to return the block to its saved position and size.
 
-Перед открытием корзины мод проверяет активную тему и ранее управляемые невидимые элементы. Если запись потерялась, но её можно достоверно восстановить, она снова появится в Hidden Blocks.
+Before the list opens, the mod audits the active layout and invisible elements previously managed by Pause Menu Studio. If a missing record can be recovered reliably, it is returned to Hidden Blocks automatically.
 
-## <cl>ИНФОРМАЦИОННЫЕ КАРТОЧКИ</c>
+## <cl>INFORMATION CARDS</c>
 
-- <cy>Level name</c> - название уровня и автор. По умолчанию выключена.
-- <cy>Music</c> - настоящий музыкальный блок Jukebox/NONGD. По умолчанию выключена.
-- <cy>Coins</c> - нативные пользовательские монеты. По умолчанию выключена.
-- <cy>Difficulty</c> - иконка сложности и звёзды. По умолчанию выключена.
-- <cy>Demonlist position</c> - доступная позиция AREDL/Pemonlist при установленном Integrated Demonlist.
+- <cy>Level name</c> - level title and creator. Disabled by default.
+- <cy>Music</c> - the real Jukebox/NONGD song widget. Disabled by default.
+- <cy>Coins</c> - native user-coin icons. Disabled by default.
+- <cy>Difficulty</c> - difficulty face and star count. Disabled by default.
+- <cy>Demonlist position</c> - an available AREDL/Pemonlist rank when Integrated Demonlist provides it.
 
-В v2.1.0 оригинальное название уровня сохраняется при запуске PlayLayer. Повторное открытие паузы не должно заменять <cg>Stereo Madness</c> названием NONG/cover из Jukebox.
+In v2.1.0, the original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <cg>Stereo Madness</c> with the active NONG/cover title from Jukebox.
 
-## <cj>СТИЛИ МЕНЮ</c>
+## <cj>MENU STYLES</c>
 
-- <cy>Classic</c> - стандартный стиль, выбран по умолчанию.
-- <cy>Compact</c> - более плотное расположение.
-- <cy>Showcase</c> - больше пространства для карточек.
+- <cy>Classic</c> - the standard style and the default choice.
+- <cy>Compact</c> - a denser layout.
+- <cy>Showcase</c> - extra room for information cards.
 
-Каждый стиль использует собственные сохранённые позиции.
+Each style uses its own saved positions.
 
-## <cp>СОВМЕСТИМОСТЬ</c>
+## <cp>MOD COMPATIBILITY</c>
 
-### <cy>Обязательный мод</c>
+### <cy>Required mod</c>
 
 - NONGD / Jukebox: <cy>fleym.nongd >= 3.6.2</c>
 
-### <cy>Дополнительные интеграции</c>
+### <cy>Optional integrations</c>
 
 - Gold User Coins >= 2.0.4
 - Demons in Between >= 1.7.0
@@ -98,54 +98,54 @@ Pause Menu Studio пока имеет статус <co>experimental</c>. Пау�
 - Better Volume >= 2.1.4
 - Better Escape >= 1.0.1
 
-Better Volume воспринимается как два цельных блока: <cg>Music</c> и <cg>SFX</c>. Jukebox использует настоящий CustomSongWidget вместе с диском, MORE и кнопкой удаления.
+Better Volume is handled as two complete blocks: <cg>Music</c> and <cg>SFX</c>. Jukebox uses the real CustomSongWidget, including its disc, MORE button, and delete button.
 
-Интеграции зависят от внутренних ID сторонних модов. Я не могу подтвердить работу каждой возможной комбинации версий и текстур-паков.
+Integrations depend on internal node IDs from other mods. I cannot confirm every possible combination of versions and texture packs.
 
-## <co>ИЗВЕСТНЫЕ ОГРАНИЧЕНИЯ</c>
+## <co>KNOWN LIMITATIONS</c>
 
-- Динамические элементы Jukebox, Better Volume и других модов могут пересоздаваться после открытия паузы или смены песни.
-- Текстур-пак, который двигает весь контейнер кнопки, может спорить с редактором за позицию.
-- Тема, сохранённая с выключенным сейчас модом, может содержать временно недоступные пути.
-- Очень большие размеры и сильное перекрытие элементов не блокируются специально.
-- Текущая сборка предназначена для <cy>Geometry Dash 2.2081</c>, <cy>Geode 5.8.2</c> и <cy>Windows</c>.
+- Dynamic elements from Jukebox, Better Volume, and other mods may be rebuilt after opening the pause menu or changing a song.
+- A texture pack that moves an entire button container can compete with the editor for its position.
+- A layout saved with a currently disabled mod may contain temporarily unavailable paths.
+- Extremely large controls and heavy overlap are intentionally not blocked.
+- The current build targets <cy>Geometry Dash 2.2081</c>, <cy>Geode 5.8.2</c>, and <cy>Windows</c>.
 
-## <cr>ЕСЛИ ЧТО-ТО СЛОМАЛОСЬ</c>
+## <cr>TROUBLESHOOTING</c>
 
-### <cy>Пропал блок</c>
+### <cy>A block disappeared</c>
 
-1. Открой Hidden Blocks.
-2. Проверь, включён ли мод, которому принадлежит блок.
-3. Закрой и снова открой пауз-меню.
-4. Не нажимай полный Reset до сохранения скриншота и логов.
+1. Open Hidden Blocks.
+2. Check whether the mod that owns the block is enabled.
+3. Close and reopen the pause menu.
+4. Do not use a full Reset before saving screenshots and logs.
 
-### <cy>Неверная тема</c>
+### <cy>A layout looks wrong</c>
 
-1. Проверь стиль Classic, Compact или Showcase.
-2. Проверь набор активных модов.
-3. Выбери только проблемный блок и нажми R.
-4. Используй полный Reset только после подтверждения.
+1. Check whether Classic, Compact, or Showcase is selected.
+2. Compare the currently enabled mods with the layout's original setup.
+3. Select only the affected block and press R.
+4. Use a full Reset only after confirming the prompt.
 
-### <cy>Вылет</c>
+### <cy>The game crashed</c>
 
-Приложи:
+Attach:
 
-- crashlog из <cy>Geometry Dash/geode/crashlogs</c>;
-- latest.log из <cy>Geometry Dash/geode/logs</c>;
-- список модов и их версии;
-- название текстур-пака;
-- скриншот или видео;
-- точные действия перед ошибкой.
+- the crashlog from <cy>Geometry Dash/geode/crashlogs</c>;
+- latest.log from <cy>Geometry Dash/geode/logs</c>;
+- your enabled mods and their versions;
+- your texture-pack name;
+- a screenshot or video;
+- the exact actions immediately before the problem.
 
-## <cg>ССЫЛКИ</c>
+## <cg>LINKS</c>
 
 - [GitHub repository](https://github.com/BANANCHIKIREAL/pause-menu-studio)
-- [Скачать последнюю версию](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest)
-- [Сообщить о баге](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml)
-- [Полный README](https://github.com/BANANCHIKIREAL/pause-menu-studio#readme)
+- [Download the latest release](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest)
+- [Report a bug](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml)
+- [Full README](https://github.com/BANANCHIKIREAL/pause-menu-studio#readme)
 
 ---
 
-Разработка: <cy>BANANCHIKIREAL</c>
+Developed by <cy>BANANCHIKIREAL</c>
 
-<cg>Создавай пауз-меню, которое выглядит именно так, как хочешь ты.</c>
+<cg>Build a pause menu that looks exactly the way you want.</c>

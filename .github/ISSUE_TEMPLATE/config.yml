@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "📖 Документация"
+  - name: "📖 Documentation"
     url: "https://github.com/BANANCHIKIREAL/pause-menu-studio#readme"
-    about: "Сначала проверь управление, известные ограничения и раздел устранения неполадок."
+    about: "Check the controls, known limitations, and troubleshooting sections first."

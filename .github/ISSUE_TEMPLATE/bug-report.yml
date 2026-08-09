@@ -1,5 +1,5 @@
 name: "🐞 Bug report"
-description: "Сообщить о вылете, пропавшем блоке, неверной позиции или конфликте с другим модом"
+description: "Report a crash, missing block, incorrect position, or compatibility problem"
 title: "[Bug] "
 labels:
   - bug
@@ -7,14 +7,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Спасибо за отчёт! Pause Menu Studio экспериментальный и сильно зависит от других модов.
-        Чем точнее информация ниже, тем выше шанс воспроизвести и исправить проблему.
+        Thank you for the report! Pause Menu Studio is experimental and interacts with many other mods.
+        Accurate information below makes the issue much easier to reproduce and fix.
 
   - type: input
     id: pms-version
     attributes:
-      label: Версия Pause Menu Studio
-      description: Указана в списке модов Geode.
+      label: Pause Menu Studio version
+      description: Find it in the Geode mod list.
       placeholder: "v2.1.0"
     validations:
       required: true
@@ -22,7 +22,7 @@ body:
   - type: input
     id: geode-gd-version
     attributes:
-      label: Версии Geometry Dash и Geode
+      label: Geometry Dash and Geode versions
       placeholder: "Geometry Dash 2.2081, Geode 5.8.2"
     validations:
       required: true
@@ -30,87 +30,87 @@ body:
   - type: dropdown
     id: problem-type
     attributes:
-      label: Тип проблемы
+      label: Problem type
       options:
-        - Вылет
-        - Пропавший или невидимый блок
-        - Неверная позиция или размер
+        - Crash
+        - Missing or invisible block
+        - Incorrect position or scale
         - SAVE / LAYOUTS / Apply
         - Hidden Blocks / Reset
         - Jukebox / NONGD
         - Better Volume
-        - Клавиатура / Esc / Space
-        - Текстур-пак
-        - Другое
+        - Keyboard / Esc / Space
+        - Texture pack
+        - Other
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Точные шаги воспроизведения
-      description: Перечисли действия с момента входа в уровень.
+      label: Exact reproduction steps
+      description: List every action starting from entering the level.
       placeholder: |
-        1. Открыл уровень ...
-        2. Нажал Esc...
-        3. Включил Edit Mode...
-        4. Ошибка появилась после...
+        1. Opened level ...
+        2. Pressed Esc ...
+        3. Enabled Edit Mode ...
+        4. The problem appeared after ...
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Ожидаемое поведение
-      description: Что должно было произойти?
+      label: Expected behavior
+      description: What should have happened?
     validations:
       required: true
 
   - type: textarea
     id: actual
     attributes:
-      label: Фактическое поведение
-      description: Что произошло вместо этого?
+      label: Actual behavior
+      description: What happened instead?
     validations:
       required: true
 
   - type: textarea
     id: mods
     attributes:
-      label: Активные моды
-      description: Особенно важны NONGD/Jukebox, Better Volume, Better Escape, Menu Animations, GodlikeFaces, Integrated Demonlist, GDDP и Demons in Between.
-      placeholder: "Вставь список активных модов и их версии"
+      label: Enabled mods
+      description: NONGD/Jukebox, Better Volume, Better Escape, Menu Animations, GodlikeFaces, Integrated Demonlist, GDDP, and Demons in Between are especially important.
+      placeholder: "Paste the enabled-mod list and versions"
     validations:
       required: true
 
   - type: input
     id: texture-pack
     attributes:
-      label: Текстур-пак
-      description: Напиши название или "не используется".
-      placeholder: "Название пака / не используется"
+      label: Texture pack
+      description: Enter its name or "None".
+      placeholder: "Texture-pack name / None"
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Логи и crashlog
-      description: Перетащи сюда latest.log и crashlog. Для вылета crashlog обязателен.
-      placeholder: "Прикрепи файлы или вставь ссылку"
+      label: Logs and crashlog
+      description: Drag latest.log and the crashlog here. A crashlog is required for crashes.
+      placeholder: "Attach the files or paste a link"
 
   - type: textarea
     id: media
     attributes:
-      label: Скриншоты или видео
-      description: Перетащи сюда изображение либо короткое видео визуальной ошибки.
+      label: Screenshots or video
+      description: Drag an image or a short video of the visual problem here.
 
   - type: checkboxes
     id: confirmation
     attributes:
-      label: Проверка
+      label: Confirmation
       options:
-        - label: Я полностью перезапустил Geometry Dash и повторил проблему.
+        - label: I fully restarted Geometry Dash and reproduced the problem again.
           required: true
-        - label: Я приложил достаточно данных, чтобы повторить ошибку.
+        - label: I included enough information to reproduce the problem.
           required: true

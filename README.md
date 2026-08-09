@@ -5,9 +5,9 @@
 <h1 align="center">Pause Menu Studio</h1>
 
 <p align="center">
-  <strong>Полноценный редактор пауз-меню Geometry Dash прямо внутри игры.</strong><br>
-  Перемещай, масштабируй, группируй и скрывай элементы, сохраняй именованные раскладки<br>
-  и добавляй красивые карточки уровня, музыки, монет и сложности.
+  <strong>A complete Geometry Dash pause-menu editor built directly into the game.</strong><br>
+  Move, resize, group, and hide controls, save named layouts,<br>
+  and add configurable cards for the level, music, coins, and difficulty.
 </p>
 
 <p align="center">
@@ -19,245 +19,245 @@
 </p>
 
 <p align="center">
-  <a href="#-возможности">Возможности</a> •
-  <a href="#-быстрый-старт">Быстрый старт</a> •
-  <a href="#%EF%B8%8F-управление">Управление</a> •
-  <a href="#-совместимость-с-другими-модами">Совместимость</a> •
-  <a href="#-известные-ограничения">Ограничения</a> •
-  <a href="#-сборка-из-исходников">Сборка</a>
+  <a href="#-features">Features</a> •
+  <a href="#-quick-start">Quick start</a> •
+  <a href="#%EF%B8%8F-controls">Controls</a> •
+  <a href="#-compatibility">Compatibility</a> •
+  <a href="#-known-limitations">Known limitations</a> •
+  <a href="#%EF%B8%8F-building-from-source">Building</a>
 </p>
 
 > [!WARNING]
-> **Мод находится в experimental-состоянии.** Он уже пригоден для использования, но пауз-меню активно изменяется другими модами и текстур-паками. Некоторые сочетания могут создавать визуальные ошибки, смещения или несовпадение сохранённых путей элементов. Перед обновлением или большой перестройкой рекомендуется сохранить именованную раскладку.
+> **Pause Menu Studio is experimental.** It is usable, but the pause menu is also modified by many other mods and texture packs. Some combinations may cause visual glitches, moved controls, or saved node paths that no longer match. Save a named layout before updating mods or making a large redesign.
 
-## ✨ Возможности
+## ✨ Features
 
-### 🎨 Визуальный редактор
+### 🎨 Visual editor
 
-- Перемещение практически любых доступных элементов пауз-меню мышью.
-- Первый клик только выбирает элемент — движение начинается после фактического перетаскивания.
-- Повторный клик в одной точке переключает перекрывающиеся элементы от верхнего к нижнему.
-- Изменение размера выбранных кнопок и блоков.
-- Перемещение стрелками с точным шагом.
-- Мультивыбор через `Ctrl` с общей оранжевой рамкой.
-- Групповое перемещение нескольких выбранных блоков.
-- Тёмная ненавязчивая сетка привязки вместо яркой сетки поверх меню.
-- Перемещаемая кнопка **EDIT / DONE**.
+- Move almost any reachable pause-menu element with the mouse.
+- A click only selects an element; movement starts after a real drag.
+- Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
+- Resize selected buttons and logical blocks.
+- Use arrow keys for precise movement.
+- Use `Ctrl` for multi-selection with a shared orange outline.
+- Move multiple selected blocks together.
+- Optional 5-unit grid snapping without a bright overlay.
+- Move the **EDIT / DONE** button itself.
 
-### ↩️ История и сброс
+### ↩️ History and reset
 
-- Отмена действия: `Ctrl + Z` или кнопка **UNDO**.
-- Повтор отменённого действия: `Ctrl + Y` или кнопка **REDO**.
-- Сброс выбранного блока: `R`.
-- Отдельный сброс масштаба выбранного блока.
-- Полный **RESET** с подтверждением.
-- Несохранённые изменения не должны незаметно заменять активную раскладку: редактор предупреждает перед выходом из уровня.
+- Undo with `Ctrl + Z` or the **UNDO** button.
+- Redo with `Ctrl + Y` or the **REDO** button.
+- Reset the selected block with `R`.
+- Reset only the selected block's scale.
+- Use a full **RESET** with a confirmation prompt.
+- The editor warns before leaving a level with unsaved Edit Mode changes.
 
-### 💾 Именованные раскладки
+### 💾 Named layouts
 
-- Сохраняй несколько вариантов пауз-меню под собственными именами.
-- Выбирай и применяй нужную раскладку через **LAYOUTS**.
-- Позиции, масштаб и состояние скрытых элементов сохраняются вместе.
-- Карточки, присутствующие в теме, создаются при Apply даже тогда, когда их обычные настройки выключены.
-- Полный Reset удаляет карточки, созданные только темой, и снова применяет обычные настройки карточек.
-- Недоступные динамические блоки не удаляются из данных раскладки: они могут восстановиться, когда соответствующий мод снова создаст их.
-- Позиции разделены по стилям меню, чтобы разные варианты не смешивались.
+- Save multiple pause-menu designs under custom names.
+- Select and apply a saved design through **LAYOUTS**.
+- Store positions, scale, hidden state, and information-card presence together.
+- Recreate cards stored in a layout even when their normal settings are disabled.
+- Keep active-layout cards available after reopening the pause menu.
+- Preserve temporarily unavailable dynamic blocks instead of deleting their records.
+- A full Reset removes layout-only cards and restores the normal card settings.
 
 ### 🗑️ Hidden Blocks
 
-- `Delete` или `Backspace` отправляет выбранный блок в корзину, а не уничтожает его навсегда.
-- Корзина хранит позицию и масштаб блока перед скрытием.
-- Скрытый блок можно вернуть из окна **Hidden Blocks**.
-- Перед открытием корзины v2.0.7 проверяет активную раскладку и невидимые элементы, которыми раньше управлял Pause Menu Studio.
-- Если запись пропала, но мод может достоверно связать невидимый элемент с сохранённой раскладкой, запись автоматически возвращается в корзину.
+- `Delete` or `Backspace` sends the selected block to a persistent recycle bin.
+- The recycle bin stores the block's position and scale before hiding it.
+- Restore a hidden block through the **Hidden Blocks** window.
+- Before opening the list, v2.0.7+ audits the active layout and invisible controls previously managed by Pause Menu Studio.
+- If a missing record can be linked reliably to a saved layout or managed node, it is returned to the list automatically.
 
-### 🧩 Логические группы
+### 🧩 Logical groups
 
-Некоторые визуальные элементы состоят из нескольких технических узлов. Pause Menu Studio старается воспринимать их как один блок:
+Some visual controls are made from several technical nodes. Pause Menu Studio attempts to treat them as one logical block:
 
-- панель музыки Jukebox/NONGD вместе с диском, названием, автором, кнопкой **MORE** и удалением трека;
-- раздел **Music** из Better Volume;
-- раздел **SFX** из Better Volume;
-- карточка названия уровня;
-- карточка сложности, огня рейтинга и количества звёзд;
-- карточка пользовательских монет.
+- the Jukebox/NONGD music panel, disc, title, artist, **MORE**, and delete controls;
+- the Better Volume **Music** section;
+- the Better Volume **SFX** section;
+- the level-title card;
+- the difficulty card, rating flame, and star reward;
+- the user-coin card.
 
-Это позволяет двигать целый виджет, а не случайную надпись `%`, внутренний спрайт или одну часть рамки.
+This lets you move a complete widget instead of accidentally selecting a `%` label, an internal sprite, or one piece of a frame.
 
-## 🚀 Быстрый старт
+## 🚀 Quick start
 
-1. Установи [Geode](https://geode-sdk.org/) для Geometry Dash.
-2. Скачай файл `.geode` со страницы [Releases](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest).
-3. Помести файл в папку `Geometry Dash/geode/mods`.
-4. Убедись, что установлена обязательная зависимость **NONGD/Jukebox** (`fleym.nongd >= 3.6.2`).
-5. Полностью перезапусти Geometry Dash.
-6. Открой любой уровень и поставь игру на паузу.
-7. Нажми **EDIT**, выбери элемент и перетащи его.
-8. Нажми **DONE**, чтобы применить изменения текущей сессии редактора.
-9. Нажми **SAVE**, если хочешь сохранить именованную раскладку.
+1. Install [Geode](https://geode-sdk.org/) for Geometry Dash.
+2. Download the `.geode` file from [Releases](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest).
+3. Place the file in `Geometry Dash/geode/mods`.
+4. Make sure the required **NONGD/Jukebox** dependency (`fleym.nongd >= 3.6.2`) is installed.
+5. Fully restart Geometry Dash.
+6. Open any level and pause the game.
+7. Press **EDIT**, select an element, and drag it.
+8. Press **DONE** to apply the current editing session.
+9. Press **SAVE** if you want to store a named layout.
 
 > [!TIP]
-> Если два элемента перекрывают друг друга, несколько раз нажми в одну и ту же точку, не двигая мышь. Выбор будет переключаться между блоками под курсором.
+> If one block is hidden behind another, click the same point repeatedly without moving the cursor. Selection cycles through the logical blocks under that point.
 
-## ⌨️ Управление
+## ⌨️ Controls
 
-| Действие | Клавиша / кнопка | Примечание |
+| Action | Key / button | Notes |
 |---|---|---|
-| Войти в редактор | **EDIT** | Кнопку тоже можно перемещать |
-| Завершить редактирование | **DONE** | Применяет текущие изменения |
-| Выбрать блок | ЛКМ | Один клик не перемещает блок |
-| Перетащить | ЛКМ + движение | Перетаскивание начинается после небольшого движения курсора |
-| Выбрать следующий перекрытый блок | Повторный ЛКМ в той же точке | Работает без предварительного перемещения объектов |
-| Добавить блок к выбору | `Ctrl + ЛКМ` | Мультивыбор отмечается оранжевой рамкой |
-| Точное перемещение | `←` `↑` `↓` `→` | Шаг 1 игровая единица |
-| Быстрое перемещение | `Shift + стрелка` | Шаг 5 игровых единиц |
-| Отменить | `Ctrl + Z` / **UNDO** | Доступно только в Edit Mode |
-| Повторить | `Ctrl + Y` / **REDO** | Возвращает отменённое действие |
-| Сбросить выбранный блок | `R` | Возвращает исходную позицию и размер |
-| Скрыть выбранный блок | `Delete` / `Backspace` | Блок попадает в Hidden Blocks |
-| Уменьшить / увеличить | **SIZE− / SIZE+** | Масштабирует выбранный логический блок |
-| Сбросить размер | кнопка сброса размера | Не удаляет блок |
-| Сохранить раскладку | **SAVE** | Имя можно задать самостоятельно |
-| Выбрать раскладку | **LAYOUTS** | Применение включает позиции, размеры и Hidden Blocks |
-| Открыть корзину | кнопка корзины | Показывает скрытые блоки и позволяет вернуть их |
-| Полный сброс | **RESET** без выбранного блока | Всегда требует подтверждения |
+| Enter Edit Mode | **EDIT** | The button itself can also be moved |
+| Leave Edit Mode | **DONE** | Applies the current editing session |
+| Select a block | Left click | A single click does not move it |
+| Drag a block | Left click + movement | Dragging starts after a small movement threshold |
+| Select the next overlapping block | Repeated click at the same point | No object movement is required |
+| Add a block to selection | `Ctrl + click` | Multi-selection uses an orange outline |
+| Precise movement | `←` `↑` `↓` `→` | Moves by 1 game unit |
+| Faster movement | `Shift + arrow` | Moves by 5 game units |
+| Undo | `Ctrl + Z` / **UNDO** | Available in Edit Mode |
+| Redo | `Ctrl + Y` / **REDO** | Restores an undone action |
+| Reset selected block | `R` | Restores its original position and size |
+| Hide selected block | `Delete` / `Backspace` | Sends it to Hidden Blocks |
+| Resize | **SIZE− / SIZE+** | Resizes the selected logical block |
+| Reset size | Scale-reset button | Does not delete or hide the block |
+| Save a layout | **SAVE** | Uses a custom name |
+| Select a layout | **LAYOUTS** | Applies positions, scale, cards, and Hidden Blocks |
+| Open recycle bin | Trash button | Lists and restores hidden blocks |
+| Full reset | **RESET** with no selection | Always asks for confirmation |
 
-## 🖼️ Стили меню
+## 🖼️ Menu styles
 
-В настройках доступны три базовых стиля:
+Three base styles are available:
 
-| Стиль | Для чего подходит |
+| Style | Intended use |
 |---|---|
-| **Classic** | Стандартный и рекомендуемый вариант; выбран по умолчанию |
-| **Compact** | Более плотное расположение элементов |
-| **Showcase** | Оставляет больше места для информационных карточек |
+| **Classic** | Standard and recommended; selected by default |
+| **Compact** | A denser arrangement |
+| **Showcase** | Extra space for information cards |
 
-Каждый стиль использует собственные сохранённые позиции. Переключение стиля не должно переносить случайные координаты из другого варианта.
+Each style uses its own saved positions so coordinates from one style do not overwrite another.
 
-## 🪪 Информационные карточки
+## 🪪 Information cards
 
-Карточки включаются отдельно в настройках мода.
+Cards can be enabled separately in the mod settings.
 
-| Карточка | Что показывает | По умолчанию |
+| Card | Content | Default |
 |---|---|---|
-| **Level name** | Название уровня и автора | Выключена |
-| **Music** | Полный блок трека: название, автор, SongID, размер и доступные действия | Выключена |
-| **Coins** | Нативные иконки пользовательских монет | Выключена |
-| **Difficulty** | Иконку сложности Geometry Dash/совместимого мода и нативную звезду | Выключена |
-| **Demonlist position** | Позицию подходящего демона из данных Integrated Demonlist | Включена при доступности данных |
+| **Level name** | Level title and creator | Off |
+| **Music** | The full song widget: title, artist, SongID, size, and available actions | Off |
+| **Coins** | Native user-coin icons | Off |
+| **Difficulty** | Geometry Dash or compatible difficulty face and native star icon | Off |
+| **Demonlist position** | An available AREDL/Pemonlist rank for an eligible demon | On when data is available |
 
-## ⚙️ Настройки
+## ⚙️ Settings
 
-| Настройка | Назначение | Значение по умолчанию |
+| Setting | Purpose | Default |
 |---|---|---|
-| **Enable Pause Menu Studio** | Полностью включает или выключает мод | `On` |
-| **Menu style** | Выбирает Classic, Compact или Showcase | `Classic` |
-| **Level name** | Показывает карточку уровня | `Off` |
-| **Music** | Показывает карточку музыки | `Off` |
-| **Coins** | Показывает карточку монет | `Off` |
-| **Difficulty** | Показывает карточку сложности | `Off` |
-| **Demonlist position** | Показывает доступный ранг demonlist | `On` |
-| **Edit mode on open** | Автоматически включает редактор при открытии паузы | `Off` |
-| **Snap to grid** | После отпускания округляет позицию до сетки 5 единиц | `Off` |
+| **Enable Pause Menu Studio** | Enables or disables the entire mod | `On` |
+| **Menu style** | Selects Classic, Compact, or Showcase | `Classic` |
+| **Level name** | Shows the level card | `Off` |
+| **Music** | Shows the music card | `Off` |
+| **Coins** | Shows the coin card | `Off` |
+| **Difficulty** | Shows the difficulty card | `Off` |
+| **Demonlist position** | Shows an available demonlist rank | `On` |
+| **Edit mode on open** | Automatically enables the editor when the pause menu opens | `Off` |
+| **Snap to grid** | Rounds the released position to a 5-unit grid | `Off` |
 
-## 🤝 Совместимость с другими модами
+## 🤝 Compatibility
 
-Версии ниже взяты непосредственно из [`mod.json`](mod.json).
+The minimum versions below come directly from [`mod.json`](mod.json).
 
-| Мод | ID | Минимальная версия | Статус интеграции |
+| Mod | ID | Minimum version | Integration |
 |---|---|---:|---|
-| **NONGD / Jukebox** | `fleym.nongd` | `3.6.2` | Обязательная зависимость; используется настоящий музыкальный блок мода |
-| **Gold User Coins** | `colon.gold_user_coins` | `2.0.4` | Цветные/золотые пользовательские монеты |
-| **Demons in Between** | `hiimjustin000.demons_in_between` | `1.7.0` | Дополнительные иконки сложности |
-| **GDDP Integration** | `minemaker0430.gddp_integration` | `1.1.16` | Дополнительные demon-прогрессии и визуалы |
-| **Integrated Demonlist** | `hiimjustin000.integrated_demonlist` | `1.7.13` | AREDL/Pemonlist-позиция подходящего демона |
-| **GodlikeFaces** | `adyagd.godlikefaces` | `1.1.10` | Совместимый огонь рейтинга и лица сложности |
-| **Better Volume** | `nwo5.better_volume` | `2.1.4` | Music и SFX выбираются как два цельных логических блока |
-| **Better Escape** | `ecuet.better-escape` | `1.0.1` | Совместимость с альтернативным выходом и `Shift + Esc` |
+| **NONGD / Jukebox** | `fleym.nongd` | `3.6.2` | Required dependency; uses the mod's real music widget |
+| **Gold User Coins** | `colon.gold_user_coins` | `2.0.4` | Compatible colored/gold user coins |
+| **Demons in Between** | `hiimjustin000.demons_in_between` | `1.7.0` | Additional difficulty faces |
+| **GDDP Integration** | `minemaker0430.gddp_integration` | `1.1.16` | Additional demon progression visuals |
+| **Integrated Demonlist** | `hiimjustin000.integrated_demonlist` | `1.7.13` | AREDL/Pemonlist placement for eligible demons |
+| **GodlikeFaces** | `adyagd.godlikefaces` | `1.1.10` | Compatible rating flames and difficulty faces |
+| **Better Volume** | `nwo5.better_volume` | `2.1.4` | Music and SFX are selected as two complete logical blocks |
+| **Better Escape** | `ecuet.better-escape` | `1.0.1` | Alternative exit behavior and `Shift + Esc` compatibility |
 
 > [!IMPORTANT]
-> Интеграции зависят от структуры узлов других модов. Если сторонний мод изменит ID, иерархию или момент создания кнопок, Pause Menu Studio может временно не распознать блок до следующего обновления совместимости.
+> Integrations depend on the node hierarchy and internal IDs of other mods. If another mod changes when a control is created, its ID, or its parent hierarchy, Pause Menu Studio may stop recognizing that block until compatibility is updated.
 
-### Текстур-паки
+### Texture packs
 
-Pause Menu Studio старается перемещать внешние контейнеры кнопок и не перезаписывать внутренние анимированные спрайты. Однако текстур-пак, который самостоятельно двигает или пересоздаёт **весь узел кнопки**, может спорить с редактором за позицию. В таком случае приложи к баг-репорту название пака и короткое видео.
+Pause Menu Studio attempts to move outer button containers without overwriting their animated internal sprites. However, a texture pack that moves or recreates the **entire button node** may compete with the editor for its position. Include the texture-pack name and a short video in a bug report when this happens.
 
-## 🗃️ Как хранятся раскладки и скрытые блоки
+## 🗃️ Layout and Hidden Blocks storage
 
-- Координаты и масштаб сохраняются по стабильному пути узла внутри `PauseLayer`.
-- Для обычных позиций учитывается выбранный стиль меню и поколение применённой раскладки.
-- Именованная раскладка хранит позицию, масштаб и признак `hidden` каждого известного элемента.
-- Hidden Blocks дополнительно хранит положение блока **до восстановления**.
-- Если динамический узел временно отсутствует, его запись остаётся в данных вместо удаления.
-- При открытии корзины выполняется сверка с активной раскладкой и ранее управляемыми невидимыми узлами.
+- Position and scale are stored using a node path inside `PauseLayer`.
+- Normal position keys include the selected menu style and applied-layout generation.
+- A named layout stores position, scale, hidden state, and known information-card presence.
+- Hidden Blocks also stores the block's restore position and scale.
+- If a dynamic node is temporarily absent, its record remains stored instead of being deleted.
+- Opening Hidden Blocks audits the active layout and invisible nodes previously managed by the editor.
 
-Такой подход уменьшает потерю элементов, но не может гарантировать совпадение путей после радикального обновления другого мода.
+This reduces lost controls, but it cannot guarantee a path match after another mod radically changes its UI hierarchy.
 
-## ⚠️ Известные ограничения
+## ⚠️ Known limitations
 
-Pause Menu Studio намеренно помечен как **experimental**.
+Pause Menu Studio is intentionally marked **experimental**.
 
-1. **Комбинации модов невозможно покрыть полностью.** Интеграции написаны для заявленных ID и минимальных версий из `mod.json`, но я не могу подтвердить работу каждой возможной комбинации; более новые версии могут изменить свою внутреннюю разметку.
-2. **Динамические элементы могут пересоздаваться.** Jukebox, Better Volume и некоторые текстур-паки обновляют интерфейс после открытия паузы или смены песни. Мод повторно стабилизирует известные элементы, однако редкий краткий скачок или новое несовпадение всё ещё возможно.
-3. **Старая раскладка может содержать недоступные пути.** Это ожидаемо, если раскладка сохранена с модом, который сейчас выключен. Запись сохраняется в Hidden Blocks и может стать доступной после возвращения мода.
-4. **Технические невидимые узлы не добавляются без доказательства.** Автовосстановление корзины учитывает только элементы, которыми Pause Menu Studio уже управлял или которые помечены скрытыми в активной раскладке. Это защищает служебные узлы других модов от случайного появления в корзине.
-5. **Поддерживается только заявленная платформа.** Текущий манифест рассчитан на Geometry Dash `2.2081`, Geode `5.8.2` и Windows.
-6. **Очень большие размеры и сильное перекрытие остаются ответственностью пользователя.** Редактор помогает выбирать перекрытые блоки, но намеренно не запрещает необычные композиции.
+1. **Every mod combination cannot be covered.** Integrations are written for the IDs and minimum versions declared in `mod.json`, but I cannot confirm every possible combination. Newer versions may change their internal UI.
+2. **Dynamic controls can be recreated.** Jukebox, Better Volume, and some texture packs rebuild UI after opening the pause menu or changing a song. Known controls are stabilized repeatedly, but a rare brief jump or a new incompatibility may still occur.
+3. **Old layouts may contain unavailable paths.** This is expected when a layout was saved with a mod that is currently disabled. The record is kept and may become available when that mod returns.
+4. **Technical invisible nodes are not recovered without evidence.** Automatic Hidden Blocks recovery only uses controls previously managed by Pause Menu Studio or marked hidden in the active layout. This avoids adding unrelated service nodes from other mods.
+5. **Only the declared platform is supported.** The current manifest targets Geometry Dash `2.2081`, Geode `5.8.2`, and Windows.
+6. **Extreme scale and overlap remain the user's choice.** The editor helps select overlapping blocks but intentionally does not prohibit unusual designs.
 
-## 🧯 Если что-то сломалось
+## 🧯 Troubleshooting
 
-### Блок пропал
+### A block disappeared
 
-1. Открой **Hidden Blocks** — v2.0.7 автоматически выполнит проверку потерянных записей.
-2. Проверь, включён ли мод, которому принадлежит блок.
-3. Повторно открой пауз-меню, чтобы динамический мод успел создать свои узлы.
-4. Если блок всё ещё отсутствует, не делай полный Reset до сохранения логов и скриншотов.
+1. Open **Hidden Blocks** so v2.0.7+ can run its missing-record audit.
+2. Check whether the mod that owns the block is enabled.
+3. Reopen the pause menu so dynamic mods can recreate their nodes.
+4. Do not use a full Reset before saving logs and screenshots.
 
-### Раскладка выглядит неправильно
+### A layout looks wrong
 
-1. Убедись, что выбран тот же стиль: Classic, Compact или Showcase.
-2. Проверь, совпадает ли набор включённых модов с моментом сохранения раскладки.
-3. Выбери конкретный блок и нажми `R` для локального сброса.
-4. Используй полный **RESET** только после подтверждения — он затрагивает всю раскладку.
+1. Check whether the same Classic, Compact, or Showcase style is selected.
+2. Compare the enabled mod set with the setup used when the layout was saved.
+3. Select the affected block and press `R` for a local reset.
+4. Use a full **RESET** only after confirming the prompt.
 
-### Игра вылетела
+### The game crashed
 
-Создай [Bug report](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml) и приложи:
+Create a [Bug report](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml) and attach:
 
-- файл из `Geometry Dash/geode/crashlogs`;
-- `latest.log` из `Geometry Dash/geode/logs`;
-- версию Pause Menu Studio;
-- полный список активных модов;
-- название текстур-пака;
-- точные действия перед вылетом;
-- скриншот или видео, если ошибка визуальная.
+- the file from `Geometry Dash/geode/crashlogs`;
+- `latest.log` from `Geometry Dash/geode/logs`;
+- your Pause Menu Studio version;
+- the full enabled-mod list;
+- your texture-pack name;
+- exact actions immediately before the crash;
+- a screenshot or video for visual problems.
 
-## 🐞 Как правильно сообщить об ошибке
+## 🐞 Reporting a bug
 
-Перед созданием issue:
+Before creating an issue:
 
-1. Перезапусти Geometry Dash и повтори проблему.
-2. Проверь, возникает ли она в одной и той же последовательности действий.
-3. По возможности временно выключи сторонние моды группами, чтобы найти конфликтующий мод.
-4. Не удаляй crashlog и `latest.log`.
-5. Используй готовую форму **Bug report** — она запрашивает данные, необходимые для воспроизведения.
+1. Fully restart Geometry Dash and reproduce the problem again.
+2. Check whether it follows the same action sequence.
+3. If possible, disable other mods in groups to find the conflicting mod.
+4. Keep the crashlog and `latest.log`.
+5. Use the provided **Bug report** form so the required reproduction information is included.
 
 [![Report a bug](https://img.shields.io/badge/Report%20a%20bug-GitHub%20Issues-ef4444?style=for-the-badge&logo=github)](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml)
 
-## 🛠️ Сборка из исходников
+## 🛠️ Building from source
 
-### Требования
+### Requirements
 
 - Windows;
 - Geometry Dash `2.2081`;
 - [Geode SDK](https://docs.geode-sdk.org/getting-started/);
-- CMake `3.21` или новее — это минимальная версия из [`CMakeLists.txt`](CMakeLists.txt);
-- Visual Studio 2022 Build Tools с C++ toolchain;
-- переменная окружения `GEODE_SDK`, указывающая на установленный SDK.
+- CMake `3.21` or newer, as declared in [`CMakeLists.txt`](CMakeLists.txt);
+- Visual Studio 2022 Build Tools with the C++ toolchain;
+- a `GEODE_SDK` environment variable pointing to the SDK directory.
 
-### Команды
+### Commands
 
-Открой **Developer PowerShell for VS 2022** в корне проекта:
+Open **Developer PowerShell for VS 2022** in the project root:
 
 ```powershell
 $env:GEODE_SDK = 'C:\path\to\GeodeSDK'
@@ -265,58 +265,53 @@ cmake -S . -B build-local -DCMAKE_BUILD_TYPE=Release
 cmake --build build-local --config Release --parallel
 ```
 
-Сборка создаёт пакет:
+The package is created at:
 
 ```text
 build-local/bananchikireal.pause-menu-studio.geode
 ```
 
-Конфигурация проекта использует C++23 и `setup_geode_mod`.
+The project uses C++23 and `setup_geode_mod`.
 
-## 🧱 Структура проекта
+## 🧱 Project structure
 
 ```text
 pause-menu-studio/
 ├── src/
-│   ├── main.cpp                  # PauseLayer, редактор, карточки и интеграции
-│   ├── HiddenBlocks.*            # Хранилище корзины
-│   ├── HiddenBlocksPopup.*       # Интерфейс восстановления блоков
-│   ├── LayoutProfiles.*          # Сериализация именованных раскладок
-│   └── LayoutProfilePopups.*     # Окна SAVE и LAYOUTS
-├── mod.json                      # Манифест, зависимости и настройки
-├── CMakeLists.txt                # Конфигурация сборки
-├── changelog.md                  # История изменений
-├── about.md                      # Краткое описание для Geode
-└── logo.png                      # Иконка мода
+│   ├── main.cpp                  # PauseLayer, editor, cards, and integrations
+│   ├── HiddenBlocks.*            # Persistent recycle-bin storage
+│   ├── HiddenBlocksPopup.*       # Hidden-block restoration UI
+│   ├── LayoutProfiles.*          # Named-layout serialization
+│   └── LayoutProfilePopups.*     # SAVE and LAYOUTS popups
+├── mod.json                      # Manifest, dependencies, and settings
+├── CMakeLists.txt                # Build configuration
+├── changelog.md                  # Version history
+├── about.md                      # In-game Geode About page
+└── logo.png                      # Mod icon
 ```
 
-## 📜 История версий
+## 📜 Version history
 
-Полный список изменений находится в [`changelog.md`](changelog.md).
+The complete history is available in [`changelog.md`](changelog.md).
 
 ### v2.1.0
 
-- Название официального уровня сохраняется при запуске PlayLayer и больше не заменяется названием NONG/cover после повторного открытия паузы.
-- Карточки Coins и Difficulty по умолчанию выключены.
-- Apply создаёт карточки, сохранённые внутри темы, даже если соответствующие настройки выключены; полный Reset возвращает обычный набор карточек.
+- Captures the original PlayLayer level name so a Jukebox NONG/cover title cannot replace an official level title after reopening the pause menu.
+- Disables Coins and Difficulty cards by default.
+- Stores card presence in named layouts and recreates layout cards even when their normal settings are disabled.
+- Removes layout-only cards during a full Reset.
+- Audits Hidden Blocks and preserves temporarily unavailable dynamic nodes.
 
-### v2.0.7
+## 🤍 Author
 
-- Hidden Blocks сверяет активную раскладку и ранее управляемые невидимые блоки.
-- Потерянные записи возвращаются в корзину перед её открытием.
-- Apply больше не удаляет записи временно отсутствующих динамических узлов.
-- SAVE включает в раскладку все элементы корзины.
-
-## 🤍 Автор
-
-Разработка: **BANANCHIKIREAL**<br>
+Developed by **BANANCHIKIREAL**<br>
 GitHub: [@BANANCHIKIREAL](https://github.com/BANANCHIKIREAL)
 
-Если мод оказался полезным, поставь репозиторию ⭐ — так проще понять, что проект стоит продолжать развивать.
+If the mod is useful, consider starring the repository. It helps show that continued development is worthwhile.
 
 ---
 
 <p align="center">
-  <strong>Создавай пауз-меню, которое выглядит именно так, как хочешь ты.</strong><br>
-  <sub>И обязательно сообщай о багах — experimental становится стабильным только благодаря хорошим отчётам.</sub>
+  <strong>Build a pause menu that looks exactly the way you want.</strong><br>
+  <sub>And please report bugs—experimental software becomes stable through clear, reproducible reports.</sub>
 </p>

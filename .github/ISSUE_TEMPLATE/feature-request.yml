@@ -1,5 +1,5 @@
 name: "✨ Feature request"
-description: "Предложить новую функцию или улучшение редактора"
+description: "Suggest a new feature or editor improvement"
 title: "[Feature] "
 labels:
   - enhancement
@@ -7,27 +7,27 @@ body:
   - type: textarea
     id: problem
     attributes:
-      label: Какую проблему решает предложение?
-      description: Опиши текущую ситуацию и почему существующего поведения недостаточно.
+      label: What problem would this solve?
+      description: Describe the current situation and why the existing behavior is not enough.
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Предлагаемое решение
-      description: Опиши, как функция должна выглядеть и работать.
+      label: Proposed solution
+      description: Describe how the feature should look and behave.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Альтернативы
-      description: Есть ли другой способ решить эту задачу?
+      label: Alternatives
+      description: Is there another way to solve the same problem?
 
   - type: textarea
     id: media
     attributes:
-      label: Макеты, скриншоты или примеры
-      description: Прикрепи изображения или ссылки, если они помогут понять идею.
+      label: Mockups, screenshots, or examples
+      description: Attach images or links if they help explain the idea.
