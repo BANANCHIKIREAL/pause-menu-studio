@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v3.0.1</c>
+# <cy>Pause Menu Studio</c> <cg>v3.0.2</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -22,7 +22,7 @@ Pause Menu Studio is currently <co>experimental</c>. Other mods and texture pack
 5. Press <cg>DONE</c> to apply the current editing session.
 6. Use <cp>SAVE</c> to store the layout under your own name.
 
-The first click only selects a block. Movement stays locked until <cy>MOVE</c> is enabled. Press MOVE again to lock the selection.
+The first click only selects a block. Movement stays locked until <cy>MOVE</c> is enabled. Press MOVE again to lock the selection. Each block remembers whether MOVE was enabled or disabled while this editor session remains open.
 
 ## <cb>CONTROLS</c>
 
@@ -36,8 +36,8 @@ The first click only selects a block. Movement stays locked until <cy>MOVE</c> i
 - <cy>Ctrl + Z</c> - undo.
 - <cy>Ctrl + Y</c> - redo.
 - <cy>R</c> - reset the selected block.
-- <cy>Delete / Backspace</c> - move a block to Hidden Blocks.
-- <cy>Scale slider / numeric field</c> - resize the selection from 0.15 to 3.50; 1.00 is marked as the normal reference.
+- <cy>Delete</c> - move a block to Hidden Blocks. Backspace is intentionally not bound.
+- <cy>Scale slider / numeric field</c> - resize the selection from 0.15 to 3.50.
 - <cy>UNDO / REDO</c> - use the visible history buttons.
 - <cy>RESET</c> - reset with a confirmation prompt.
 - <cy>Preview</c> - hide the editor interface for a clean, read-only view.
@@ -64,13 +64,13 @@ Old layouts may not contain card-presence data if they were saved before v2.1.0 
 Removing something in Edit Mode works like a recycle bin:
 
 1. Select a block.
-2. Press <cy>Delete</c>, <cy>Backspace</c>, or the hide button.
+2. Press <cy>Delete</c> or the hide button.
 3. Open the trash button.
 4. Select an entry to return the block to its saved position and size.
 
 Before the list opens, the mod audits the active layout and invisible elements previously managed by Pause Menu Studio. If a missing record can be recovered reliably, it is returned to Hidden Blocks automatically.
 
-In v3.0.1, Hidden Blocks uses a visual two-column grid, stores native Geometry Dash icon types per layout, and restores the exact Trash state saved by that layout.
+In v3.0.2, Hidden Blocks uses a visual two-column grid, stores the actual reusable sprite frame captured from each object, and restores the exact Trash state saved by that layout. If an object has no cached sprite frame, a neutral info icon is shown instead of a guessed icon.
 
 ## <cb>V3 EDITOR INTERFACE</c>
 

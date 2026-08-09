@@ -226,20 +226,20 @@ void LayoutListPopup::rebuildList() {
 
         auto renameSprite = ButtonSprite::create("REN", 42, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .3f);
         auto rename = CCMenuItemSpriteExtra::create(renameSprite, this, menu_selector(LayoutListPopup::onRename));
-        rename->setPosition({273.f, y - 17.f});
+        rename->setPosition({252.f, y - 17.f});
         rename->setUserObject(CCString::create(name));
         row->addChild(rename);
 
         auto copySprite = ButtonSprite::create("COPY", 50, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .28f);
         auto copy = CCMenuItemSpriteExtra::create(copySprite, this, menu_selector(LayoutListPopup::onDuplicate));
-        copy->setPosition({326.f, y - 17.f});
+        copy->setPosition({337.f, y - 17.f});
         copy->setUserObject(CCString::create(name));
         row->addChild(copy);
 
         auto trashSprite = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
         trashSprite->setScale(.42f);
         auto trash = CCMenuItemSpriteExtra::create(trashSprite, this, menu_selector(LayoutListPopup::onDelete));
-        trash->setPosition({371.f, y - 15.f});
+        trash->setPosition({371.f, y + 13.f});
         trash->setUserObject(CCString::create(name));
         row->addChild(trash);
         content->addChild(row);

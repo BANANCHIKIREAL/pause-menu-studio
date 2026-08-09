@@ -954,7 +954,6 @@ public:
             });
         };
         m_deleteKey = bindRemove(KEY_Delete);
-        m_backspaceKey = bindRemove(KEY_Backspace);
         buildControls();
         setEditing(Mod::get()->getSettingValue<bool>("edit-on-open"));
         return true;
@@ -1152,6 +1151,7 @@ private:
     std::vector<EditAction> m_undo;
     std::vector<EditAction> m_redo;
     std::vector<WeakRef<CCNode>> m_dirtyTransforms;
+    std::unordered_map<std::string, bool> m_moveModeByNode;
     ListenerHandle m_undoKey;
     ListenerHandle m_redoKey;
     ListenerHandle m_leftKey;
@@ -1160,7 +1160,6 @@ private:
     ListenerHandle m_downKey;
     ListenerHandle m_resetKey;
     ListenerHandle m_deleteKey;
-    ListenerHandle m_backspaceKey;
 
     static bool isAncestorOf(CCNode* possibleAncestor, CCNode* node) {
         for (auto current = node ? node->getParent() : nullptr; current; current = current->getParent()) {
@@ -1174,6 +1173,25 @@ private:
         m_selected = nullptr;
         m_moveEnabled = false;
         updateMoveToggle();
+    }
+
+    void restoreMoveModeForSelection() {
+        if (m_selectedNodes.empty()) {
+            m_moveEnabled = false;
+        } else {
+            m_moveEnabled = std::ranges::all_of(m_selectedNodes, [this](CCNode* node) {
+                auto found = m_moveModeByNode.find(nodePath(node));
+                return found != m_moveModeByNode.end() && found->second;
+            });
+        }
+        updateMoveToggle();
+    }
+
+    void rememberMoveModeForSelection() {
+        for (auto node : m_selectedNodes) {
+            auto path = nodePath(node);
+            if (!path.empty()) m_moveModeByNode[path] = m_moveEnabled;
+        }
     }
 
     void addNodeToSelection(CCNode* node) {
@@ -1193,10 +1211,12 @@ private:
     void selectOnly(std::vector<CCNode*> const& nodes) {
         clearSelection();
         for (auto node : nodes) addNodeToSelection(node);
+        restoreMoveModeForSelection();
     }
 
     void addToSelection(std::vector<CCNode*> const& nodes) {
         for (auto node : nodes) addNodeToSelection(node);
+        restoreMoveModeForSelection();
     }
 
     bool isVolumeGroupMember(CCNode* node, std::string_view type) const {
@@ -1297,9 +1317,7 @@ private:
             entry.id = id;
             if (entry.label.empty()) entry.label = transform.hiddenLabel.value_or(path);
             if (entry.iconFrame.empty()) {
-                entry.iconFrame = transform.hiddenIcon.value_or(
-                    pause_menu_studio::block_icons::frameForText(entry.label + " " + path)
-                );
+                entry.iconFrame = transform.hiddenIcon.value_or("GJ_infoBtn_001.png");
             }
             auto node = findNodeByStoredPath(m_owner, path);
             entry.members.push_back({
@@ -1363,9 +1381,8 @@ private:
                         entry.id = id;
                         if (entry.label.empty()) entry.label = groupLabel(group);
                         if (entry.iconFrame.empty()) {
-                            entry.iconFrame = pause_menu_studio::block_icons::frameForText(
-                                entry.label + " " + preferredID
-                            );
+                            entry.iconFrame = pause_menu_studio::block_icons::frameForNodes(missing);
+                            if (entry.iconFrame.empty()) entry.iconFrame = "GJ_infoBtn_001.png";
                         }
                         for (size_t index = 0; index < missing.size(); ++index) {
                             auto member = missing[index];
@@ -1562,7 +1579,12 @@ private:
     void buildControls() {
         auto size = getContentSize();
         auto makeIcon = [](char const* frame, float maxSize) {
-            auto icon = CCSprite::createWithSpriteFrameName(frame);
+            CCSprite* icon = nullptr;
+            if (std::string_view(frame).find('/') != std::string_view::npos) {
+                icon = CCSprite::create(frame);
+            } else {
+                icon = CCSprite::createWithSpriteFrameName(frame);
+            }
             if (!icon) icon = CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png");
             auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
             if (largest > .001f) icon->setScale(maxSize / largest);
@@ -1604,6 +1626,8 @@ private:
         m_historyMenu->setID("editor-history-controls");
         m_historyMenu->setPosition({toolbarWidth / 2.f, 29.f});
         m_bottomPanel->addChild(m_historyMenu);
+        auto resetIconFrame = Mod::get()->expandSpriteName("reset-icon.png");
+        auto viewIconFrame = Mod::get()->expandSpriteName("view-icon.png");
 
         auto makeControl = [this, &makeIcon](
             CCMenu* targetMenu,
@@ -1652,8 +1676,8 @@ private:
         makeControl(m_historyMenu, "GJ_downloadBtn_001.png", -56.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
         makeControl(m_historyMenu, "GJ_viewListsBtn_001.png", 0.f, menu_selector(PauseEditor::onLayouts), "saved-layouts-button");
         m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", 56.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
-        m_resetButton = makeControl(m_historyMenu, "GJ_resetBtn_001.png", 112.f, menu_selector(PauseEditor::onReset), "reset-button");
-        makeControl(m_historyMenu, "GJ_viewLevelsBtn_001.png", 168.f, menu_selector(PauseEditor::onPreview), "preview-button", 25.f);
+        m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), 112.f, menu_selector(PauseEditor::onReset), "reset-button", 25.f);
+        makeControl(m_historyMenu, viewIconFrame.c_str(), 168.f, menu_selector(PauseEditor::onPreview), "preview-button", 25.f);
 
         auto contextWidth = std::min(420.f, size.width - 8.f);
         m_contextPanel = CCScale9Sprite::create("GJ_square02.png");
@@ -1690,27 +1714,6 @@ private:
         m_scaleSlider->setPosition({170.f, 31.f});
         m_scaleSlider->setLiveDragging(true);
         m_contextPanel->addChild(m_scaleSlider, 3);
-        auto defaultX = 128.f;
-        auto grooveY = 31.f;
-        if (m_scaleSlider->m_groove) {
-            auto groove = m_scaleSlider->m_groove;
-            auto left = m_contextPanel->convertToNodeSpace(groove->convertToWorldSpace({0.f, groove->getContentHeight() / 2.f}));
-            auto right = m_contextPanel->convertToNodeSpace(groove->convertToWorldSpace({groove->getContentWidth(), groove->getContentHeight() / 2.f}));
-            auto normalValue = (1.f - .15f) / 3.35f;
-            defaultX = left.x + (right.x - left.x) * normalValue;
-            grooveY = (left.y + right.y) / 2.f;
-        }
-        auto defaultMark = CCDrawNode::create();
-        defaultMark->drawSegment(
-            {defaultX, grooveY - 6.f}, {defaultX, grooveY + 6.f}, .7f,
-            {1.f, .68f, .12f, 1.f}
-        );
-        m_contextPanel->addChild(defaultMark, 4);
-        auto defaultLabel = CCLabelBMFont::create("1.00", "chatFont.fnt");
-        defaultLabel->setPosition({defaultX, 13.f});
-        defaultLabel->setScale(.31f);
-        defaultLabel->setColor({255, 190, 65});
-        m_contextPanel->addChild(defaultLabel, 4);
         m_scaleInput = TextInput::create(70.f, "Scale");
         m_scaleInput->setID("selection-scale-input");
         m_scaleInput->setCommonFilter(CommonFilter::Float);
@@ -1813,6 +1816,7 @@ private:
         if (!m_editing || m_preview || m_selectedNodes.empty()) return;
         if (m_dragging || m_pendingDrag) finishDrag();
         m_moveEnabled = !m_moveEnabled;
+        rememberMoveModeForSelection();
         m_hasLastSelectionPoint = false;
         updateMoveToggle();
         pulseContextPanel();
@@ -1821,6 +1825,7 @@ private:
     void onPreview(CCObject*) { setPreview(!m_preview); }
     void onTrash(CCObject*) {
         auto recovered = reconcileHiddenBlocks();
+        refreshHiddenBlockIcons();
         if (recovered > 0) {
             Notification::create(
                 recovered == 1
@@ -2025,6 +2030,7 @@ private:
         for (auto const& state : action.before) if (state.node) markTransformDirty(state.node.data());
         clearSelection();
         for (auto const& state : action.before) if (state.node) addNodeToSelection(state.node);
+        restoreMoveModeForSelection();
         m_redo.push_back(std::move(action));
         m_hasEdits = true;
         updateHistoryButtons();
@@ -2044,6 +2050,7 @@ private:
         for (auto const& state : action.after) if (state.node) markTransformDirty(state.node.data());
         clearSelection();
         for (auto const& state : action.after) if (state.node) addNodeToSelection(state.node);
+        restoreMoveModeForSelection();
         m_undo.push_back(std::move(action));
         m_hasEdits = true;
         updateHistoryButtons();
@@ -2140,9 +2147,8 @@ private:
                 entry.members, {}, &pause_menu_studio::hidden_blocks::Member::path
             )->path;
             entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID);
-            entry.iconFrame = pause_menu_studio::block_icons::frameForText(
-                entry.label + " " + preferredID
-            );
+            entry.iconFrame = pause_menu_studio::block_icons::frameForNodes(group);
+            if (entry.iconFrame.empty()) entry.iconFrame = "GJ_infoBtn_001.png";
             // Never make a node disappear unless its complete restore record
             // can immediately be read back from the mod's saved storage.
             if (!pause_menu_studio::hidden_blocks::upsert(entry)) {
@@ -2186,6 +2192,21 @@ private:
             if (auto found = findNodeByStoredPath(child, path)) return found;
         }
         return nullptr;
+    }
+
+    void refreshHiddenBlockIcons() {
+        for (auto entry : pause_menu_studio::hidden_blocks::entries()) {
+            std::vector<CCNode*> nodes;
+            nodes.reserve(entry.members.size());
+            for (auto const& member : entry.members) {
+                if (auto node = findNodeByStoredPath(m_owner, member.path)) nodes.push_back(node);
+            }
+            auto captured = pause_menu_studio::block_icons::frameForNodes(nodes);
+            if (captured.empty()) captured = "GJ_infoBtn_001.png";
+            if (entry.iconFrame == captured) continue;
+            entry.iconFrame = std::move(captured);
+            pause_menu_studio::hidden_blocks::upsert(entry);
+        }
     }
 
     bool restoreHiddenBlock(std::string const& id) {

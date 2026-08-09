@@ -1,10 +1,81 @@
 #include "BlockIcons.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 using namespace geode::prelude;
 
 namespace pause_menu_studio::block_icons {
+namespace {
+bool sameValue(float lhs, float rhs) {
+    return std::abs(lhs - rhs) <= .01f;
+}
+
+bool sameFrame(CCSpriteFrame* lhs, CCSpriteFrame* rhs) {
+    if (!lhs || !rhs || lhs->getTexture() != rhs->getTexture() || lhs->isRotated() != rhs->isRotated()) {
+        return false;
+    }
+    auto const& a = lhs->getRect();
+    auto const& b = rhs->getRect();
+    return
+        sameValue(a.origin.x, b.origin.x) && sameValue(a.origin.y, b.origin.y) &&
+        sameValue(a.size.width, b.size.width) && sameValue(a.size.height, b.size.height);
+}
+
+std::string cachedName(CCSpriteFrame* frame) {
+    if (!frame) return {};
+    auto direct = std::string(frame->getFrameName());
+    if (!direct.empty()) return direct;
+
+    auto cache = CCSpriteFrameCache::sharedSpriteFrameCache();
+    if (!cache || !cache->m_pSpriteFrames) return {};
+    for (auto [name, candidate] : CCDictionaryExt<std::string_view, CCSpriteFrame*, false>(cache->m_pSpriteFrames)) {
+        if (sameFrame(frame, candidate)) return std::string(name);
+    }
+    return {};
+}
+
+float frameScore(std::string const& name, CCSprite* sprite) {
+    auto lower = utils::string::toLower(name);
+    auto has = [&lower](std::string_view term) { return lower.find(term) != std::string::npos; };
+    if (
+        has("gj_square") || has("button_0") || has("slidergroove") ||
+        has("sliderbar") || has("background") || has("ground") || has("gradient")
+    ) return -100000.f;
+
+    float score = 0.f;
+    if (has("icon")) score += 15000.f;
+    if (has("btn")) score += 9000.f;
+    if (
+        has("coin") || has("star") || has("demon") || has("skull") || has("music") ||
+        has("sfx") || has("play") || has("practice") || has("replay") || has("trash") ||
+        has("edit") || has("info") || has("setting") || has("option") || has("download")
+    ) score += 12000.f;
+    if (sprite) {
+        score += std::min(5000.f, sprite->getContentWidth() * sprite->getContentHeight());
+    }
+    return score;
+}
+
+void inspectNode(CCNode* node, std::string& bestName, float& bestScore) {
+    if (!node) return;
+    if (auto sprite = typeinfo_cast<CCSprite*>(node)) {
+        auto name = cachedName(sprite->displayFrame());
+        if (!name.empty()) {
+            auto score = frameScore(name, sprite);
+            if (score > bestScore) {
+                bestScore = score;
+                bestName = std::move(name);
+            }
+        }
+    }
+    for (auto child : CCArrayExt<CCNode*>(node->getChildren())) {
+        inspectNode(child, bestName, bestScore);
+    }
+}
+}
+
 std::string frameForText(std::string_view value) {
     auto text = utils::string::toLower(std::string(value));
     auto has = [&text](std::string_view term) { return text.find(term) != std::string::npos; };
@@ -27,6 +98,20 @@ std::string frameForText(std::string_view value) {
     if (has("edit")) return "GJ_editBtn_001.png";
     if (has("trash") || has("delete")) return "GJ_trashBtn_001.png";
     return "GJ_viewListsBtn_001.png";
+}
+
+std::string frameForNode(CCNode* node) {
+    std::string bestName;
+    auto bestScore = -std::numeric_limits<float>::infinity();
+    inspectNode(node, bestName, bestScore);
+    return bestScore > -99999.f ? bestName : std::string();
+}
+
+std::string frameForNodes(std::vector<CCNode*> const& nodes) {
+    std::string bestName;
+    auto bestScore = -std::numeric_limits<float>::infinity();
+    for (auto node : nodes) inspectNode(node, bestName, bestScore);
+    return bestScore > -99999.f ? bestName : std::string();
 }
 
 CCSprite* create(std::string_view text, float maxSize) {

@@ -71,7 +71,7 @@
 
 ### 🗑️ Hidden Blocks
 
-- `Delete` or `Backspace` sends the selected block to a persistent recycle bin.
+- `Delete` sends the selected block to a persistent recycle bin. `Backspace` is not bound to removal.
 - The recycle bin stores the block's position and scale before hiding it.
 - Restore a hidden block through the **Hidden Blocks** window.
 - Browse hidden controls in a two-column icon grid with large Restore buttons.
@@ -115,7 +115,7 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Enter Edit Mode | **EDIT** | The button itself can also be moved |
 | Leave Edit Mode | **DONE** | Applies the current editing session |
 | Select a block | Click / tap | A single press does not move it |
-| Unlock / lock movement | Context **MOVE** button | Movement is locked by default; the green `MOVE ON` state allows dragging and arrow keys |
+| Unlock / lock movement | Context **MOVE** button | Each block remembers its own on/off state while the editor is open |
 | Drag a block | Enable MOVE, then click / touch + movement | Dragging starts after a small movement threshold |
 | Select the next overlapping block | Repeated click / tap at the same point | No object movement is required |
 | Add a block to selection | `Ctrl + click` | Requires a keyboard; multi-selection uses an orange outline |
@@ -124,8 +124,8 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Undo | `Ctrl + Z` / **UNDO** | Android users can use the visible button |
 | Redo | `Ctrl + Y` / **REDO** | Android users can use the visible button |
 | Reset selected block | `R` | Restores its original position and size |
-| Hide selected block | `Delete` / `Backspace` | Sends it to Hidden Blocks |
-| Resize | Context scale slider or numeric field | Touch-friendly range from `0.15×` to `3.5×`; `1.00` is marked on the slider |
+| Hide selected block | `Delete` | Sends it to Hidden Blocks; Backspace does nothing |
+| Resize | Context scale slider or numeric field | Touch-friendly range from `0.15×` to `3.5×` |
 | Reset size | Context reset button | Does not delete or hide the block |
 | Save a layout | **SAVE** | Uses a custom name |
 | Select a layout | **LAYOUTS** | Applies positions, scale, cards, and Hidden Blocks |
@@ -318,9 +318,16 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v3.0.2
+
+- Makes Delete the only removal key and keeps Backspace unbound.
+- Remembers FREE MOVE separately for each block during the current editor session.
+- Adds custom white Reset/View artwork and removes the orange 1.00 slider marker.
+- Captures real object sprite frames for Trash, repairs old Trash previews, and separates REN/COPY.
+
 ### v3.0.1
 
-- Makes MOVE a real lock/unlock toggle, adds exact numeric scale input, and marks 1.00 on the slider.
+- Makes MOVE a real lock/unlock toggle and adds exact numeric scale input.
 - Adds a smooth Edit Mode exit, wider control spacing, rounded GD frames, and dedicated Reset/View icons.
 - Saves the complete Trash state and icon types per named layout.
 - Replaces dot-only previews with miniature Geometry Dash icons.

@@ -1,7 +1,17 @@
+# v3.0.2
+
+- Delete is now the only keyboard shortcut that moves a selected block to Trash; Backspace no longer removes blocks.
+- FREE MOVE now remembers its enabled or disabled state separately for each selected block while the editor is open.
+- Replaced RESET and VIEW with custom white reset and eye artwork.
+- Removed the orange 1.00 line and label from the scale slider.
+- Trash now captures the actual cached sprite frame from each removed object instead of choosing an icon from its name; objects without a reusable frame get one neutral info icon.
+- Re-captures icons for existing Trash entries when Hidden Blocks opens.
+- Added a larger gap between REN and COPY and moved the layout delete button away from them.
+
 # v3.0.1
 
 - Added a real MOVE lock: selecting a block no longer moves it until MOVE is enabled.
-- Added direct numeric scale input and a visible 1.00 marker on the scale slider.
+- Added direct numeric scale input.
 - Increased spacing between toolbar and saved-layout actions.
 - Added a smooth exit animation when leaving Edit Mode.
 - Replaced RESET and VIEW with dedicated Geometry Dash icons.

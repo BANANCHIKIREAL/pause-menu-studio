@@ -21,7 +21,11 @@ CCSprite* iconForEntry(hidden_blocks::Entry const& entry) {
             return icon;
         }
     }
-    return block_icons::create(entry.label + " " + entry.id, 42.f);
+    auto icon = CCSprite::createWithSpriteFrameName("GJ_infoBtn_001.png");
+    if (!icon) return nullptr;
+    auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
+    if (largest > .001f) icon->setScale(42.f / largest);
+    return icon;
 }
 }
 
