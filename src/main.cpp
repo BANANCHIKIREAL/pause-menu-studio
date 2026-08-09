@@ -217,6 +217,8 @@ void captureCurrentSnapshot(
         pause_menu_studio::profiles::Transform transform {
             node->getPosition(), node->getScaleX(), node->getScaleY()
         };
+        auto previewIcon = pause_menu_studio::block_icons::frameForNode(node);
+        if (!previewIcon.empty()) transform.previewIcon = std::move(previewIcon);
         auto hidden = hiddenMembership.find(path);
         transform.hidden = hidden != hiddenMembership.end();
         if (hidden != hiddenMembership.end()) {
@@ -2272,6 +2274,7 @@ private:
 
     void writeNamedLayout(std::string const& name) {
         reconcileInvisibleManagedBlocks();
+        refreshHiddenBlockIcons();
         pause_menu_studio::profiles::Snapshot snapshot;
         std::unordered_map<std::string, HiddenSnapshotInfo> hiddenMembership;
         for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
@@ -2290,6 +2293,8 @@ private:
                 pause_menu_studio::profiles::Transform transform {
                     card->getPosition(), card->getScaleX(), card->getScaleY()
                 };
+                auto previewIcon = pause_menu_studio::block_icons::frameForNode(card);
+                if (!previewIcon.empty()) transform.previewIcon = std::move(previewIcon);
                 if (auto hidden = hiddenMembership.find(path); hidden != hiddenMembership.end()) {
                     transform.hidden = true;
                     transform.hiddenID = hidden->second.id;

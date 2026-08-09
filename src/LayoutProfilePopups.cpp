@@ -1,6 +1,5 @@
 #include "LayoutProfilePopups.hpp"
 #include "LayoutProfiles.hpp"
-#include "BlockIcons.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -48,11 +47,22 @@ CCNode* createPreview(std::string const& name, ccColor3B color) {
         if (transform.hidden.value_or(false)) continue;
         auto x = std::clamp(transform.position.x / 568.f, 0.f, 1.f);
         auto y = std::clamp(transform.position.y / 320.f, 0.f, 1.f);
-        auto icon = block_icons::create(path, 9.f);
-        if (!icon) continue;
-        icon->setColor(color);
-        icon->setPosition({7.f + x * 60.f, 5.f + y * 32.f});
-        preview->addChild(icon);
+        CCSprite* icon = nullptr;
+        if (transform.previewIcon) {
+            icon = CCSprite::createWithSpriteFrameName(transform.previewIcon->c_str());
+        }
+        auto position = CCPoint {7.f + x * 60.f, 5.f + y * 32.f};
+        if (icon) {
+            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
+            if (largest > .001f) icon->setScale(9.f / largest);
+            icon->setPosition(position);
+            preview->addChild(icon);
+        } else {
+            auto marker = CCDrawNode::create();
+            auto markerColor = ccc4FFromccc3B(color);
+            marker->drawCircle(position, 1.7f, markerColor, 0.f, markerColor, 12);
+            preview->addChild(marker);
+        }
         if (++drawn >= 10) break;
     }
     return preview;

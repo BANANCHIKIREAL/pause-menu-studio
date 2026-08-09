@@ -6,6 +6,7 @@
 - Replaced both RESET controls and VIEW with custom white reset and eye artwork.
 - Removed the orange 1.00 line and label from the scale slider.
 - Trash now captures the actual cached sprite frame from each removed object instead of choosing an icon from its name; objects without a reusable frame get one neutral info icon.
+- Saved-layout previews now store actual cached object sprite frames; old or unavailable frames use neutral dots instead of guessed icons.
 - Re-captures icons for existing Trash entries when Hidden Blocks opens.
 - Added a larger gap between REN and COPY and moved the layout delete button away from them.
 

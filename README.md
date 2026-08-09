@@ -325,6 +325,7 @@ The complete history is available in [`changelog.md`](changelog.md).
 - Remembers FREE MOVE separately for each block during the current editor session.
 - Adds custom white artwork to both Reset controls and View, and removes the orange 1.00 slider marker.
 - Captures real object sprite frames for Trash, repairs old Trash previews, and separates REN/COPY.
+- Stores real object sprite frames in newly saved layout previews; legacy layouts use neutral dots instead of guessed icons.
 
 ### v3.0.1
 

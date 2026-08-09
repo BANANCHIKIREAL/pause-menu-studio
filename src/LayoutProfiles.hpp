@@ -16,6 +16,7 @@ struct Transform {
     std::optional<std::string> hiddenID;
     std::optional<std::string> hiddenLabel;
     std::optional<std::string> hiddenIcon;
+    std::optional<std::string> previewIcon;
 };
 
 using Snapshot = std::map<std::string, Transform>;
