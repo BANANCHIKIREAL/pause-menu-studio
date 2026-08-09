@@ -1,0 +1,123 @@
+{
+    "geode": "5.8.2",
+    "gd": {
+        "win": "2.2081"
+    },
+    "id": "bananchikireal.pause-menu-studio",
+    "name": "Pause Menu Studio",
+    "version": "v2.1.0",
+    "developer": "BANANCHIKIREAL",
+    "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
+    "tags": [
+        "interface",
+        "customization",
+        "online"
+    ],
+    "dependencies": {
+        "fleym.nongd": {
+            "version": ">=3.6.2",
+            "required": true
+        },
+        "colon.gold_user_coins": {
+            "version": ">=v2.0.4",
+            "required": false
+        },
+        "hiimjustin000.demons_in_between": {
+            "version": ">=v1.7.0",
+            "required": false
+        },
+        "minemaker0430.gddp_integration": {
+            "version": ">=v1.1.16",
+            "required": false
+        },
+        "hiimjustin000.integrated_demonlist": {
+            "version": ">=v1.7.13",
+            "required": false
+        },
+        "adyagd.godlikefaces": {
+            "version": ">=v1.1.10",
+            "required": false
+        },
+        "nwo5.better_volume": {
+            "version": ">=v2.1.4",
+            "required": false
+        },
+        "ecuet.better-escape": {
+            "version": ">=v1.0.1",
+            "required": false
+        }
+    },
+    "settings": {
+        "enabled": {
+            "type": "bool",
+            "name": "Enable Pause Menu Studio",
+            "description": "Enables custom pause-menu layouts and information cards.",
+            "default": true
+        },
+        "preset": {
+            "type": "string",
+            "name": "Menu style",
+            "description": "Classic keeps the original layout, Compact makes it smaller, and Showcase leaves more room for information cards.",
+            "default": "Classic",
+            "one-of": ["Classic", "Compact", "Showcase"],
+            "enable-if": "enabled"
+        },
+        "cards-title": {
+            "type": "title",
+            "name": "Information cards"
+        },
+        "show-level": {
+            "type": "bool",
+            "name": "Level name",
+            "description": "Shows the current level name and creator.",
+            "default": false,
+            "enable-if": "enabled"
+        },
+        "show-song": {
+            "type": "bool",
+            "name": "Music",
+            "description": "Shows the current song name, artist, and SongID when available.",
+            "default": false,
+            "enable-if": "enabled"
+        },
+        "show-coins": {
+            "type": "bool",
+            "name": "Coins",
+            "description": "Shows how many user coins the level contains.",
+            "default": false,
+            "enable-if": "enabled"
+        },
+        "show-difficulty": {
+            "type": "bool",
+            "name": "Difficulty",
+            "description": "Shows the level difficulty and star count.",
+            "default": false,
+            "enable-if": "enabled"
+        },
+        "show-demon-rank": {
+            "type": "bool",
+            "name": "Demonlist position",
+            "description": "Shows the AREDL or Pemonlist position for eligible demons when Integrated Demonlist is installed.",
+            "default": true,
+            "enable-if": "enabled"
+        },
+        "editor-title": {
+            "type": "title",
+            "name": "Layout editor"
+        },
+        "edit-on-open": {
+            "type": "bool",
+            "name": "Edit mode on open",
+            "description": "Opens the pause menu in drag mode. You can also use the EDIT button in the pause menu.",
+            "default": false,
+            "enable-if": "enabled"
+        },
+        "snap-grid": {
+            "type": "bool",
+            "name": "Snap to grid",
+            "description": "Rounds the final position to a 5-unit grid after you release the element. Dragging remains smooth.",
+            "default": false,
+            "enable-if": "enabled"
+        }
+    }
+}

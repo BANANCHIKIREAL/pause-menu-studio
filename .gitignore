@@ -1,0 +1,7 @@
+build*/
+tmp/
+.vs/
+.cache/
+*.dll
+*.pdb
+logo-chroma-*.png
