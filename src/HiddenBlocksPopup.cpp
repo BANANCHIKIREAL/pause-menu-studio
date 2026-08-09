@@ -1,4 +1,5 @@
 #include "HiddenBlocksPopup.hpp"
+#include "BlockIcons.hpp"
 
 #include <algorithm>
 
@@ -13,26 +14,14 @@ std::string entryID(CCObject* sender) {
 }
 
 CCSprite* iconForEntry(hidden_blocks::Entry const& entry) {
-    auto text = utils::string::toLower(entry.label + " " + entry.id);
-    char const* frame = "GJ_viewListsBtn_001.png";
-    if (text.find("resume") != std::string::npos || text.find("play") != std::string::npos) {
-        frame = "GJ_playBtn2_001.png";
-    } else if (text.find("practice") != std::string::npos) {
-        frame = "GJ_practiceBtn_001.png";
-    } else if (text.find("retry") != std::string::npos || text.find("restart") != std::string::npos) {
-        frame = "GJ_replayBtn_001.png";
-    } else if (text.find("option") != std::string::npos || text.find("setting") != std::string::npos) {
-        frame = "GJ_optionsBtn_001.png";
-    } else if (text.find("music") != std::string::npos) {
-        frame = "GJ_musicOnBtn_001.png";
-    } else if (text.find("sfx") != std::string::npos) {
-        frame = "GJ_sfxOnBtn_001.png";
-    } else if (text.find("edit") != std::string::npos) {
-        frame = "GJ_editBtn_001.png";
+    if (!entry.iconFrame.empty()) {
+        if (auto icon = CCSprite::createWithSpriteFrameName(entry.iconFrame.c_str())) {
+            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
+            if (largest > .001f) icon->setScale(42.f / largest);
+            return icon;
+        }
     }
-    auto icon = CCSprite::createWithSpriteFrameName(frame);
-    if (!icon) icon = CCSprite::createWithSpriteFrameName("GJ_viewListsBtn_001.png");
-    return icon;
+    return block_icons::create(entry.label + " " + entry.id, 42.f);
 }
 }
 
@@ -70,7 +59,7 @@ void HiddenBlocksPopup::rebuildList() {
     auto content = m_scroll->m_contentLayer;
     content->removeAllChildren();
     constexpr float cardWidth = 185.f;
-    constexpr float cardHeight = 98.f;
+    constexpr float cardHeight = 104.f;
     constexpr size_t columns = 2;
     auto rows = (m_entries.size() + columns - 1) / columns;
     auto height = std::max(235.f, static_cast<float>(rows) * cardHeight);
@@ -91,24 +80,25 @@ void HiddenBlocksPopup::rebuildList() {
         auto column = index % columns;
         auto rowIndex = index / columns;
         auto x = 4.f + static_cast<float>(column) * 193.f;
-        auto y = height - 49.f - static_cast<float>(rowIndex) * cardHeight;
+        auto y = height - 50.f - static_cast<float>(rowIndex) * cardHeight;
         auto row = CCMenu::create();
         row->setPosition(CCPointZero);
         row->setContentSize({cardWidth, 92.f});
 
-        auto card = CCScale9Sprite::create("square02_001.png");
-        card->setContentSize({cardWidth, 90.f});
+        auto card = CCScale9Sprite::create("GJ_square02.png");
+        card->setContentSize({cardWidth, 94.f});
         card->setPosition({x + cardWidth / 2.f, y});
-        card->setColor({39, 32, 64});
-        card->setOpacity(220);
+        card->setColor({36, 31, 78});
+        card->setOpacity(235);
         row->addChild(card, -2);
 
-        auto iconPlate = CCLayerColor::create({8, 8, 18, 175}, 54.f, 54.f);
-        iconPlate->setPosition({x + 8.f, y - 27.f});
+        auto iconPlate = CCScale9Sprite::create("GJ_square01.png");
+        iconPlate->setContentSize({54.f, 54.f});
+        iconPlate->setPosition({x + 35.f, y});
+        iconPlate->setColor({12, 11, 28});
+        iconPlate->setOpacity(220);
         row->addChild(iconPlate, -1);
         if (auto icon = iconForEntry(entry)) {
-            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
-            if (largest > .001f) icon->setScale(42.f / largest);
             icon->setPosition({x + 35.f, y});
             row->addChild(icon);
         }

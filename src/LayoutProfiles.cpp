@@ -82,6 +82,9 @@ std::optional<Snapshot> load(std::string const& name) {
         if (auto hiddenLabel = entry["hidden-label"].asString(); hiddenLabel.isOk()) {
             transform.hiddenLabel = hiddenLabel.unwrap();
         }
+        if (auto hiddenIcon = entry["hidden-icon"].asString(); hiddenIcon.isOk()) {
+            transform.hiddenIcon = hiddenIcon.unwrap();
+        }
         snapshot[*key] = transform;
     }
     return snapshot;
@@ -99,6 +102,7 @@ void save(std::string const& name, Snapshot const& snapshot) {
         if (transform.hidden) point.set("hidden", *transform.hidden);
         if (transform.hiddenID) point.set("hidden-id", *transform.hiddenID);
         if (transform.hiddenLabel) point.set("hidden-label", *transform.hiddenLabel);
+        if (transform.hiddenIcon) point.set("hidden-icon", *transform.hiddenIcon);
         encoded.set(path, std::move(point));
     }
     storage.set(name, std::move(encoded));

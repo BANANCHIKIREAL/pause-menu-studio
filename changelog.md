@@ -1,3 +1,15 @@
+# v3.0.1
+
+- Added a real MOVE lock: selecting a block no longer moves it until MOVE is enabled.
+- Added direct numeric scale input and a visible 1.00 marker on the scale slider.
+- Increased spacing between toolbar and saved-layout actions.
+- Added a smooth exit animation when leaving Edit Mode.
+- Replaced RESET and VIEW with dedicated Geometry Dash icons.
+- Saved the exact Trash contents and their icon types inside every named layout.
+- Replaced dot-only layout previews with miniature Geometry Dash block icons.
+- Added rounded Geometry Dash frames to editor panels, layout cards, previews, and Trash cards.
+- Improved native icon matching for settings, music, SFX, comments, coins, demons, ratings, levels, and other hidden blocks.
+
 # v3.0.0
 
 - Rebuilt Edit Mode around a single dark bottom toolbar with large touch targets for Undo, Redo, Save, Layouts, Hidden Blocks, Reset, and Preview.

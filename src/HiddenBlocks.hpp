@@ -18,6 +18,7 @@ struct Entry {
     std::string id;
     std::string label;
     std::vector<Member> members;
+    std::string iconFrame;
 };
 
 std::vector<Entry> entries();

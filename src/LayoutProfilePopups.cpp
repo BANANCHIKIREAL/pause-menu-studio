@@ -1,5 +1,6 @@
 #include "LayoutProfilePopups.hpp"
 #include "LayoutProfiles.hpp"
+#include "BlockIcons.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -37,8 +38,9 @@ std::string savedDate(std::string const& name) {
     return buffer;
 }
 
-CCDrawNode* createPreview(std::string const& name, ccColor4F color) {
-    auto preview = CCDrawNode::create();
+CCNode* createPreview(std::string const& name, ccColor3B color) {
+    auto preview = CCNode::create();
+    preview->setContentSize({74.f, 44.f});
     auto snapshot = profiles::load(name);
     if (!snapshot || snapshot->empty()) return preview;
     size_t drawn = 0;
@@ -46,8 +48,12 @@ CCDrawNode* createPreview(std::string const& name, ccColor4F color) {
         if (transform.hidden.value_or(false)) continue;
         auto x = std::clamp(transform.position.x / 568.f, 0.f, 1.f);
         auto y = std::clamp(transform.position.y / 320.f, 0.f, 1.f);
-        preview->drawDot({5.f + x * 64.f, 4.f + y * 34.f}, 1.8f, color);
-        if (++drawn >= 28) break;
+        auto icon = block_icons::create(path, 9.f);
+        if (!icon) continue;
+        icon->setColor(color);
+        icon->setPosition({7.f + x * 60.f, 5.f + y * 32.f});
+        preview->addChild(icon);
+        if (++drawn >= 10) break;
     }
     return preview;
 }
@@ -175,20 +181,23 @@ void LayoutListPopup::rebuildList() {
         row->setPosition({0.f, 0.f});
         row->setContentSize({390.f, rowHeight});
 
-        auto card = CCScale9Sprite::create("square02_001.png");
+        auto card = CCScale9Sprite::create("GJ_square02.png");
         card->setContentSize({382.f, 64.f});
         card->setPosition({195.f, y});
-        card->setColor(name == m_activeName ? ccColor3B {45, 105, 82} : ccColor3B {35, 31, 57});
-        card->setOpacity(210);
+        card->setColor(name == m_activeName ? ccColor3B {38, 112, 85} : ccColor3B {38, 34, 82});
+        card->setOpacity(235);
         row->addChild(card, -2);
 
-        auto previewBG = CCLayerColor::create({8, 8, 18, 185}, 74.f, 44.f);
-        previewBG->setPosition({8.f, y - 22.f});
+        auto previewBG = CCScale9Sprite::create("GJ_square01.png");
+        previewBG->setContentSize({74.f, 44.f});
+        previewBG->setPosition({45.f, y});
+        previewBG->setColor({10, 10, 28});
+        previewBG->setOpacity(225);
         row->addChild(previewBG, -1);
         auto preview = createPreview(
-            name, name == m_activeName ? ccColor4F {.3f, 1.f, .65f, 1.f} : ccColor4F {.25f, .85f, 1.f, 1.f}
+            name, name == m_activeName ? ccColor3B {90, 255, 170} : ccColor3B {90, 220, 255}
         );
-        preview->setPosition({8.f, y - 19.f});
+        preview->setPosition({8.f, y - 22.f});
         row->addChild(preview);
 
         auto label = CCLabelBMFont::create(name.c_str(), "bigFont.fnt");
@@ -217,20 +226,20 @@ void LayoutListPopup::rebuildList() {
 
         auto renameSprite = ButtonSprite::create("REN", 42, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .3f);
         auto rename = CCMenuItemSpriteExtra::create(renameSprite, this, menu_selector(LayoutListPopup::onRename));
-        rename->setPosition({278.f, y - 17.f});
+        rename->setPosition({273.f, y - 17.f});
         rename->setUserObject(CCString::create(name));
         row->addChild(rename);
 
         auto copySprite = ButtonSprite::create("COPY", 50, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .28f);
         auto copy = CCMenuItemSpriteExtra::create(copySprite, this, menu_selector(LayoutListPopup::onDuplicate));
-        copy->setPosition({327.f, y - 17.f});
+        copy->setPosition({326.f, y - 17.f});
         copy->setUserObject(CCString::create(name));
         row->addChild(copy);
 
         auto trashSprite = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
         trashSprite->setScale(.42f);
         auto trash = CCMenuItemSpriteExtra::create(trashSprite, this, menu_selector(LayoutListPopup::onDelete));
-        trash->setPosition({365.f, y - 15.f});
+        trash->setPosition({371.f, y - 15.f});
         trash->setUserObject(CCString::create(name));
         row->addChild(trash);
         content->addChild(row);

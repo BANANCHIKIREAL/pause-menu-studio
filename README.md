@@ -36,8 +36,8 @@
 
 - Move almost any reachable pause-menu element with a mouse or touchscreen.
 - Use one compact bottom toolbar instead of separate controls scattered around the screen.
-- Use the contextual panel beside the selection for Move guidance, touch scaling, local reset, and Hide.
-- A click only selects an element; movement starts after a real drag.
+- Use the contextual panel beside the selection for the MOVE lock, exact scaling, local reset, and Hide.
+- A click only selects an element. Enable **MOVE**, then drag or use the arrow keys; press MOVE again to lock it.
 - Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
 - Resize selected buttons and logical blocks with a touch-friendly slider.
 - Use arrow keys for precise movement.
@@ -101,7 +101,7 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 4. Make sure the required **NONGD/Jukebox** dependency (`fleym.nongd >= 3.6.2`) is installed.
 5. Fully restart Geometry Dash.
 6. Open any level and pause the game.
-7. Press **EDIT**, select an element, and drag it.
+7. Press **EDIT**, select an element, enable **MOVE**, and drag it.
 8. Press **DONE** to apply the current editing session.
 9. Press **SAVE** if you want to store a named layout.
 
@@ -115,7 +115,8 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Enter Edit Mode | **EDIT** | The button itself can also be moved |
 | Leave Edit Mode | **DONE** | Applies the current editing session |
 | Select a block | Click / tap | A single press does not move it |
-| Drag a block | Click / touch + movement | Dragging starts after a small movement threshold |
+| Unlock / lock movement | Context **MOVE** button | Movement is locked by default; the green `MOVE ON` state allows dragging and arrow keys |
+| Drag a block | Enable MOVE, then click / touch + movement | Dragging starts after a small movement threshold |
 | Select the next overlapping block | Repeated click / tap at the same point | No object movement is required |
 | Add a block to selection | `Ctrl + click` | Requires a keyboard; multi-selection uses an orange outline |
 | Precise movement | `←` `↑` `↓` `→` | Optional physical-keyboard shortcut; moves by 1 game unit |
@@ -124,7 +125,7 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Redo | `Ctrl + Y` / **REDO** | Android users can use the visible button |
 | Reset selected block | `R` | Restores its original position and size |
 | Hide selected block | `Delete` / `Backspace` | Sends it to Hidden Blocks |
-| Resize | Context scale slider | Touch-friendly range from `0.15×` to `3.5×` |
+| Resize | Context scale slider or numeric field | Touch-friendly range from `0.15×` to `3.5×`; `1.00` is marked on the slider |
 | Reset size | Context reset button | Does not delete or hide the block |
 | Save a layout | **SAVE** | Uses a custom name |
 | Select a layout | **LAYOUTS** | Applies positions, scale, cards, and Hidden Blocks |
@@ -304,7 +305,8 @@ pause-menu-studio/
 │   ├── HiddenBlocks.*            # Persistent recycle-bin storage
 │   ├── HiddenBlocksPopup.*       # Hidden-block restoration UI
 │   ├── LayoutProfiles.*          # Named-layout serialization
-│   └── LayoutProfilePopups.*     # SAVE and LAYOUTS popups
+│   ├── LayoutProfilePopups.*     # SAVE and LAYOUTS popups
+│   └── BlockIcons.*              # Native GD icon selection for previews and Trash
 ├── mod.json                      # Manifest, dependencies, and settings
 ├── CMakeLists.txt                # Build configuration
 ├── changelog.md                  # Version history
@@ -315,6 +317,13 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v3.0.1
+
+- Makes MOVE a real lock/unlock toggle, adds exact numeric scale input, and marks 1.00 on the slider.
+- Adds a smooth Edit Mode exit, wider control spacing, rounded GD frames, and dedicated Reset/View icons.
+- Saves the complete Trash state and icon types per named layout.
+- Replaces dot-only previews with miniature Geometry Dash icons.
 
 ### v3.0.0
 

@@ -10,6 +10,7 @@
 #include "LayoutProfiles.hpp"
 #include "HiddenBlocks.hpp"
 #include "HiddenBlocksPopup.hpp"
+#include "BlockIcons.hpp"
 
 #include <algorithm>
 #include <array>
@@ -174,6 +175,12 @@ struct InitialPosition {
     float scaleY;
 };
 
+struct HiddenSnapshotInfo {
+    std::string id;
+    std::string label;
+    std::string iconFrame;
+};
+
 void captureResetPositions(CCNode* node, CCNode* owner, std::vector<InitialPosition>& positions) {
     if (!node || node->getID() == EDITOR_ID) return;
     // RESET must only touch nodes moved by this mod. Capturing every child also
@@ -198,7 +205,7 @@ void captureCurrentSnapshot(
     CCNode* node,
     CCNode* owner,
     pause_menu_studio::profiles::Snapshot& snapshot,
-    std::unordered_map<std::string, std::pair<std::string, std::string>> const& hiddenMembership
+    std::unordered_map<std::string, HiddenSnapshotInfo> const& hiddenMembership
 ) {
     if (!node || node->getID() == EDITOR_ID) return;
     if (
@@ -213,8 +220,9 @@ void captureCurrentSnapshot(
         auto hidden = hiddenMembership.find(path);
         transform.hidden = hidden != hiddenMembership.end();
         if (hidden != hiddenMembership.end()) {
-            transform.hiddenID = hidden->second.first;
-            transform.hiddenLabel = hidden->second.second;
+            transform.hiddenID = hidden->second.id;
+            transform.hiddenLabel = hidden->second.label;
+            if (!hidden->second.iconFrame.empty()) transform.hiddenIcon = hidden->second.iconFrame;
         }
         snapshot[path] = std::move(transform);
     }
@@ -914,7 +922,7 @@ public:
         auto bindArrow = [this](enumKeyCodes key, CCPoint delta) {
             return KeyboardInputEvent(key).listen([this, delta](KeyboardInputData& input) {
                 if (
-                    !m_editing || m_preview || m_selectedNodes.empty() ||
+                    !m_editing || m_preview || !m_moveEnabled || m_selectedNodes.empty() ||
                     (input.action != KeyboardInputData::Action::Press &&
                      input.action != KeyboardInputData::Action::Repeat)
                 ) return false;
@@ -967,6 +975,7 @@ public:
         // In Edit mode the DONE button itself is selectable. A click still
         // exits Edit mode, while a real drag moves the button.
         if (m_toggle && pointInside(m_toggle, world)) {
+            if (!m_moveEnabled) return false;
             m_hasLastSelectionPoint = false;
             selectOnly({m_toggle});
             beginPendingDrag(world, true);
@@ -1008,18 +1017,20 @@ public:
                     break;
                 }
             }
-            selectOnly(selections[selectionIndex]);
+            if (!sameLogicalGroup(selections[selectionIndex], m_selectedNodes)) {
+                selectOnly(selections[selectionIndex]);
+            }
             m_lastSelectionPoint = world;
             m_hasLastSelectionPoint = true;
         }
-        beginPendingDrag(world, false);
+        if (m_moveEnabled) beginPendingDrag(world, false);
         updateSelectionLabel();
         updateSelectionOutline();
         return true;
     }
 
     void ccTouchMoved(CCTouch* touch, CCEvent*) override {
-        if (!m_editing || m_selectedNodes.empty() || (!m_pendingDrag && !m_dragging)) return;
+        if (!m_editing || !m_moveEnabled || m_selectedNodes.empty() || (!m_pendingDrag && !m_dragging)) return;
         auto world = touch->getLocation();
         if (m_pendingDrag) {
             auto delta = world - m_pressWorld;
@@ -1104,6 +1115,9 @@ private:
     bool m_dragging = false;
     bool m_pendingDrag = false;
     bool m_editControlPressed = false;
+    bool m_moveEnabled = false;
+    bool m_animatingExit = false;
+    bool m_updatingScaleControls = false;
     bool m_hasEdits = false;
     bool m_hasLastSelectionPoint = false;
     CCPoint m_lastSelectionPoint = CCPointZero;
@@ -1117,13 +1131,17 @@ private:
     CCMenuItemSpriteExtra* m_resetButton = nullptr;
     CCMenuItemSpriteExtra* m_hideButton = nullptr;
     CCMenuItemSpriteExtra* m_trashButton = nullptr;
+    CCMenuItemSpriteExtra* m_moveButton = nullptr;
+    CCSprite* m_moveIcon = nullptr;
+    CCLabelBMFont* m_moveLabel = nullptr;
     CCSprite* m_toggleEditIcon = nullptr;
     CCSprite* m_toggleDoneIcon = nullptr;
     CCMenu* m_profileMenu = nullptr;
     CCMenu* m_scaleMenu = nullptr;
     Slider* m_scaleSlider = nullptr;
-    CCLayerColor* m_bottomPanel = nullptr;
-    CCLayerColor* m_contextPanel = nullptr;
+    TextInput* m_scaleInput = nullptr;
+    CCScale9Sprite* m_bottomPanel = nullptr;
+    CCScale9Sprite* m_contextPanel = nullptr;
     CCMenu* m_previewReturnMenu = nullptr;
     bool m_contextWasVisible = false;
     CCDrawNode* m_selectionOutline = nullptr;
@@ -1154,6 +1172,8 @@ private:
     void clearSelection() {
         m_selectedNodes.clear();
         m_selected = nullptr;
+        m_moveEnabled = false;
+        updateMoveToggle();
     }
 
     void addNodeToSelection(CCNode* node) {
@@ -1276,6 +1296,11 @@ private:
             auto& entry = entriesByID[id];
             entry.id = id;
             if (entry.label.empty()) entry.label = transform.hiddenLabel.value_or(path);
+            if (entry.iconFrame.empty()) {
+                entry.iconFrame = transform.hiddenIcon.value_or(
+                    pause_menu_studio::block_icons::frameForText(entry.label + " " + path)
+                );
+            }
             auto node = findNodeByStoredPath(m_owner, path);
             entry.members.push_back({
                 path,
@@ -1337,6 +1362,11 @@ private:
                         auto& entry = entriesByID[id];
                         entry.id = id;
                         if (entry.label.empty()) entry.label = groupLabel(group);
+                        if (entry.iconFrame.empty()) {
+                            entry.iconFrame = pause_menu_studio::block_icons::frameForText(
+                                entry.label + " " + preferredID
+                            );
+                        }
                         for (size_t index = 0; index < missing.size(); ++index) {
                             auto member = missing[index];
                             entry.members.push_back({
@@ -1457,7 +1487,7 @@ private:
     }
 
     void nudgeSelection(CCPoint worldDelta) {
-        if (m_selectedNodes.empty()) return;
+        if (!m_moveEnabled || m_selectedNodes.empty()) return;
         if (m_dragging || m_pendingDrag) finishDrag();
         auto before = captureStates(m_selectedNodes);
         for (auto node : m_selectedNodes) {
@@ -1560,14 +1590,19 @@ private:
         });
         restorePositions(m_toggleMenu);
 
-        auto toolbarWidth = std::min(360.f, size.width - 16.f);
-        m_bottomPanel = CCLayerColor::create({10, 7, 24, 220}, toolbarWidth, 50.f);
+        auto toolbarWidth = std::min(430.f, size.width - 16.f);
+        m_bottomPanel = CCScale9Sprite::create("GJ_square02.png");
+        m_bottomPanel->setContentSize({toolbarWidth, 58.f});
+        m_bottomPanel->setColor({28, 23, 68});
+        m_bottomPanel->setOpacity(238);
+        m_bottomPanel->setCascadeOpacityEnabled(true);
         m_bottomPanel->setID("editor-bottom-toolbar");
         m_bottomPanel->setPosition({(size.width - toolbarWidth) / 2.f, 4.f});
+        m_bottomPanel->setAnchorPoint({0.f, 0.f});
         addChild(m_bottomPanel, 20);
         m_historyMenu = CCMenu::create();
         m_historyMenu->setID("editor-history-controls");
-        m_historyMenu->setPosition({toolbarWidth / 2.f, 25.f});
+        m_historyMenu->setPosition({toolbarWidth / 2.f, 29.f});
         m_bottomPanel->addChild(m_historyMenu);
 
         auto makeControl = [this, &makeIcon](
@@ -1579,6 +1614,7 @@ private:
             float maxSize = 27.f
         ) {
             auto icon = makeIcon(frame, maxSize);
+            icon->setID(std::string(id) + "-icon");
             auto visual = CCNode::create();
             visual->setContentSize({42.f, 42.f});
             icon->setPosition({21.f, 24.f});
@@ -1601,6 +1637,7 @@ private:
                 label->setScale(.32f);
                 label->setOpacity(210);
                 label->limitLabelWidth(39.f, .32f, .2f);
+                label->setID(controlID + "-label");
                 visual->addChild(label);
             }
             auto button = CCMenuItemSpriteExtra::create(visual, this, callback);
@@ -1610,35 +1647,79 @@ private:
             m_controlItems.push_back(button);
             return button;
         };
-        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", -132.f, menu_selector(PauseEditor::onUndo), "undo-button");
-        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", -88.f, menu_selector(PauseEditor::onRedo), "redo-button");
-        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", -44.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
+        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", -168.f, menu_selector(PauseEditor::onUndo), "undo-button");
+        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", -112.f, menu_selector(PauseEditor::onRedo), "redo-button");
+        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", -56.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
         makeControl(m_historyMenu, "GJ_viewListsBtn_001.png", 0.f, menu_selector(PauseEditor::onLayouts), "saved-layouts-button");
-        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", 44.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
-        m_resetButton = makeControl(m_historyMenu, "GJ_replayBtn_001.png", 88.f, menu_selector(PauseEditor::onReset), "reset-button");
-        makeControl(m_historyMenu, "GJ_checkOn_001.png", 132.f, menu_selector(PauseEditor::onPreview), "preview-button", 24.f);
+        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", 56.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
+        m_resetButton = makeControl(m_historyMenu, "GJ_resetBtn_001.png", 112.f, menu_selector(PauseEditor::onReset), "reset-button");
+        makeControl(m_historyMenu, "GJ_viewLevelsBtn_001.png", 168.f, menu_selector(PauseEditor::onPreview), "preview-button", 25.f);
 
-        m_contextPanel = CCLayerColor::create({13, 9, 29, 235}, 300.f, 62.f);
+        auto contextWidth = std::min(420.f, size.width - 8.f);
+        m_contextPanel = CCScale9Sprite::create("GJ_square02.png");
+        m_contextPanel->setContentSize({contextWidth, 78.f});
+        m_contextPanel->setColor({30, 25, 72});
+        m_contextPanel->setOpacity(242);
+        m_contextPanel->setCascadeOpacityEnabled(true);
+        m_contextPanel->setAnchorPoint({0.f, 0.f});
         m_contextPanel->setID("selection-context-panel");
         m_contextPanel->setVisible(false);
         addChild(m_contextPanel, 22);
         m_scaleMenu = CCMenu::create();
         m_scaleMenu->setID("editor-scale-controls");
-        m_scaleMenu->setPosition({150.f, 21.f});
-        makeControl(m_scaleMenu, "GJ_editBtn_001.png", -125.f, menu_selector(PauseEditor::onMoveHint), "move-hint-button", 23.f);
-        makeControl(m_scaleMenu, "edit_eResetBtn_001.png", 92.f, menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 23.f);
-        m_hideButton = makeControl(m_scaleMenu, "hideBtn_001.png", 130.f, menu_selector(PauseEditor::onHide), "hide-block-button", 23.f);
+        m_scaleMenu->setPosition({contextWidth / 2.f, 31.f});
+        m_moveButton = makeControl(
+            m_scaleMenu, "edit_freeMoveBtn_001.png", -contextWidth / 2.f + 31.f,
+            menu_selector(PauseEditor::onMoveToggle), "move-hint-button", 24.f
+        );
+        if (auto visual = m_moveButton ? m_moveButton->getNormalImage() : nullptr) {
+            m_moveIcon = typeinfo_cast<CCSprite*>(visual->getChildByID("move-hint-button-icon"));
+            m_moveLabel = typeinfo_cast<CCLabelBMFont*>(visual->getChildByID("move-hint-button-label"));
+        }
+        makeControl(
+            m_scaleMenu, "GJ_resetBtn_001.png", contextWidth / 2.f - 75.f,
+            menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 23.f
+        );
+        m_hideButton = makeControl(
+            m_scaleMenu, "hideBtn_001.png", contextWidth / 2.f - 25.f,
+            menu_selector(PauseEditor::onHide), "hide-block-button", 23.f
+        );
         m_contextPanel->addChild(m_scaleMenu);
         m_scaleSlider = Slider::create(this, menu_selector(PauseEditor::onScaleSlider), .62f);
         m_scaleSlider->setID("selection-scale-slider");
-        m_scaleSlider->setPosition({145.f, 21.f});
+        m_scaleSlider->setPosition({170.f, 31.f});
         m_scaleSlider->setLiveDragging(true);
         m_contextPanel->addChild(m_scaleSlider, 3);
-        auto sizeLabel = CCLabelBMFont::create("SIZE", "chatFont.fnt");
-        sizeLabel->setPosition({145.f, 7.f});
-        sizeLabel->setScale(.32f);
-        sizeLabel->setOpacity(190);
-        m_contextPanel->addChild(sizeLabel, 3);
+        auto defaultX = 128.f;
+        auto grooveY = 31.f;
+        if (m_scaleSlider->m_groove) {
+            auto groove = m_scaleSlider->m_groove;
+            auto left = m_contextPanel->convertToNodeSpace(groove->convertToWorldSpace({0.f, groove->getContentHeight() / 2.f}));
+            auto right = m_contextPanel->convertToNodeSpace(groove->convertToWorldSpace({groove->getContentWidth(), groove->getContentHeight() / 2.f}));
+            auto normalValue = (1.f - .15f) / 3.35f;
+            defaultX = left.x + (right.x - left.x) * normalValue;
+            grooveY = (left.y + right.y) / 2.f;
+        }
+        auto defaultMark = CCDrawNode::create();
+        defaultMark->drawSegment(
+            {defaultX, grooveY - 6.f}, {defaultX, grooveY + 6.f}, .7f,
+            {1.f, .68f, .12f, 1.f}
+        );
+        m_contextPanel->addChild(defaultMark, 4);
+        auto defaultLabel = CCLabelBMFont::create("1.00", "chatFont.fnt");
+        defaultLabel->setPosition({defaultX, 13.f});
+        defaultLabel->setScale(.31f);
+        defaultLabel->setColor({255, 190, 65});
+        m_contextPanel->addChild(defaultLabel, 4);
+        m_scaleInput = TextInput::create(70.f, "Scale");
+        m_scaleInput->setID("selection-scale-input");
+        m_scaleInput->setCommonFilter(CommonFilter::Float);
+        m_scaleInput->setMaxCharCount(4);
+        m_scaleInput->setScale(.72f);
+        m_scaleInput->setPosition({278.f, 31.f});
+        m_scaleInput->setCallback([this](std::string const& value) { onScaleInput(value); });
+        m_contextPanel->addChild(m_scaleInput, 5);
+        m_controlItems.push_back(m_scaleInput);
 
         m_modeLabel = CCLabelBMFont::create("", "bigFont.fnt");
         m_modeLabel->setAnchorPoint({1.f, .5f});
@@ -1649,10 +1730,10 @@ private:
 
         m_selectionLabel = CCLabelBMFont::create("", "chatFont.fnt");
         m_selectionLabel->setAnchorPoint({0.f, .5f});
-        m_selectionLabel->setPosition({8.f, 51.f});
+        m_selectionLabel->setPosition({12.f, 66.f});
         m_selectionLabel->setScale(.36f);
         m_selectionLabel->setOpacity(220);
-        m_selectionLabel->limitLabelWidth(284.f, .36f, .2f);
+        m_selectionLabel->limitLabelWidth(contextWidth - 24.f, .36f, .2f);
         m_contextPanel->addChild(m_selectionLabel, 2);
 
         m_selectionOutline = CCDrawNode::create();
@@ -1683,12 +1764,10 @@ private:
     void onScaleDown(CCObject*) { scaleSelection(.9f); }
     void onScaleUp(CCObject*) { scaleSelection(1.1f); }
     void onScaleReset(CCObject*) { resetSelectionScale(); }
-    void onScaleSlider(CCObject* sender) {
-        auto slider = typeinfo_cast<Slider*>(sender);
-        if (!slider) slider = m_scaleSlider;
-        if (!slider || !m_editing || m_preview || m_selectedNodes.empty()) return;
+    void applyScaleTarget(float target) {
+        if (!m_editing || m_preview || m_selectedNodes.empty()) return;
+        target = std::clamp(target, .15f, 3.5f);
         auto before = captureStates(m_selectedNodes);
-        auto target = .15f + std::clamp(slider->getValue(), 0.f, 1.f) * 3.35f;
         for (auto node : m_selectedNodes) {
             rememberInitialPosition(node);
             auto largest = std::max(std::abs(node->getScaleX()), std::abs(node->getScaleY()));
@@ -1706,10 +1785,37 @@ private:
             m_hasEdits = true;
         }
         updateHistoryButtons();
+        updateSelectionLabel();
         updateSelectionOutline();
     }
-    void onMoveHint(CCObject*) {
-        Notification::create("Drag the selected block to move it", NotificationIcon::Info)->show();
+    void onScaleSlider(CCObject* sender) {
+        auto slider = typeinfo_cast<Slider*>(sender);
+        if (!slider) slider = m_scaleSlider;
+        if (!slider || m_updatingScaleControls) return;
+        auto target = .15f + std::clamp(slider->getValue(), 0.f, 1.f) * 3.35f;
+        applyScaleTarget(target);
+    }
+    void onScaleInput(std::string const& value) {
+        if (m_updatingScaleControls || value.empty()) return;
+        auto parsed = numFromString<float>(value);
+        if (parsed.isErr()) return;
+        applyScaleTarget(parsed.unwrap());
+    }
+    void updateMoveToggle() {
+        if (m_moveIcon) m_moveIcon->setColor(m_moveEnabled ? ccColor3B {90, 255, 170} : ccWHITE);
+        if (m_moveLabel) {
+            m_moveLabel->setString(m_moveEnabled ? "MOVE ON" : "MOVE");
+            m_moveLabel->setColor(m_moveEnabled ? ccColor3B {90, 255, 170} : ccWHITE);
+            m_moveLabel->limitLabelWidth(40.f, .3f, .2f);
+        }
+    }
+    void onMoveToggle(CCObject*) {
+        if (!m_editing || m_preview || m_selectedNodes.empty()) return;
+        if (m_dragging || m_pendingDrag) finishDrag();
+        m_moveEnabled = !m_moveEnabled;
+        m_hasLastSelectionPoint = false;
+        updateMoveToggle();
+        pulseContextPanel();
     }
     void onHide(CCObject*) { hideSelection(); }
     void onPreview(CCObject*) { setPreview(!m_preview); }
@@ -1831,31 +1937,81 @@ private:
         if (leavingEditor) {
             commitDirtyTransforms();
             m_hasEdits = false;
+            m_animatingExit = true;
         }
+        if (editing) m_animatingExit = false;
         m_editing = editing;
         m_dragging = false;
         m_pendingDrag = false;
         if (!editing) clearSelection();
         if (!editing) m_hasLastSelectionPoint = false;
-        m_modeLabel->setString(editing ? "EDIT MODE" : "");
-        m_modeLabel->setVisible(editing);
+        if (editing) m_modeLabel->setString("EDIT MODE");
+        else if (!leavingEditor) m_modeLabel->setString("");
+        m_modeLabel->setVisible(editing || leavingEditor);
+        m_modeLabel->stopAllActions();
+        m_modeLabel->setOpacity(255);
+        if (leavingEditor) m_modeLabel->runAction(CCFadeOut::create(.18f));
         if (m_toggleEditIcon) m_toggleEditIcon->setVisible(!editing);
         if (m_toggleDoneIcon) m_toggleDoneIcon->setVisible(editing);
         for (auto line : m_gridLines) line->setVisible(editing);
         if (m_bottomPanel) {
-            m_bottomPanel->setVisible(editing);
             m_bottomPanel->stopAllActions();
             if (editing) {
-                auto target = m_bottomPanel->getPosition();
+                m_bottomPanel->setVisible(true);
+                m_bottomPanel->setOpacity(238);
                 m_bottomPanel->setPositionY(-m_bottomPanel->getContentHeight());
-                m_bottomPanel->runAction(CCEaseBackOut::create(CCMoveTo::create(.24f, target)));
+                m_bottomPanel->runAction(CCEaseBackOut::create(CCMoveTo::create(
+                    .24f, {m_bottomPanel->getPositionX(), 4.f}
+                )));
+            } else if (leavingEditor) {
+                m_bottomPanel->setVisible(true);
+                m_bottomPanel->runAction(CCSequence::create(
+                    CCEaseIn::create(CCMoveTo::create(
+                        .2f, {m_bottomPanel->getPositionX(), -m_bottomPanel->getContentHeight()}
+                    ), 2.f),
+                    CCHide::create(),
+                    CCCallFunc::create(this, callfunc_selector(PauseEditor::finishEditorExitAnimation)),
+                    nullptr
+                ));
+            } else {
+                m_bottomPanel->setVisible(false);
             }
         }
-        if (m_contextPanel && !editing) m_contextPanel->setVisible(false);
-        m_contextWasVisible = false;
+        if (m_contextPanel) {
+            m_contextPanel->stopAllActions();
+            if (editing) {
+                m_contextPanel->setOpacity(242);
+                m_contextPanel->setScale(1.f);
+            } else if (leavingEditor && m_contextPanel->isVisible()) {
+                m_contextPanel->runAction(CCSpawn::create(
+                    CCFadeOut::create(.16f),
+                    CCEaseSineIn::create(CCScaleTo::create(.16f, .92f)),
+                    nullptr
+                ));
+            } else if (!leavingEditor) {
+                m_contextPanel->setVisible(false);
+            }
+        }
+        if (!leavingEditor) m_contextWasVisible = false;
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
+    }
+
+    void finishEditorExitAnimation() {
+        m_animatingExit = false;
+        if (m_bottomPanel) m_bottomPanel->setVisible(false);
+        if (m_contextPanel) {
+            m_contextPanel->setVisible(false);
+            m_contextPanel->setOpacity(242);
+            m_contextPanel->setScale(1.f);
+        }
+        if (m_modeLabel) {
+            m_modeLabel->setString("");
+            m_modeLabel->setVisible(false);
+            m_modeLabel->setOpacity(255);
+        }
+        m_contextWasVisible = false;
     }
 
     void undo() {
@@ -1984,6 +2140,9 @@ private:
                 entry.members, {}, &pause_menu_studio::hidden_blocks::Member::path
             )->path;
             entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID);
+            entry.iconFrame = pause_menu_studio::block_icons::frameForText(
+                entry.label + " " + preferredID
+            );
             // Never make a node disappear unless its complete restore record
             // can immediately be read back from the mod's saved storage.
             if (!pause_menu_studio::hidden_blocks::upsert(entry)) {
@@ -2093,10 +2252,10 @@ private:
     void writeNamedLayout(std::string const& name) {
         reconcileInvisibleManagedBlocks();
         pause_menu_studio::profiles::Snapshot snapshot;
-        std::unordered_map<std::string, std::pair<std::string, std::string>> hiddenMembership;
+        std::unordered_map<std::string, HiddenSnapshotInfo> hiddenMembership;
         for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
             for (auto const& member : entry.members) {
-                hiddenMembership[member.path] = {entry.id, entry.label};
+                hiddenMembership[member.path] = {entry.id, entry.label, entry.iconFrame};
             }
         }
         captureCurrentSnapshot(m_owner, m_owner, snapshot, hiddenMembership);
@@ -2112,8 +2271,9 @@ private:
                 };
                 if (auto hidden = hiddenMembership.find(path); hidden != hiddenMembership.end()) {
                     transform.hidden = true;
-                    transform.hiddenID = hidden->second.first;
-                    transform.hiddenLabel = hidden->second.second;
+                    transform.hiddenID = hidden->second.id;
+                    transform.hiddenLabel = hidden->second.label;
+                    if (!hidden->second.iconFrame.empty()) transform.hiddenIcon = hidden->second.iconFrame;
                 } else {
                     transform.hidden = false;
                 }
@@ -2132,11 +2292,13 @@ private:
                     transform.hidden = true;
                     transform.hiddenID = entry.id;
                     transform.hiddenLabel = entry.label;
+                    if (!entry.iconFrame.empty()) transform.hiddenIcon = entry.iconFrame;
                     snapshot[member.path] = std::move(transform);
                 } else {
                     found->second.hidden = true;
                     found->second.hiddenID = entry.id;
                     found->second.hiddenLabel = entry.label;
+                    if (!entry.iconFrame.empty()) found->second.hiddenIcon = entry.iconFrame;
                 }
             }
         }
@@ -2164,17 +2326,9 @@ private:
             // Entries whose dynamic nodes are unavailable are retained instead
             // of being silently deleted from Trash.
             for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
-                pause_menu_studio::hidden_blocks::Entry unavailable {
-                    entry.id, entry.label, {}
-                };
                 for (auto const& member : entry.members) {
-                    if (auto node = findNodeByStoredPath(m_owner, member.path)) {
-                        node->setVisible(true);
-                    } else if (!isInformationCardPath(member.path) || snapshot->contains(member.path)) {
-                        unavailable.members.push_back(member);
-                    }
+                    if (auto node = findNodeByStoredPath(m_owner, member.path)) node->setVisible(true);
                 }
-                if (!unavailable.members.empty()) hiddenEntries[unavailable.id] = std::move(unavailable);
             }
             pause_menu_studio::hidden_blocks::clear();
         }
@@ -2252,7 +2406,10 @@ private:
         }
         if (m_scaleSlider && m_selected) {
             auto scale = std::max(std::abs(m_selected->getScaleX()), std::abs(m_selected->getScaleY()));
+            m_updatingScaleControls = true;
             m_scaleSlider->setValue(std::clamp((scale - .15f) / 3.35f, 0.f, 1.f));
+            if (m_scaleInput) m_scaleInput->setString(fmt::format("{:.2f}", scale), false);
+            m_updatingScaleControls = false;
         }
         auto const logicalCount = logicalSelectionCount();
         if (logicalCount > 1) {
@@ -2370,7 +2527,7 @@ private:
     void updateSelectionOutline() {
         m_selectionOutline->clear();
         if (!m_editing || m_preview || m_selectedNodes.empty()) {
-            if (m_contextPanel) m_contextPanel->setVisible(false);
+            if (m_contextPanel && !m_animatingExit) m_contextPanel->setVisible(false);
             for (auto shade : m_focusShade) if (shade) shade->setVisible(false);
             m_contextWasVisible = false;
             return;
@@ -2424,7 +2581,7 @@ private:
             if (y + panelSize.height > screen.height - 4.f) {
                 y = contextBounds.minY - panelSize.height - 8.f;
             }
-            y = std::clamp(y, 58.f, std::max(58.f, screen.height - panelSize.height - 4.f));
+            y = std::clamp(y, 68.f, std::max(68.f, screen.height - panelSize.height - 4.f));
             m_contextPanel->setPosition({x, y});
             m_contextPanel->setVisible(true);
             if (!m_contextWasVisible) {

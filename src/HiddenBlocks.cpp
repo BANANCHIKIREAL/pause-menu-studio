@@ -24,6 +24,9 @@ std::optional<Entry> decode(std::string id, matjson::Value const& encoded) {
     if (label.isErr() || membersValue.type() != matjson::Type::Object) return std::nullopt;
 
     Entry result {std::move(id), label.unwrap(), {}};
+    if (auto icon = encoded["icon-frame"].asString(); icon.isOk()) {
+        result.iconFrame = icon.unwrap();
+    }
     for (auto const& item : membersValue) {
         auto path = item.getKey();
         if (!path || item.type() != matjson::Type::Object) continue;
@@ -86,6 +89,7 @@ bool upsert(Entry const& entry) {
     auto storage = readStorage();
     auto encoded = matjson::Value::object();
     encoded.set("label", entry.label);
+    if (!entry.iconFrame.empty()) encoded.set("icon-frame", entry.iconFrame);
     auto members = matjson::Value::object();
     for (auto const& member : entry.members) {
         auto transform = matjson::Value::object();

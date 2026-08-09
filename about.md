@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v3.0.0</c>
+# <cy>Pause Menu Studio</c> <cg>v3.0.1</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -17,16 +17,18 @@ Pause Menu Studio is currently <co>experimental</c>. Other mods and texture pack
 1. Open any level and pause the game.
 2. Press <cy>EDIT</c>.
 3. Click an element to select it.
-4. Drag it with a mouse or touchscreen, or move it with the arrow keys.
+4. Press <cy>MOVE</c> to unlock movement.
+5. Drag it with a mouse or touchscreen, or move it with the arrow keys.
 5. Press <cg>DONE</c> to apply the current editing session.
 6. Use <cp>SAVE</c> to store the layout under your own name.
 
-The first click only selects a block. It starts moving only after the cursor actually crosses the drag threshold.
+The first click only selects a block. Movement stays locked until <cy>MOVE</c> is enabled. Press MOVE again to lock the selection.
 
 ## <cb>CONTROLS</c>
 
 - <cy>Click / tap</c> - select a block.
-- <cy>Click / touch + drag</c> - move the selected block.
+- <cy>MOVE</c> - toggle whether the selected block may move.
+- <cy>Click / touch + drag</c> - move the selected block while MOVE is enabled.
 - <cy>Repeated click / tap at the same point</c> - select the next overlapping block.
 - <cy>Ctrl + click</c> - add another block to the selection.
 - <cy>Arrow keys</c> - move by 1 unit.
@@ -35,7 +37,7 @@ The first click only selects a block. It starts moving only after the cursor act
 - <cy>Ctrl + Y</c> - redo.
 - <cy>R</c> - reset the selected block.
 - <cy>Delete / Backspace</c> - move a block to Hidden Blocks.
-- <cy>Scale slider</c> - resize the selection from the contextual panel.
+- <cy>Scale slider / numeric field</c> - resize the selection from 0.15 to 3.50; 1.00 is marked as the normal reference.
 - <cy>UNDO / REDO</c> - use the visible history buttons.
 - <cy>RESET</c> - reset with a confirmation prompt.
 - <cy>Preview</c> - hide the editor interface for a clean, read-only view.
@@ -68,7 +70,7 @@ Removing something in Edit Mode works like a recycle bin:
 
 Before the list opens, the mod audits the active layout and invisible elements previously managed by Pause Menu Studio. If a missing record can be recovered reliably, it is returned to Hidden Blocks automatically.
 
-In v3.0.0, Hidden Blocks uses a visual two-column grid with native Geometry Dash icons and larger Restore buttons.
+In v3.0.1, Hidden Blocks uses a visual two-column grid, stores native Geometry Dash icon types per layout, and restores the exact Trash state saved by that layout.
 
 ## <cb>V3 EDITOR INTERFACE</c>
 
@@ -125,7 +127,7 @@ Integrations depend on internal node IDs from other mods. I cannot confirm every
 - A layout saved with a currently disabled mod may contain temporarily unavailable paths.
 - Extremely large controls and heavy overlap are intentionally not blocked.
 - The current build targets <cy>Geometry Dash 2.2081</c> and <cy>Geode 5.8.2</c> on <cy>Windows, Android32, and Android64</c>.
-- Android touch editing uses the same tap and drag controls as the desktop editor. Keyboard shortcuts require a physical keyboard; the visible editor buttons remain available without one.
+- Android touch editing uses the same select, MOVE-unlock, and drag controls as the desktop editor. Keyboard shortcuts require a physical keyboard; the visible editor buttons remain available without one.
 - Android packages compile successfully, but not every phone, Android version, or touch configuration has been tested.
 
 ## <cr>TROUBLESHOOTING</c>
