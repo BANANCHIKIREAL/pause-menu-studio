@@ -36,7 +36,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.3";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.4";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -1303,6 +1303,7 @@ private:
     CCMenuItemSpriteExtra* m_redoButton = nullptr;
     CCMenuItemSpriteExtra* m_updateButton = nullptr;
     CCNode* m_updateBadge = nullptr;
+    CCNode* m_toggleUpdateBadge = nullptr;
     CCMenuItemSpriteExtra* m_resetButton = nullptr;
     CCMenuItemSpriteExtra* m_hideButton = nullptr;
     CCMenuItemSpriteExtra* m_trashButton = nullptr;
@@ -1785,6 +1786,22 @@ private:
             if (largest > .001f) icon->setScale(maxSize / largest);
             return icon;
         };
+        auto makeUpdateBadge = [](char const* id, CCPoint position) {
+            auto badge = CCScale9Sprite::create("square02_001.png");
+            badge->setID(id);
+            badge->setContentSize({15.f, 15.f});
+            badge->setPosition(position);
+            badge->setColor({225, 45, 55});
+            badge->setOpacity(255);
+            auto mark = Label::create("!", "bigFont.fnt");
+            mark->setPosition({7.5f, 7.5f});
+            mark->setScale(.38f);
+            mark->setColor(ccWHITE);
+            mark->setOpacity(255);
+            badge->addChild(mark);
+            badge->setVisible(false);
+            return static_cast<CCNode*>(badge);
+        };
 
         auto addPanelDepth = [](CCScale9Sprite* panel, CCSize panelSize) {
             auto shadow = CCScale9Sprite::create("square02_001.png");
@@ -1811,6 +1828,8 @@ private:
             icon->setPosition({21.f, 21.f});
             toggleVisual->addChild(icon);
         }
+        m_toggleUpdateBadge = makeUpdateBadge("edit-updates-available-badge", {38.f, 40.f});
+        toggleVisual->addChild(m_toggleUpdateBadge, 8);
         m_toggle = CCMenuItemSpriteExtra::create(toggleVisual, this, menu_selector(PauseEditor::onToggle));
         m_toggle->setID("editor-toggle-button");
         m_toggleMenu->addChild(m_toggle);
@@ -1846,7 +1865,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.0.3", "bigFont.fnt");
+        auto beta = Label::create("V4.0.4", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -1930,21 +1949,8 @@ private:
         makeControl(m_historyMenu, layoutsIconFrame.c_str(), controlPositions[3], menu_selector(PauseEditor::onLayouts), "saved-layouts-button", 26.f, {76, 52, 128});
         m_updateButton = makeControl(m_historyMenu, downloadIconFrame.c_str(), controlPositions[4], menu_selector(PauseEditor::onUpdates), "updates-button", 26.f, {38, 118, 105});
         if (auto visual = m_updateButton ? m_updateButton->getNormalImage() : nullptr) {
-            auto badge = CCScale9Sprite::create("square02_001.png");
-            badge->setID("updates-available-badge");
-            badge->setContentSize({15.f, 15.f});
-            badge->setPosition({39.f, 43.f});
-            badge->setColor({225, 45, 55});
-            badge->setOpacity(255);
-            auto mark = Label::create("!", "bigFont.fnt");
-            mark->setPosition({7.5f, 7.5f});
-            mark->setScale(.38f);
-            mark->setColor(ccWHITE);
-            mark->setOpacity(255);
-            badge->addChild(mark);
-            badge->setVisible(false);
-            visual->addChild(badge, 8);
-            m_updateBadge = badge;
+            m_updateBadge = makeUpdateBadge("updates-available-badge", {39.f, 43.f});
+            visual->addChild(m_updateBadge, 8);
         }
         refreshUpdateBadge();
         m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 26.f, {116, 52, 86});
@@ -2182,10 +2188,10 @@ private:
     void onPreview(CCObject*) { setPreview(!m_preview); }
     void pollUpdateBadge(float) { refreshUpdateBadge(); }
     void refreshUpdateBadge() {
-        if (m_updateBadge) {
-            m_updateBadge->setVisible(
-                m_pendingUpdateVersion.empty() && !cachedAvailableUpdateVersion().empty()
-            );
+        auto const visible =
+            m_pendingUpdateVersion.empty() && !cachedAvailableUpdateVersion().empty();
+        for (auto badge : {m_updateBadge, m_toggleUpdateBadge}) {
+            if (badge) badge->setVisible(visible);
         }
     }
     void showUpdateNotice(std::string const& text, NotificationIcon icon, float time = 0.f) {
@@ -3311,14 +3317,16 @@ class $modify(PauseMenuStudioLoadingLayer, LoadingLayer) {
         CCLabelBMFont* updateLabel = nullptr;
     };
 
+public:
     void buildUpdateBanner() {
+        if (m_fields->updateBanner && m_fields->updateBanner->getParent()) return;
         auto const screen = CCDirector::sharedDirector()->getWinSize();
         auto const width = std::min(360.f, screen.width - 20.f);
         auto banner = CCNode::create();
         banner->setID("pause-menu-studio-update-banner");
         banner->setContentSize({width, 30.f});
         banner->setAnchorPoint({.5f, .5f});
-        banner->setPosition({screen.width / 2.f, 44.f});
+        banner->setPosition({screen.width / 2.f, 82.f});
         banner->setVisible(false);
 
         auto border = CCLayerColor::create({70, 235, 255, 255}, width, 30.f);
@@ -3328,6 +3336,7 @@ class $modify(PauseMenuStudioLoadingLayer, LoadingLayer) {
         banner->addChild(background, 1);
 
         auto label = CCLabelBMFont::create("", "bigFont.fnt");
+        label->setID("pause-menu-studio-update-label");
         label->setPosition({width / 2.f, 15.f});
         label->setColor({255, 235, 75});
         label->setOpacity(255);
@@ -3342,8 +3351,7 @@ class $modify(PauseMenuStudioLoadingLayer, LoadingLayer) {
         showLoadingUpdateBanner(m_fields->updateBanner, m_fields->updateLabel, version);
     }
 
-    bool init(bool refresh) {
-        if (!LoadingLayer::init(refresh)) return false;
+    void ensureStartupUpdateUI() {
         buildUpdateBanner();
         showAvailableUpdate(cachedAvailableUpdateVersion());
 
@@ -3382,9 +3390,30 @@ class $modify(PauseMenuStudioLoadingLayer, LoadingLayer) {
                 }
             );
         }
+    }
+
+    bool init(bool refresh) {
+        if (!LoadingLayer::init(refresh)) return false;
+        ensureStartupUpdateUI();
         return true;
     }
 };
+
+LoadingLayer* findActiveLoadingLayer(CCNode* root) {
+    if (!root) return nullptr;
+    if (auto loading = typeinfo_cast<LoadingLayer*>(root)) return loading;
+    for (auto child : CCArrayExt<CCNode*>(root->getChildren())) {
+        if (auto loading = findActiveLoadingLayer(child)) return loading;
+    }
+    return nullptr;
+}
+
+void attachStartupUpdateUIToActiveLoadingLayer() {
+    auto scene = CCDirector::sharedDirector()->getRunningScene();
+    if (auto loading = findActiveLoadingLayer(scene)) {
+        static_cast<PauseMenuStudioLoadingLayer*>(loading)->ensureStartupUpdateUI();
+    }
+}
 
 class $modify(PauseMenuStudioPlayLayer, PlayLayer) {
     struct Fields {
@@ -3417,6 +3446,14 @@ std::string stableLevelName(PlayLayer* play, GJGameLevel* level) {
 }
 
 $on_mod(Loaded) {
+    // Geode loads normal mods from inside an already initialized LoadingLayer,
+    // so an init hook alone is too late on the first launch. Attach immediately
+    // to the active layer and retry on the next main-thread turn. Future/reload
+    // LoadingLayers are still covered by the init hook above.
+    attachStartupUpdateUIToActiveLoadingLayer();
+    Loader::get()->queueInMainThread([] {
+        attachStartupUpdateUIToActiveLoadingLayer();
+    });
     if (!Mod::get()->getSavedValue<bool>("v1.4-card-defaults-applied", false)) {
         Mod::get()->setSettingValue<bool>("show-level", false);
         Mod::get()->setSettingValue<bool>("show-song", false);

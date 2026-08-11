@@ -1,3 +1,10 @@
+# v4.0.4
+
+- Fixed the automatic update check not starting on the first Geode loading screen because Pause Menu Studio was loaded after `LoadingLayer::init` had already run.
+- The update banner now attaches to the currently visible loading screen as soon as Pause Menu Studio loads.
+- Added the red update `!` directly above the pause-menu Edit button, while retaining the badge on the Updates toolbar button.
+- Moved the loading banner above Geode's two status labels so the three messages do not overlap.
+
 # v4.0.3
 
 - Fixed the stock pause-menu heading of official levels changing to the active Jukebox NONG/remix title after resuming and pausing again.

@@ -340,6 +340,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.0.4
+
+- Fixed the startup update check on Geode's already active loading screen.
+- Added the update `!` directly above the pause-menu Edit button as well as the Updates toolbar button.
+- Moved the update banner away from Geode's loading-status labels.
+
 ### v4.0.3
 
 - Fixed the stock pause-menu heading of official levels changing to the active Jukebox NONG/remix title after resuming and pausing again.
