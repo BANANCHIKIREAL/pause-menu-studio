@@ -12,6 +12,9 @@ struct Transform {
     cocos2d::CCPoint position;
     std::optional<float> scaleX;
     std::optional<float> scaleY;
+    std::optional<float> rotation;
+    std::optional<int> opacity;
+    std::optional<int> zOrder;
     std::optional<bool> hidden;
     std::optional<std::string> hiddenID;
     std::optional<std::string> hiddenLabel;

@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.0.4",
+    "version": "v4.1.0",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -136,6 +136,63 @@
             "name": "Snap to grid",
             "description": "Rounds the final position to a 5-unit grid after you release the element. Dragging remains smooth.",
             "default": false,
+            "enable-if": "enabled"
+        },
+        "separate-mode-layouts": {
+            "type": "bool",
+            "name": "Separate layouts by mode",
+            "description": "Keeps positions, hidden blocks, and named layouts separate for normal, platformer, creator, and creator-platformer pause menus.",
+            "default": true,
+            "enable-if": "enabled"
+        },
+        "advanced-transform": {
+            "type": "bool",
+            "name": "Advanced transform controls",
+            "description": "Adds rotation, opacity, and drawing-layer controls to the selected-block panel in Edit Mode.",
+            "default": true,
+            "enable-if": "enabled"
+        },
+        "undo-history-limit": {
+            "type": "int",
+            "name": "Undo history size",
+            "description": "Maximum number of editor actions retained for Undo and Redo during the current pause menu.",
+            "default": 50,
+            "min": 10,
+            "max": 200,
+            "enable-if": "enabled",
+            "control": {
+                "arrows": true,
+                "arrow-step": 10,
+                "big-arrows": true,
+                "big-arrow-step": 50,
+                "slider": true,
+                "slider-step": 10,
+                "input": true
+            }
+        },
+        "updates-title": {
+            "type": "title",
+            "name": "Update notifications"
+        },
+        "check-updates-on-startup": {
+            "type": "bool",
+            "name": "Check on startup",
+            "description": "Checks GitHub for a newer Pause Menu Studio release while Geode is loading. Manual checks from Edit Mode remain available when disabled.",
+            "default": true,
+            "enable-if": "enabled"
+        },
+        "show-update-loading-banner": {
+            "type": "bool",
+            "name": "Loading-screen banner",
+            "description": "Shows the available-version banner on Geometry Dash's Geode loading screen.",
+            "default": true,
+            "enable-if": "enabled && check-updates-on-startup"
+        },
+        "show-update-badges": {
+            "type": "bool",
+            "name": "Update badges",
+            "description": "Shows the red exclamation mark above the pause-menu Edit button and the Updates toolbar button.",
+            "default": true,
             "enable-if": "enabled"
         }
     }

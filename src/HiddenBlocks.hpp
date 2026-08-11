@@ -12,6 +12,9 @@ struct Member {
     cocos2d::CCPoint position;
     float scaleX;
     float scaleY;
+    std::optional<float> rotation;
+    std::optional<int> opacity;
+    std::optional<int> zOrder;
 };
 
 struct Entry {

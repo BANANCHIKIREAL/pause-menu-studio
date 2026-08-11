@@ -1,3 +1,11 @@
+# v4.1.0
+
+- Added the **Separate layouts by mode** setting. When enabled, normal, platformer, creator, and creator-platformer pause menus keep independent positions, active named layouts, generations, and Hidden Blocks; disabling it makes every mode use the normal layout namespace without deleting separated data.
+- Added an Advanced Transform popup for exact rotation, opacity, and drawing-layer values. Supported values participate in Undo/Redo, per-block Reset, full Reset, persistent transforms, named layouts, Apply, Trash, and Restore.
+- Added independent settings for automatic startup checks, the loading-screen update banner, and red update badges. Manual checks from Edit Mode remain available when automatic checking is disabled.
+- Added a configurable Undo/Redo history limit from 10 to 200 actions, with a default of 50.
+- Saving a named layout now commits pending Edit Mode transforms first, so a newly changed block is included without requiring DONE beforehand.
+
 # v4.0.4
 
 - Fixed the automatic update check not starting on the first Geode loading screen because Pause Menu Studio was loaded after `LoadingLayer::init` had already run.

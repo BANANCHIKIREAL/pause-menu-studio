@@ -10,6 +10,7 @@
 
 #include "LayoutProfilePopups.hpp"
 #include "LayoutProfiles.hpp"
+#include "AdvancedTransformPopup.hpp"
 #include "HiddenBlocks.hpp"
 #include "HiddenBlocksPopup.hpp"
 #include "BlockIcons.hpp"
@@ -36,7 +37,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.4";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -120,6 +121,13 @@ void showLoadingUpdateBanner(
     std::string const& version
 ) {
     if (!banner || !label || version.empty()) return;
+    if (
+        !Mod::get()->getSettingValue<bool>("check-updates-on-startup") ||
+        !Mod::get()->getSettingValue<bool>("show-update-loading-banner")
+    ) {
+        banner->setVisible(false);
+        return;
+    }
     label->setString(fmt::format("PAUSE MENU STUDIO {} AVAILABLE!", version).c_str());
     auto scale = .38f;
     auto const availableWidth = banner->getContentWidth() - 18.f;
@@ -156,8 +164,13 @@ std::string pauseModeKey() {
     return "normal";
 }
 
+std::string layoutModeKey() {
+    if (!Mod::get()->getSettingValue<bool>("separate-mode-layouts")) return "normal";
+    return pauseModeKey();
+}
+
 std::string activeLayoutStorageKey() {
-    auto const mode = pauseModeKey();
+    auto const mode = layoutModeKey();
     if (mode == "platformer") return "active-named-layout-platformer";
     if (mode == "creator") return "active-named-layout-creator";
     if (mode == "platformer-creator") return "active-named-layout-platformer-creator";
@@ -165,7 +178,7 @@ std::string activeLayoutStorageKey() {
 }
 
 std::string layoutGenerationStorageKey() {
-    auto const mode = pauseModeKey();
+    auto const mode = layoutModeKey();
     if (mode == "platformer") return "layout-generation-platformer";
     if (mode == "creator") return "layout-generation-creator";
     if (mode == "platformer-creator") return "layout-generation-platformer-creator";
@@ -177,7 +190,7 @@ std::string positionNamespace() {
     // Normal-mode keys intentionally keep their legacy shape. Only platformer
     // and creator variants get suffixes, so upgrading does not reset an
     // existing normal layout or mix menus with different button sets.
-    auto const mode = pauseModeKey();
+    auto const mode = layoutModeKey();
     if (mode != "normal") result += "/" + mode;
     return result;
 }
@@ -191,7 +204,7 @@ std::string editorModeLabel() {
 }
 
 std::string saveLayoutTitle() {
-    auto const mode = pauseModeKey();
+    auto const mode = layoutModeKey();
     if (mode == "platformer-creator") return "Save platformer creator layout";
     if (mode == "platformer") return "Save platformer layout";
     if (mode == "creator") return "Save creator layout";
@@ -199,7 +212,7 @@ std::string saveLayoutTitle() {
 }
 
 std::string layoutListTitle() {
-    auto const mode = pauseModeKey();
+    auto const mode = layoutModeKey();
     if (mode == "platformer-creator") return "Platformer creator layouts";
     if (mode == "platformer") return "Platformer layouts";
     if (mode == "creator") return "Creator layouts";
@@ -258,6 +271,23 @@ std::string xKey(CCNode* node) { return "position-x/" + nodeKey(node); }
 std::string yKey(CCNode* node) { return "position-y/" + nodeKey(node); }
 std::string scaleXKey(CCNode* node) { return "scale-x/" + nodeKey(node); }
 std::string scaleYKey(CCNode* node) { return "scale-y/" + nodeKey(node); }
+std::string rotationKey(CCNode* node) { return "rotation/" + nodeKey(node); }
+std::string opacityKey(CCNode* node) { return "opacity/" + nodeKey(node); }
+std::string zOrderKey(CCNode* node) { return "z-order/" + nodeKey(node); }
+
+std::optional<int> nodeOpacity(CCNode* node) {
+    if (auto rgba = node ? typeinfo_cast<CCRGBAProtocol*>(node) : nullptr) {
+        return static_cast<int>(rgba->getOpacity());
+    }
+    return std::nullopt;
+}
+
+bool setNodeOpacity(CCNode* node, int opacity) {
+    auto rgba = node ? typeinfo_cast<CCRGBAProtocol*>(node) : nullptr;
+    if (!rgba) return false;
+    rgba->setOpacity(static_cast<GLubyte>(std::clamp(opacity, 0, 255)));
+    return true;
+}
 
 bool isInformationCard(CCNode* node) {
     if (!node) return false;
@@ -300,6 +330,11 @@ void savePosition(CCNode* node) {
     Mod::get()->setSavedValue<double>(yKey(node), node->getPositionY());
     Mod::get()->setSavedValue<double>(scaleXKey(node), node->getScaleX());
     Mod::get()->setSavedValue<double>(scaleYKey(node), node->getScaleY());
+    Mod::get()->setSavedValue<double>(rotationKey(node), node->getRotation());
+    Mod::get()->setSavedValue<int>(zOrderKey(node), node->getZOrder());
+    if (auto opacity = nodeOpacity(node)) {
+        Mod::get()->setSavedValue<int>(opacityKey(node), *opacity);
+    }
 }
 
 void restorePositions(CCNode* node, CCNode* skip = nullptr) {
@@ -317,10 +352,20 @@ void restorePositions(CCNode* node, CCNode* skip = nullptr) {
         node->setScaleX(static_cast<float>(mod->getSavedValue<double>(scaleXKey(node))));
         node->setScaleY(static_cast<float>(mod->getSavedValue<double>(scaleYKey(node))));
     }
+    if (mod->hasSavedValue(rotationKey(node))) {
+        node->setRotation(static_cast<float>(mod->getSavedValue<double>(rotationKey(node))));
+    }
+    if (mod->hasSavedValue(opacityKey(node))) {
+        setNodeOpacity(node, mod->getSavedValue<int>(opacityKey(node)));
+    }
+    if (mod->hasSavedValue(zOrderKey(node))) {
+        node->_setZOrder(mod->getSavedValue<int>(zOrderKey(node)));
+    }
     // Cards are logical blocks. Their internal Jukebox and difficulty nodes
     // rebuild themselves and must never receive old per-child editor offsets.
     if (isInformationCard(node)) return;
     for (auto child : CCArrayExt<CCNode*>(node->getChildren())) restorePositions(child, skip);
+    node->sortAllChildren();
 }
 
 void applyHiddenVisibility(CCNode* node, std::unordered_set<std::string> const& paths) {
@@ -334,7 +379,7 @@ void applyHiddenVisibility(CCNode* node, std::unordered_set<std::string> const& 
 }
 
 void applyHiddenVisibility(CCNode* root) {
-    auto storedPaths = pause_menu_studio::hidden_blocks::memberPaths(pauseModeKey());
+    auto storedPaths = pause_menu_studio::hidden_blocks::memberPaths(layoutModeKey());
     std::unordered_set<std::string> paths(storedPaths.begin(), storedPaths.end());
     applyHiddenVisibility(root, paths);
 }
@@ -344,6 +389,9 @@ struct InitialPosition {
     CCPoint position;
     float scaleX;
     float scaleY;
+    float rotation;
+    std::optional<int> opacity;
+    int zOrder;
 };
 
 struct HiddenSnapshotInfo {
@@ -363,7 +411,8 @@ void captureResetPositions(CCNode* node, CCNode* owner, std::vector<InitialPosit
         Mod::get()->hasSavedValue(yKey(node))
     ) {
         positions.push_back({
-            WeakRef<CCNode>(node), node->getPosition(), node->getScaleX(), node->getScaleY()
+            WeakRef<CCNode>(node), node->getPosition(), node->getScaleX(), node->getScaleY(),
+            node->getRotation(), nodeOpacity(node), node->getZOrder()
         });
     }
     if (isInformationCard(node)) return;
@@ -388,6 +437,9 @@ void captureCurrentSnapshot(
         pause_menu_studio::profiles::Transform transform {
             node->getPosition(), node->getScaleX(), node->getScaleY()
         };
+        transform.rotation = node->getRotation();
+        transform.opacity = nodeOpacity(node);
+        transform.zOrder = node->getZOrder();
         auto hidden = hiddenMembership.find(path);
         transform.hidden = hidden != hiddenMembership.end();
         if (hidden != hiddenMembership.end()) {
@@ -1250,8 +1302,7 @@ public:
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(m_dragStart, after)) {
-            m_undo.push_back({m_dragStart, std::move(after)});
-            m_redo.clear();
+            pushUndoAction({m_dragStart, std::move(after)});
             m_hasEdits = true;
             for (auto node : m_selectedNodes) markTransformDirty(node);
         }
@@ -1269,6 +1320,9 @@ private:
         CCPoint position;
         float scaleX;
         float scaleY;
+        float rotation;
+        std::optional<int> opacity;
+        int zOrder;
     };
 
     struct EditAction {
@@ -1308,6 +1362,7 @@ private:
     CCMenuItemSpriteExtra* m_hideButton = nullptr;
     CCMenuItemSpriteExtra* m_trashButton = nullptr;
     CCMenuItemSpriteExtra* m_moveButton = nullptr;
+    CCMenuItemSpriteExtra* m_transformButton = nullptr;
     CCSprite* m_moveIcon = nullptr;
     Label* m_moveLabel = nullptr;
     CCSprite* m_toggleEditIcon = nullptr;
@@ -1507,7 +1562,7 @@ private:
             auto preferredID = transform.hiddenID.value_or(path);
             auto id = preferredID;
             if (auto found = entriesByID.find(id); found == entriesByID.end()) {
-                id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey());
+                id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, layoutModeKey());
             }
             auto& entry = entriesByID[id];
             entry.id = id;
@@ -1516,12 +1571,16 @@ private:
                 entry.iconFrame = transform.hiddenIcon.value_or("GJ_infoBtn_001.png");
             }
             auto node = findNodeByStoredPath(m_owner, path);
-            entry.members.push_back({
+            pause_menu_studio::hidden_blocks::Member member {
                 path,
                 transform.position,
                 transform.scaleX.value_or(node ? node->getScaleX() : 1.f),
                 transform.scaleY.value_or(node ? node->getScaleY() : 1.f),
-            });
+            };
+            member.rotation = transform.rotation;
+            member.opacity = transform.opacity;
+            member.zOrder = transform.zOrder;
+            entry.members.push_back(std::move(member));
             trackedPaths.insert(path);
             ++recovered;
         }
@@ -1529,7 +1588,7 @@ private:
     }
 
     size_t reconcileInvisibleManagedBlocks() {
-        auto storedEntries = pause_menu_studio::hidden_blocks::entries(pauseModeKey());
+        auto storedEntries = pause_menu_studio::hidden_blocks::entries(layoutModeKey());
         std::map<std::string, pause_menu_studio::hidden_blocks::Entry> entriesByID;
         std::unordered_map<std::string, std::string> pathToID;
         for (auto const& entry : storedEntries) {
@@ -1571,7 +1630,7 @@ private:
                     if (processedGroups.insert(signature).second) {
                         auto preferredID = *std::ranges::min_element(missingPaths);
                         auto id = existingID.empty()
-                            ? pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey())
+                            ? pause_menu_studio::hidden_blocks::uniqueID(preferredID, layoutModeKey())
                             : existingID;
                         auto& entry = entriesByID[id];
                         entry.id = id;
@@ -1582,9 +1641,13 @@ private:
                         }
                         for (size_t index = 0; index < missing.size(); ++index) {
                             auto member = missing[index];
-                            entry.members.push_back({
+                            pause_menu_studio::hidden_blocks::Member stored {
                                 missingPaths[index], member->getPosition(), member->getScaleX(), member->getScaleY()
-                            });
+                            };
+                            stored.rotation = member->getRotation();
+                            stored.opacity = nodeOpacity(member);
+                            stored.zOrder = member->getZOrder();
+                            entry.members.push_back(std::move(stored));
                             pathToID[missingPaths[index]] = id;
                             ++recovered;
                         }
@@ -1598,14 +1661,14 @@ private:
         visit(m_owner);
 
         for (auto const& id : changedIDs) {
-            pause_menu_studio::hidden_blocks::upsert(entriesByID[id], pauseModeKey());
+            pause_menu_studio::hidden_blocks::upsert(entriesByID[id], layoutModeKey());
         }
         return recovered;
     }
 
     size_t reconcileHiddenBlocks() {
         size_t recovered = 0;
-        auto entries = pause_menu_studio::hidden_blocks::entries(pauseModeKey());
+        auto entries = pause_menu_studio::hidden_blocks::entries(layoutModeKey());
         std::map<std::string, pause_menu_studio::hidden_blocks::Entry> entriesByID;
         for (auto const& entry : entries) entriesByID[entry.id] = entry;
 
@@ -1617,7 +1680,7 @@ private:
                 for (auto const& [id, entry] : entriesByID) {
                     auto old = before.find(id);
                     if (old == before.end() || old->second.members.size() != entry.members.size()) {
-                        pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
+                        pause_menu_studio::hidden_blocks::upsert(entry, layoutModeKey());
                     }
                 }
             }
@@ -1631,7 +1694,10 @@ private:
         result.reserve(nodes.size());
         for (auto node : nodes) {
             if (!node) continue;
-            result.push_back({node, node->getPosition(), node->getScaleX(), node->getScaleY()});
+            result.push_back({
+                node, node->getPosition(), node->getScaleX(), node->getScaleY(),
+                node->getRotation(), nodeOpacity(node), node->getZOrder()
+            });
         }
         return result;
     }
@@ -1642,6 +1708,9 @@ private:
             state.node->setPosition(state.position);
             state.node->setScaleX(state.scaleX);
             state.node->setScaleY(state.scaleY);
+            state.node->setRotation(state.rotation);
+            if (state.opacity) setNodeOpacity(state.node, *state.opacity);
+            state.node->setZOrder(state.zOrder);
         }
     }
 
@@ -1670,10 +1739,36 @@ private:
                 before[index].node.data() != after[index].node.data() ||
                 !before[index].position.equals(after[index].position) ||
                 std::abs(before[index].scaleX - after[index].scaleX) > .0001f ||
-                std::abs(before[index].scaleY - after[index].scaleY) > .0001f
+                std::abs(before[index].scaleY - after[index].scaleY) > .0001f ||
+                std::abs(before[index].rotation - after[index].rotation) > .0001f ||
+                before[index].opacity != after[index].opacity ||
+                before[index].zOrder != after[index].zOrder
             ) return true;
         }
         return false;
+    }
+
+    size_t historyLimit() const {
+        auto value = Mod::get()->getSettingValue<int64_t>("undo-history-limit");
+        return static_cast<size_t>(std::clamp<int64_t>(value, 10, 200));
+    }
+
+    void trimHistory(std::vector<EditAction>& history) const {
+        auto const limit = historyLimit();
+        if (history.size() > limit) {
+            history.erase(history.begin(), history.begin() + (history.size() - limit));
+        }
+    }
+
+    void pushUndoAction(EditAction action, bool clearRedo = true) {
+        m_undo.push_back(std::move(action));
+        trimHistory(m_undo);
+        if (clearRedo) m_redo.clear();
+    }
+
+    void pushRedoAction(EditAction action) {
+        m_redo.push_back(std::move(action));
+        trimHistory(m_redo);
     }
 
     void beginPendingDrag(CCPoint world, bool editControl) {
@@ -1709,8 +1804,7 @@ private:
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(before, after)) {
-            m_undo.push_back({std::move(before), std::move(after)});
-            m_redo.clear();
+            pushUndoAction({std::move(before), std::move(after)});
             m_hasEdits = true;
             for (auto node : m_selectedNodes) markTransformDirty(node);
         }
@@ -1735,8 +1829,7 @@ private:
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(before, after)) {
-            m_undo.push_back({std::move(before), std::move(after)});
-            m_redo.clear();
+            pushUndoAction({std::move(before), std::move(after)});
             m_hasEdits = true;
             for (auto node : m_selectedNodes) markTransformDirty(node);
         }
@@ -1762,8 +1855,7 @@ private:
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(before, after)) {
-            m_undo.push_back({std::move(before), std::move(after)});
-            m_redo.clear();
+            pushUndoAction({std::move(before), std::move(after)});
             m_hasEdits = true;
             for (auto node : m_selectedNodes) markTransformDirty(node);
         }
@@ -1865,7 +1957,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.0.4", "bigFont.fnt");
+        auto beta = Label::create("V4.1.0", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2069,12 +2161,30 @@ private:
         m_contextPanel->addChild(m_selectionLabel, 2);
         m_selectionMetaLabel = Label::create("", "chatFont.fnt");
         m_selectionMetaLabel->setAnchorPoint({1.f, .5f});
-        m_selectionMetaLabel->setPosition({contextWidth - 10.f, 68.f});
+        m_selectionMetaLabel->setPosition({contextWidth - 42.f, 68.f});
         m_selectionMetaLabel->setScale(.34f);
         m_selectionMetaLabel->setColor({225, 215, 255});
         m_selectionMetaLabel->setOpacity(255);
-        m_selectionMetaLabel->setLimitLabelWidth(150.f, .34f, .24f);
+        m_selectionMetaLabel->setLimitLabelWidth(120.f, .34f, .24f);
         m_contextPanel->addChild(m_selectionMetaLabel, 2);
+
+        auto transformIcon = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+        auto const transformLargest = std::max(
+            transformIcon->getContentWidth(), transformIcon->getContentHeight()
+        );
+        if (transformLargest > .001f) transformIcon->setScale(22.f / transformLargest);
+        m_transformButton = CCMenuItemSpriteExtra::create(
+            transformIcon, this, menu_selector(PauseEditor::onAdvancedTransform)
+        );
+        m_transformButton->setID("advanced-transform-button");
+        m_transformButton->setVisible(
+            Mod::get()->getSettingValue<bool>("advanced-transform")
+        );
+        auto transformMenu = CCMenu::create();
+        transformMenu->setID("advanced-transform-menu");
+        transformMenu->setPosition({contextWidth - 17.f, 68.f});
+        transformMenu->addChild(m_transformButton);
+        m_contextPanel->addChild(transformMenu, 6);
 
         m_selectionOutline = CCDrawNode::create();
         m_selectionOutline->setID("selection-outline");
@@ -2104,6 +2214,56 @@ private:
     void onScaleDown(CCObject*) { scaleSelection(.9f); }
     void onScaleUp(CCObject*) { scaleSelection(1.1f); }
     void onScaleReset(CCObject*) { resetSelectionScale(); }
+    void onAdvancedTransform(CCObject*) {
+        if (!m_editing || m_preview || m_selectedNodes.empty()) return;
+        if (m_dragging || m_pendingDrag) finishDrag();
+        auto primary = m_selected ? m_selected : m_selectedNodes.front();
+        std::optional<int> opacity;
+        for (auto node : m_selectedNodes) {
+            if (auto value = nodeOpacity(node)) {
+                opacity = value;
+                break;
+            }
+        }
+        auto self = WeakRef<PauseEditor>(this);
+        if (auto popup = pause_menu_studio::AdvancedTransformPopup::create(
+            primary->getRotation(), opacity, primary->getZOrder(),
+            [self](float rotation, std::optional<int> opacity, int zOrder) {
+                if (auto editor = self.lock()) {
+                    editor->applyAdvancedTransform(rotation, opacity, zOrder);
+                }
+            }
+        )) popup->show();
+    }
+    void applyAdvancedTransform(float rotation, std::optional<int> opacity, int zOrder) {
+        if (!m_editing || m_preview || m_selectedNodes.empty()) return;
+        auto before = captureStates(m_selectedNodes);
+        size_t opacityUnsupported = 0;
+        for (auto node : m_selectedNodes) {
+            rememberInitialPosition(node);
+            node->setRotation(rotation);
+            node->setZOrder(zOrder);
+            if (opacity && !setNodeOpacity(node, *opacity)) ++opacityUnsupported;
+            markTransformDirty(node);
+        }
+        auto after = captureStates(m_selectedNodes);
+        if (statesDiffer(before, after)) {
+            pushUndoAction({std::move(before), std::move(after)});
+            m_hasEdits = true;
+        }
+        updateHistoryButtons();
+        updateSelectionLabel();
+        updateSelectionOutline();
+        pulseContextPanel();
+        if (opacity && opacityUnsupported > 0) {
+            Notification::create(
+                opacityUnsupported == 1
+                    ? "Opacity is unavailable for one selected block"
+                    : "Opacity is unavailable for some selected blocks",
+                NotificationIcon::Warning
+            )->show();
+        }
+    }
     void applyScaleTarget(float target) {
         if (!m_editing || m_preview || m_selectedNodes.empty()) return;
         target = std::clamp(target, .15f, 3.5f);
@@ -2120,8 +2280,7 @@ private:
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(before, after)) {
-            m_undo.push_back({std::move(before), std::move(after)});
-            m_redo.clear();
+            pushUndoAction({std::move(before), std::move(after)});
             m_hasEdits = true;
         }
         updateHistoryButtons();
@@ -2189,6 +2348,7 @@ private:
     void pollUpdateBadge(float) { refreshUpdateBadge(); }
     void refreshUpdateBadge() {
         auto const visible =
+            Mod::get()->getSettingValue<bool>("show-update-badges") &&
             m_pendingUpdateVersion.empty() && !cachedAvailableUpdateVersion().empty();
         for (auto badge : {m_updateBadge, m_toggleUpdateBadge}) {
             if (badge) badge->setVisible(visible);
@@ -2399,7 +2559,7 @@ private:
         }
         auto self = WeakRef<PauseEditor>(this);
         if (auto popup = pause_menu_studio::HiddenBlocksPopup::create(
-            pause_menu_studio::hidden_blocks::entries(pauseModeKey()),
+            pause_menu_studio::hidden_blocks::entries(layoutModeKey()),
             [self](std::string id) -> bool {
                 if (auto editor = self.lock()) return editor->restoreHiddenBlock(id);
                 return false;
@@ -2418,7 +2578,7 @@ private:
     }
     void onLayouts(CCObject*) {
         auto self = WeakRef<PauseEditor>(this);
-        auto mode = pauseModeKey();
+        auto mode = layoutModeKey();
         auto activeKey = activeLayoutStorageKey();
         auto active = Mod::get()->getSavedValue<std::string>(activeKey, "");
         if (auto popup = pause_menu_studio::LayoutListPopup::create(
@@ -2476,9 +2636,9 @@ private:
         createQuickPopup(
             count == 1 ? "Reset block" : "Reset blocks",
             count == 1
-                ? "Reset the selected block to its <cy>default position and size</c>?"
+                ? "Reset the selected block to its <cy>default transform</c>?"
                 : fmt::format(
-                    "Reset <cy>{}</c> selected blocks to their default positions and sizes?", count
+                    "Reset <cy>{}</c> selected blocks to their default transforms?", count
                 ),
             "Cancel", "Reset",
             [self](FLAlertLayer*, bool confirmed) {
@@ -2638,7 +2798,7 @@ private:
         clearSelection();
         for (auto const& state : action.before) if (state.node) addNodeToSelection(state.node);
         restoreMoveModeForSelection();
-        m_redo.push_back(std::move(action));
+        pushRedoAction(std::move(action));
         m_hasEdits = true;
         updateHistoryButtons();
         updateSelectionLabel();
@@ -2658,7 +2818,7 @@ private:
         clearSelection();
         for (auto const& state : action.after) if (state.node) addNodeToSelection(state.node);
         restoreMoveModeForSelection();
-        m_undo.push_back(std::move(action));
+        pushUndoAction(std::move(action), false);
         m_hasEdits = true;
         updateHistoryButtons();
         updateSelectionLabel();
@@ -2669,12 +2829,12 @@ private:
     void resetLayout() {
         if (!m_editing) return;
         m_hasEdits = true;
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(layoutModeKey())) {
             for (auto const& member : entry.members) {
                 if (auto node = findNodeByStoredPath(m_owner, member.path)) node->setVisible(true);
             }
         }
-        pause_menu_studio::hidden_blocks::clear(pauseModeKey());
+        pause_menu_studio::hidden_blocks::clear(layoutModeKey());
         auto generationKey = layoutGenerationStorageKey();
         auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
         Mod::get()->setSavedValue<int64_t>(generationKey, generation + 1);
@@ -2685,6 +2845,9 @@ private:
                 node->setPosition(initial.position);
                 node->setScaleX(initial.scaleX);
                 node->setScaleY(initial.scaleY);
+                node->setRotation(initial.rotation);
+                if (initial.opacity) setNodeOpacity(node.data(), *initial.opacity);
+                node->setZOrder(initial.zOrder);
                 if (node->getID() == "editor-toggle-button") savePosition(node);
             }
         }
@@ -2713,12 +2876,14 @@ private:
             node->setPosition(found->position);
             node->setScaleX(found->scaleX);
             node->setScaleY(found->scaleY);
+            node->setRotation(found->rotation);
+            if (found->opacity) setNodeOpacity(node, *found->opacity);
+            node->setZOrder(found->zOrder);
             markTransformDirty(node);
         }
         auto after = captureStates(m_selectedNodes);
         if (statesDiffer(before, after)) {
-            m_undo.push_back({std::move(before), std::move(after)});
-            m_redo.clear();
+            pushUndoAction({std::move(before), std::move(after)});
             m_hasEdits = true;
         }
         Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
@@ -2746,20 +2911,24 @@ private:
                 if (!node) continue;
                 rememberInitialPosition(node);
                 savePosition(node);
-                entry.members.push_back({
+                pause_menu_studio::hidden_blocks::Member stored {
                     nodePath(node), node->getPosition(), node->getScaleX(), node->getScaleY()
-                });
+                };
+                stored.rotation = node->getRotation();
+                stored.opacity = nodeOpacity(node);
+                stored.zOrder = node->getZOrder();
+                entry.members.push_back(std::move(stored));
             }
             if (entry.members.empty()) continue;
             auto preferredID = std::ranges::min_element(
                 entry.members, {}, &pause_menu_studio::hidden_blocks::Member::path
             )->path;
-            entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey());
+            entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, layoutModeKey());
             entry.iconFrame = pause_menu_studio::block_icons::frameForNodes(group);
             if (entry.iconFrame.empty()) entry.iconFrame = "GJ_infoBtn_001.png";
             // Never make a node disappear unless its complete restore record
             // can immediately be read back from the mod's saved storage.
-            if (!pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey())) {
+            if (!pause_menu_studio::hidden_blocks::upsert(entry, layoutModeKey())) {
                 Notification::create("Could not move block to trash", NotificationIcon::Error)->show();
                 continue;
             }
@@ -2804,7 +2973,7 @@ private:
     }
 
     void refreshHiddenBlockIcons() {
-        for (auto entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
+        for (auto entry : pause_menu_studio::hidden_blocks::entries(layoutModeKey())) {
             std::vector<CCNode*> nodes;
             nodes.reserve(entry.members.size());
             for (auto const& member : entry.members) {
@@ -2814,12 +2983,12 @@ private:
             if (captured.empty()) captured = "GJ_infoBtn_001.png";
             if (entry.iconFrame == captured) continue;
             entry.iconFrame = std::move(captured);
-            pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
+            pause_menu_studio::hidden_blocks::upsert(entry, layoutModeKey());
         }
     }
 
     bool restoreHiddenBlock(std::string const& id) {
-        auto entry = pause_menu_studio::hidden_blocks::find(id, pauseModeKey());
+        auto entry = pause_menu_studio::hidden_blocks::find(id, layoutModeKey());
         if (!entry) {
             Notification::create("Hidden block could not be loaded", NotificationIcon::Error)->show();
             return false;
@@ -2832,6 +3001,9 @@ private:
             node->setPosition(member.position);
             node->setScaleX(member.scaleX);
             node->setScaleY(member.scaleY);
+            if (member.rotation) node->setRotation(*member.rotation);
+            if (member.opacity) setNodeOpacity(node, *member.opacity);
+            if (member.zOrder) node->setZOrder(*member.zOrder);
             node->setVisible(true);
             savePosition(node);
             ++restored;
@@ -2842,7 +3014,7 @@ private:
             )->show();
             return false;
         }
-        pause_menu_studio::hidden_blocks::erase(id, pauseModeKey());
+        pause_menu_studio::hidden_blocks::erase(id, layoutModeKey());
         Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         m_hasEdits = true;
         updateChromeState();
@@ -2858,14 +3030,15 @@ private:
         });
         if (!alreadyRemembered) {
             m_initialPositions.push_back({
-                WeakRef<CCNode>(node), node->getPosition(), node->getScaleX(), node->getScaleY()
+                WeakRef<CCNode>(node), node->getPosition(), node->getScaleX(), node->getScaleY(),
+                node->getRotation(), nodeOpacity(node), node->getZOrder()
             });
         }
     }
 
     void saveNamedLayout(std::string const& name) {
         if (pause_menu_studio::profiles::exists(name)) {
-            if (pause_menu_studio::profiles::mode(name) != pauseModeKey()) {
+            if (pause_menu_studio::profiles::mode(name) != layoutModeKey()) {
                 Notification::create(
                     "That name belongs to the other editor mode", NotificationIcon::Warning
                 )->show();
@@ -2887,11 +3060,15 @@ private:
     }
 
     void writeNamedLayout(std::string const& name) {
+        // SAVE is available while Edit Mode is still open. Persist pending
+        // transforms first so newly rotated, faded, resized, or moved blocks
+        // are included even if the user has not pressed DONE yet.
+        commitDirtyTransforms();
         reconcileInvisibleManagedBlocks();
         refreshHiddenBlockIcons();
         pause_menu_studio::profiles::Snapshot snapshot;
         std::unordered_map<std::string, HiddenSnapshotInfo> hiddenMembership;
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(layoutModeKey())) {
             for (auto const& member : entry.members) {
                 hiddenMembership[member.path] = {entry.id, entry.label, entry.iconFrame};
             }
@@ -2907,6 +3084,9 @@ private:
                 pause_menu_studio::profiles::Transform transform {
                     card->getPosition(), card->getScaleX(), card->getScaleY()
                 };
+                transform.rotation = card->getRotation();
+                transform.opacity = nodeOpacity(card);
+                transform.zOrder = card->getZOrder();
                 if (auto hidden = hiddenMembership.find(path); hidden != hiddenMembership.end()) {
                     transform.hidden = true;
                     transform.hiddenID = hidden->second.id;
@@ -2920,13 +3100,16 @@ private:
         }
         // Keep every Trash member in the profile even when a dynamic mod node
         // is temporarily absent from this particular pause-menu instance.
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(layoutModeKey())) {
             for (auto const& member : entry.members) {
                 auto found = snapshot.find(member.path);
                 if (found == snapshot.end()) {
                     pause_menu_studio::profiles::Transform transform {
                         member.position, member.scaleX, member.scaleY
                     };
+                    transform.rotation = member.rotation;
+                    transform.opacity = member.opacity;
+                    transform.zOrder = member.zOrder;
                     transform.hidden = true;
                     transform.hiddenID = entry.id;
                     transform.hiddenLabel = entry.label;
@@ -2940,13 +3123,13 @@ private:
                 }
             }
         }
-        pause_menu_studio::profiles::save(name, snapshot, pauseModeKey());
+        pause_menu_studio::profiles::save(name, snapshot, layoutModeKey());
         Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), name);
         Notification::create("Layout saved: " + name, NotificationIcon::Success)->show();
     }
 
     void applyNamedLayout(std::string const& name) {
-        if (pause_menu_studio::profiles::mode(name) != pauseModeKey()) {
+        if (pause_menu_studio::profiles::mode(name) != layoutModeKey()) {
             Notification::create(
                 "This layout belongs to the other editor mode", NotificationIcon::Warning
             )->show();
@@ -2969,12 +3152,12 @@ private:
             // hidden by this mod before replacing that state with the profile.
             // Entries whose dynamic nodes are unavailable are retained instead
             // of being silently deleted from Trash.
-            for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
+            for (auto const& entry : pause_menu_studio::hidden_blocks::entries(layoutModeKey())) {
                 for (auto const& member : entry.members) {
                     if (auto node = findNodeByStoredPath(m_owner, member.path)) node->setVisible(true);
                 }
             }
-            pause_menu_studio::hidden_blocks::clear(pauseModeKey());
+            pause_menu_studio::hidden_blocks::clear(layoutModeKey());
         }
         auto generationKey = layoutGenerationStorageKey();
         auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
@@ -2984,9 +3167,9 @@ private:
             mergeHiddenSnapshot(*snapshot, hiddenEntries);
             for (auto& [id, entry] : hiddenEntries) {
                 if (entry.id.empty()) {
-                    entry.id = pause_menu_studio::hidden_blocks::uniqueID("hidden-block", pauseModeKey());
+                    entry.id = pause_menu_studio::hidden_blocks::uniqueID("hidden-block", layoutModeKey());
                 }
-                pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
+                pause_menu_studio::hidden_blocks::upsert(entry, layoutModeKey());
             }
         }
         // Old profiles have no visibility metadata, so their Apply operation
@@ -3027,11 +3210,15 @@ private:
                 node->setPosition(found->second.position);
                 if (found->second.scaleX) node->setScaleX(*found->second.scaleX);
                 if (found->second.scaleY) node->setScaleY(*found->second.scaleY);
+                if (found->second.rotation) node->setRotation(*found->second.rotation);
+                if (found->second.opacity) setNodeOpacity(node, *found->second.opacity);
+                if (found->second.zOrder) node->_setZOrder(*found->second.zOrder);
                 savePosition(node);
             }
         }
         if (isInformationCard(node)) return;
         for (auto child : CCArrayExt<CCNode*>(node->getChildren())) applySnapshot(child, snapshot);
+        node->sortAllChildren();
     }
 
     void updateHistoryButtons() {
@@ -3355,7 +3542,10 @@ public:
         buildUpdateBanner();
         showAvailableUpdate(cachedAvailableUpdateVersion());
 
-        if (!g_startupUpdateCheckStarted) {
+        if (
+            Mod::get()->getSettingValue<bool>("check-updates-on-startup") &&
+            !g_startupUpdateCheckStarted
+        ) {
             g_startupUpdateCheckStarted = true;
             auto request = web::WebRequest();
             request.userAgent(UPDATE_USER_AGENT);

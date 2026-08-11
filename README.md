@@ -38,10 +38,11 @@
 - Automatically enter **PLATFORMER EDIT MODE** in platformer levels, including the play-time display and platformer pause buttons.
 - Automatically enter **CREATOR EDIT MODE** for levels launched from your saved level editor, including the level-editor pause button.
 - Use one compact bottom toolbar instead of separate controls scattered around the screen.
-- Use the compact contextual panel beside the selection for the MOVE lock, exact scaling, local reset, and Hide.
+- Use the compact contextual panel beside the selection for the MOVE lock, exact scaling, advanced transforms, local reset, and Hide.
 - A click only selects an element. Enable **MOVE**, then drag or use the arrow keys; press MOVE again to lock it.
 - Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
 - Resize selected buttons and logical blocks with a touch-friendly slider.
+- Open the gear control to edit rotation, opacity, and drawing layer precisely.
 - Use arrow keys for precise movement.
 - Use `Ctrl` for multi-selection with a shared orange outline.
 - Move multiple selected blocks together.
@@ -54,6 +55,7 @@
 
 - Undo with `Ctrl + Z` or the **UNDO** button.
 - Redo with `Ctrl + Y` or the **REDO** button.
+- Choose an Undo/Redo history limit from 10 to 200 actions in the mod settings.
 - Reset the selected block with `R`.
 - Reset only the selected block's scale.
 - Use a full **RESET** with a confirmation prompt.
@@ -62,9 +64,9 @@
 ### 💾 Named layouts
 
 - Save multiple pause-menu designs under custom names.
-- Keep normal, platformer, creator, and platformer-creator layouts separate, with independent active layouts, positions, and Hidden Blocks bins.
+- Optionally keep normal, platformer, creator, and platformer-creator layouts separate, with independent active layouts, positions, and Hidden Blocks bins.
 - Select and apply a saved design through **LAYOUTS**.
-- Store positions, scale, hidden state, and information-card presence together.
+- Store position, scale, rotation, opacity, drawing layer, hidden state, and information-card presence together.
 - Recreate cards stored in a layout even when their normal settings are disabled.
 - Keep active-layout cards available after reopening the pause menu.
 - Preserve temporarily unavailable dynamic blocks instead of deleting their records.
@@ -75,7 +77,7 @@
 ### 🗑️ Hidden Blocks
 
 - `Delete` sends the selected block to a persistent recycle bin. `Backspace` is not bound to removal.
-- The recycle bin stores the block's position and scale before hiding it.
+- The recycle bin stores the block's complete transform before hiding it.
 - Restore a hidden block through the **Hidden Blocks** window.
 - Browse hidden controls in a two-column icon grid with large Restore buttons.
 - Before opening the list, v2.0.7+ audits the active layout and invisible controls previously managed by Pause Menu Studio.
@@ -143,12 +145,13 @@ for a newer stable or prerelease version.
 | Faster movement | `Shift + arrow` | Optional physical-keyboard shortcut; moves by 5 game units |
 | Undo | `Ctrl + Z` / **UNDO** | Android users can use the visible button |
 | Redo | `Ctrl + Y` / **REDO** | Android users can use the visible button |
-| Reset selected block | `R` | Restores its original position and size |
+| Reset selected block | `R` | Restores its original position, scale, rotation, opacity, and layer |
 | Hide selected block | `Delete` | Sends it to Hidden Blocks; Backspace does nothing |
 | Resize | Context scale slider or numeric field | Touch-friendly range from `0.15×` to `3.5×` |
 | Reset size | Context reset button | Does not delete or hide the block |
+| Advanced transform | Context gear button | Edits rotation, opacity, and drawing layer |
 | Save a layout | **SAVE** | Uses a custom name |
-| Select a layout | **LAYOUTS** | Applies positions, scale, cards, and Hidden Blocks |
+| Select a layout | **LAYOUTS** | Applies transforms, cards, and Hidden Blocks |
 | Open recycle bin | Trash button | Lists and restores hidden blocks |
 | Full reset | **RESET** with no selection | Always asks for confirmation |
 | Preview the menu | Preview toolbar button | Hides editor UI for a clean, read-only view |
@@ -165,7 +168,7 @@ Three base styles are available:
 | **Compact** | A denser arrangement |
 | **Showcase** | Extra space for information cards |
 
-Each style uses its own saved positions. Normal, platformer, creator, and platformer-creator menus also use separate position namespaces, so a menu with additional controls cannot overwrite another pause-menu variant.
+Each style uses its own saved positions. With **Separate layouts by mode** enabled, normal, platformer, creator, and platformer-creator menus also use separate position namespaces, so a menu with additional controls cannot overwrite another pause-menu variant.
 
 ## 🪪 Information cards
 
@@ -192,6 +195,12 @@ Cards can be enabled separately in the mod settings.
 | **Demonlist position** | Shows an available demonlist rank | `On` |
 | **Edit mode on open** | Automatically enables the editor when the pause menu opens | `Off` |
 | **Snap to grid** | Rounds the released position to a 5-unit grid | `Off` |
+| **Separate layouts by mode** | Isolates positions, named layouts, active layouts, and Hidden Blocks for each pause-menu mode | `On` |
+| **Advanced transform controls** | Adds rotation, opacity, and drawing-layer editing | `On` |
+| **Undo history size** | Keeps between 10 and 200 editor actions | `50` |
+| **Check on startup** | Checks GitHub Releases while Geode loads | `On` |
+| **Loading-screen banner** | Shows the available-version banner during loading | `On` |
+| **Update badges** | Shows a red `!` above Edit and Updates | `On` |
 
 ## 🤝 Compatibility
 
@@ -217,12 +226,12 @@ Pause Menu Studio attempts to move outer button containers without overwriting t
 
 ## 🗃️ Layout and Hidden Blocks storage
 
-- Position and scale are stored using a node path inside `PauseLayer`.
+- Position, scale, rotation, supported opacity, and drawing layer are stored using a node path inside `PauseLayer`.
 - Position keys include the selected menu style, gameplay mode, and applied-layout generation. Existing normal-mode keys retain their legacy format.
-- A named layout stores position, scale, hidden state, and known information-card presence.
+- A named layout stores the complete supported transform, hidden state, and known information-card presence.
 - Named layouts are tagged as normal, platformer, creator, or platformer-creator and appear only in their matching editor mode.
-- Every menu variant has its own active layout and Hidden Blocks storage.
-- Hidden Blocks also stores the block's restore position and scale.
+- When mode separation is enabled, every menu variant has its own active layout and Hidden Blocks storage.
+- Hidden Blocks also stores the block's complete supported restore transform.
 - If a dynamic node is temporarily absent, its record remains stored instead of being deleted.
 - Opening Hidden Blocks audits the active layout and invisible nodes previously managed by the editor.
 
@@ -339,6 +348,13 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.1.0
+
+- Added optional mode-separated layouts for normal, platformer, creator, and creator-platformer pause menus.
+- Added precise rotation, opacity, and drawing-layer controls with persistence through Undo/Redo, named layouts, and Hidden Blocks.
+- Added independent startup-check, loading-banner, and update-badge settings.
+- Added a configurable Undo history limit from 10 to 200 actions.
 
 ### v4.0.4
 

@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v4.0.4</c>
+# <cy>Pause Menu Studio</c> <cg>v4.1.0</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -49,8 +49,8 @@ Multi-selection uses an <co>orange</c> outline. A single selected block uses a <
 
 - <cy>SAVE</c> stores the current layout under a custom name.
 - <cy>LAYOUTS</c> opens the saved-layout list.
-- A layout stores positions, sizes, Hidden Blocks, and the information cards that were present.
-- Normal, platformer, creator, and platformer-creator menus keep independent positions, active layouts, and Hidden Blocks bins.
+- A layout stores position, scale, rotation, supported opacity, drawing layer, Hidden Blocks, and the information cards that were present.
+- The <cy>Separate layouts by mode</c> setting controls whether normal, platformer, creator, and platformer-creator menus use independent saved state.
 - A card stored in a layout appears even when its normal mod setting is disabled.
 - Cards from the active layout remain available after reopening the pause menu.
 - A full <cr>RESET</c> removes layout-only cards and restores the normal card settings.
@@ -67,7 +67,7 @@ Removing something in Edit Mode works like a recycle bin:
 1. Select a block.
 2. Press <cy>Delete</c> or the hide button.
 3. Open the trash button.
-4. Select an entry to return the block to its saved position and size.
+4. Select an entry to return the block to its saved transform.
 
 Before the list opens, the mod audits the active layout and invisible elements previously managed by Pause Menu Studio. If a missing record can be recovered reliably, it is returned to Hidden Blocks automatically.
 
@@ -84,12 +84,13 @@ In v3.0.2, Hidden Blocks uses a visual two-column grid, stores the actual reusab
 - Four safe shade regions dim everything around the selection without changing another mod's node opacity.
 - Editor panels animate when Edit Mode opens, a selection appears, history changes, or a block enters Trash.
 - Larger hit areas and the scale slider are designed for touchscreen use on Android.
+- The context-panel gear opens exact <cy>rotation</c>, <cy>opacity</c>, and <cy>drawing-layer</c> controls.
 
 ## <cg>IN-GAME UPDATES</c>
 
 Press <cy>UPDATES</c> in Edit Mode to check the public Pause Menu Studio GitHub Releases server.
 
-The same check runs automatically while Geometry Dash loads. A visible loading-screen banner and a red <cr>!</c> above UPDATES remain available until the newer package is installed.
+The same check can run automatically while Geometry Dash loads. Startup checking, the loading-screen banner, and the red <cr>!</c> badges can be enabled independently in the mod settings.
 
 If a newer release is available, the mod asks before downloading it, shows progress, validates the package identity, version, compatibility, and published SHA-256 digest, then stages it for the next restart. The currently running code is never hot-swapped.
 

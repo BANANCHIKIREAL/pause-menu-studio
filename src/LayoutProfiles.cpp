@@ -89,6 +89,15 @@ std::optional<Snapshot> load(std::string const& name) {
         if (auto scaleY = entry["scale-y"].asDouble(); scaleY.isOk()) {
             transform.scaleY = static_cast<float>(scaleY.unwrap());
         }
+        if (auto rotation = entry["rotation"].asDouble(); rotation.isOk()) {
+            transform.rotation = static_cast<float>(rotation.unwrap());
+        }
+        if (auto opacity = entry["opacity"].asInt(); opacity.isOk()) {
+            transform.opacity = static_cast<int>(opacity.unwrap());
+        }
+        if (auto zOrder = entry["z-order"].asInt(); zOrder.isOk()) {
+            transform.zOrder = static_cast<int>(zOrder.unwrap());
+        }
         if (auto hidden = entry["hidden"].asBool(); hidden.isOk()) {
             transform.hidden = hidden.unwrap();
         }
@@ -115,6 +124,9 @@ void save(std::string const& name, Snapshot const& snapshot, std::string const& 
         point.set("y", transform.position.y);
         if (transform.scaleX) point.set("scale-x", *transform.scaleX);
         if (transform.scaleY) point.set("scale-y", *transform.scaleY);
+        if (transform.rotation) point.set("rotation", *transform.rotation);
+        if (transform.opacity) point.set("opacity", *transform.opacity);
+        if (transform.zOrder) point.set("z-order", *transform.zOrder);
         if (transform.hidden) point.set("hidden", *transform.hidden);
         if (transform.hiddenID) point.set("hidden-id", *transform.hiddenID);
         if (transform.hiddenLabel) point.set("hidden-label", *transform.hiddenLabel);

@@ -41,12 +41,22 @@ std::optional<Entry> decode(std::string id, matjson::Value const& encoded) {
         auto scaleX = item["scale-x"].asDouble();
         auto scaleY = item["scale-y"].asDouble();
         if (x.isErr() || y.isErr() || scaleX.isErr() || scaleY.isErr()) continue;
-        result.members.push_back({
+        Member member {
             *path,
             {static_cast<float>(x.unwrap()), static_cast<float>(y.unwrap())},
             static_cast<float>(scaleX.unwrap()),
             static_cast<float>(scaleY.unwrap()),
-        });
+        };
+        if (auto rotation = item["rotation"].asDouble(); rotation.isOk()) {
+            member.rotation = static_cast<float>(rotation.unwrap());
+        }
+        if (auto opacity = item["opacity"].asInt(); opacity.isOk()) {
+            member.opacity = static_cast<int>(opacity.unwrap());
+        }
+        if (auto zOrder = item["z-order"].asInt(); zOrder.isOk()) {
+            member.zOrder = static_cast<int>(zOrder.unwrap());
+        }
+        result.members.push_back(std::move(member));
     }
     if (result.members.empty()) return std::nullopt;
     return result;
@@ -103,6 +113,9 @@ bool upsert(Entry const& entry, std::string const& mode) {
         transform.set("y", member.position.y);
         transform.set("scale-x", member.scaleX);
         transform.set("scale-y", member.scaleY);
+        if (member.rotation) transform.set("rotation", *member.rotation);
+        if (member.opacity) transform.set("opacity", *member.opacity);
+        if (member.zOrder) transform.set("z-order", *member.zOrder);
         members.set(member.path, std::move(transform));
     }
     encoded.set("members", std::move(members));
