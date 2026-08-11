@@ -36,7 +36,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.2";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.3";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -1846,7 +1846,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.0.2", "bigFont.fnt");
+        auto beta = Label::create("V4.0.3", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -3560,6 +3560,24 @@ class $modify(PauseMenuStudioLayer, PauseLayer) {
         // IDs before the editor captures paths or builds logical selections.
         NodeIDs::provideFor(this);
         if (!Mod::get()->getSettingValue<bool>("enabled")) return;
+
+        // Jukebox intentionally overrides LevelTools::getAudioTitle() with the
+        // active NONG title. Geometry Dash also uses that function for the
+        // stock PauseLayer heading of official levels, so after Jukebox has
+        // initialized a second pause can incorrectly show the remix title.
+        // The real level name was captured before PlayLayer::init; restore only
+        // the already-created pause label and leave Jukebox's song metadata
+        // and selected NONG untouched.
+        if (auto play = PlayLayer::get()) {
+            if (auto level = play->m_level) {
+                auto const name = stableLevelName(play, level);
+                if (!name.empty()) {
+                    if (auto title = typeinfo_cast<CCLabelBMFont*>(getChildByIDRecursive("level-name"))) {
+                        title->setString(name.c_str());
+                    }
+                }
+            }
+        }
 
         auto const savedSchema = Mod::get()->getSavedValue<int>("layout-schema", 0);
         if (savedSchema < LAYOUT_SCHEMA) {

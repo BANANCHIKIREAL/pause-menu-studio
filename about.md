@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v4.0.2</c>
+# <cy>Pause Menu Studio</c> <cg>v4.0.3</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 

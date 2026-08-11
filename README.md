@@ -340,6 +340,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.0.3
+
+- Fixed the stock pause-menu heading of official levels changing to the active Jukebox NONG/remix title after resuming and pausing again.
+- The fix restores the real level name only on the PauseLayer title, so Jukebox song selection and metadata remain untouched.
+
 ### v4.0.2
 
 - Checks GitHub Releases during the Geometry Dash loading screen and shows a visible update banner when a newer version exists.

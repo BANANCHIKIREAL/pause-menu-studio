@@ -1,3 +1,8 @@
+# v4.0.3
+
+- Fixed the stock pause-menu heading of official levels changing to the active Jukebox NONG/remix title after resuming and pausing again.
+- The heading now uses the real level name captured when the PlayLayer starts, without changing Jukebox's selected song or song-card metadata.
+
 # v4.0.2
 
 - Added an automatic GitHub Releases check while Geometry Dash is loading.
