@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v3.1.0</c>
+# <cy>Pause Menu Studio</c> <cg>v4.0.1</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -50,6 +50,7 @@ Multi-selection uses an <co>orange</c> outline. A single selected block uses a <
 - <cy>SAVE</c> stores the current layout under a custom name.
 - <cy>LAYOUTS</c> opens the saved-layout list.
 - A layout stores positions, sizes, Hidden Blocks, and the information cards that were present.
+- Normal, platformer, creator, and platformer-creator menus keep independent positions, active layouts, and Hidden Blocks bins.
 - A card stored in a layout appears even when its normal mod setting is disabled.
 - Cards from the active layout remain available after reopening the pause menu.
 - A full <cr>RESET</c> removes layout-only cards and restores the normal card settings.
@@ -72,15 +73,23 @@ Before the list opens, the mod audits the active layout and invisible elements p
 
 In v3.0.2, Hidden Blocks uses a visual two-column grid, stores the actual reusable sprite frame captured from each object, and restores the exact Trash state saved by that layout. If an object has no cached sprite frame, a neutral info icon is shown instead of a guessed icon.
 
-## <cb>V3 EDITOR INTERFACE</c>
+## <cb>V4 EDITOR INTERFACE</c>
 
-- One bottom toolbar contains Undo, Redo, Save, Layouts, Hidden Blocks, Reset, and Preview.
-- A contextual panel follows the selected logical block.
+- One bottom toolbar contains Undo, Redo, Save, Layouts, Updates, Hidden Blocks, Reset, and Preview.
+- A compact contextual panel follows the selected logical block.
+- Platformer levels automatically use <co>PLATFORMER EDIT MODE</c> for the play-time display and additional pause controls.
+- Levels opened from your saved level editor automatically use <co>CREATOR EDIT MODE</c>. The level-editor button can be moved, resized, reset, hidden, restored from Trash, and saved in creator layouts.
 - Cyan marks one selected block; orange marks a multi-selection.
 - Corner handles and a logical-block label make the active target clear.
 - Four safe shade regions dim everything around the selection without changing another mod's node opacity.
 - Editor panels animate when Edit Mode opens, a selection appears, history changes, or a block enters Trash.
 - Larger hit areas and the scale slider are designed for touchscreen use on Android.
+
+## <cg>IN-GAME UPDATES</c>
+
+Press <cy>UPDATES</c> in Edit Mode to check the public Pause Menu Studio GitHub Releases server.
+
+If a newer release is available, the mod asks before downloading it, shows progress, validates the package identity, version, compatibility, and published SHA-256 digest, then stages it for the next restart. The currently running code is never hot-swapped.
 
 ## <cl>INFORMATION CARDS</c>
 
@@ -126,7 +135,7 @@ Integrations depend on internal node IDs from other mods. I cannot confirm every
 - A texture pack that moves an entire button container can compete with the editor for its position.
 - A layout saved with a currently disabled mod may contain temporarily unavailable paths.
 - Extremely large controls and heavy overlap are intentionally not blocked.
-- The current build targets <cy>Geometry Dash 2.2081</c> and <cy>Geode 5.8.2</c> on <cy>Windows, Android32, and Android64</c>.
+- The current build targets <cy>Geometry Dash 2.2081</c> and <cy>Geode 5.9.0</c> on <cy>Windows, Android32, and Android64</c>.
 - Android touch editing uses the same select, MOVE-unlock, and drag controls as the desktop editor. Keyboard shortcuts require a physical keyboard; the visible editor buttons remain available without one.
 - Android packages compile successfully, but not every phone, Android version, or touch configuration has been tested.
 

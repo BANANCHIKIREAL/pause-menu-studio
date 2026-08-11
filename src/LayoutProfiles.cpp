@@ -10,6 +10,14 @@ namespace {
 constexpr char const* STORAGE_KEY = "named-layouts-v1";
 constexpr char const* METADATA_KEY = "named-layout-metadata-v1";
 
+std::string normalizeMode(std::string mode) {
+    if (
+        mode == "normal" || mode == "platformer" ||
+        mode == "creator" || mode == "platformer-creator"
+    ) return mode;
+    return "normal";
+}
+
 matjson::Value readStorage() {
     auto value = Mod::get()->getSavedValue<matjson::Value>(STORAGE_KEY, matjson::Value::object());
     return value.type() == matjson::Type::Object ? value : matjson::Value::object();
@@ -42,6 +50,14 @@ std::vector<std::string> names() {
     }
     std::ranges::sort(result, [](auto const& a, auto const& b) {
         return geode::utils::string::toLower(a) < geode::utils::string::toLower(b);
+    });
+    return result;
+}
+
+std::vector<std::string> names(std::string const& wantedMode) {
+    auto result = names();
+    std::erase_if(result, [&wantedMode](std::string const& name) {
+        return mode(name) != wantedMode;
     });
     return result;
 }
@@ -90,7 +106,7 @@ std::optional<Snapshot> load(std::string const& name) {
     return snapshot;
 }
 
-void save(std::string const& name, Snapshot const& snapshot) {
+void save(std::string const& name, Snapshot const& snapshot, std::string const& layoutMode) {
     auto storage = readStorage();
     auto encoded = matjson::Value::object();
     for (auto const& [path, transform] : snapshot) {
@@ -111,6 +127,7 @@ void save(std::string const& name, Snapshot const& snapshot) {
     auto metadata = readMetadata();
     auto item = matjson::Value::object();
     item.set("saved-at", nowUnix());
+    item.set("mode", normalizeMode(layoutMode));
     metadata.set(name, std::move(item));
     writeMetadata(metadata);
 }
@@ -119,6 +136,12 @@ int64_t savedAt(std::string const& name) {
     auto metadata = readMetadata();
     auto value = metadata[name]["saved-at"].asInt();
     return value.isOk() ? value.unwrap() : 0;
+}
+
+std::string mode(std::string const& name) {
+    auto metadata = readMetadata();
+    auto value = metadata[name]["mode"].asString();
+    return value.isOk() ? normalizeMode(value.unwrap()) : "normal";
 }
 
 bool rename(std::string const& oldName, std::string const& newName) {
@@ -144,7 +167,7 @@ bool duplicate(std::string const& sourceName, std::string const& newName) {
     if (sourceName.empty() || newName.empty() || exists(newName)) return false;
     auto snapshot = load(sourceName);
     if (!snapshot) return false;
-    save(newName, *snapshot);
+    save(newName, *snapshot, mode(sourceName));
     return true;
 }
 

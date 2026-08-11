@@ -1,12 +1,12 @@
 {
-    "geode": "5.8.2",
+    "geode": "5.9.0",
     "gd": {
         "win": "2.2081",
         "android": "2.2081"
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v3.1.0",
+    "version": "v4.0.1",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -21,6 +21,9 @@
     ],
     "resources": {
         "sprites": [
+            "resources/download-icon.png",
+            "resources/layouts-icon.png",
+            "resources/move-icon.png",
             "resources/reset-icon.png",
             "resources/view-icon.png"
         ]

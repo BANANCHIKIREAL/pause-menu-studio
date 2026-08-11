@@ -78,7 +78,7 @@ bool HiddenBlocksPopup::init(
     m_pageMenu->addChild(next);
     m_mainLayer->addChild(m_pageMenu, 3);
 
-    m_pageLabel = CCLabelBMFont::create("", "chatFont.fnt");
+    m_pageLabel = Label::create("", "chatFont.fnt");
     m_pageLabel->setPosition({m_size.width / 2.f, 16.f});
     m_pageLabel->setScale(.42f);
     m_mainLayer->addChild(m_pageLabel, 3);
@@ -111,7 +111,7 @@ void HiddenBlocksPopup::rebuildList() {
     }
 
     if (m_entries.empty()) {
-        auto empty = CCLabelBMFont::create("Trash is empty", "bigFont.fnt");
+        auto empty = Label::create("Trash is empty", "bigFont.fnt");
         empty->setScale(.45f);
         empty->setOpacity(150);
         empty->setPosition({195.f, height - 110.f});
@@ -148,11 +148,11 @@ void HiddenBlocksPopup::rebuildList() {
             row->addChild(icon);
         }
 
-        auto label = CCLabelBMFont::create(entry.label.c_str(), "bigFont.fnt");
+        auto label = Label::create(entry.label, "bigFont.fnt");
         label->setAnchorPoint({0.f, .5f});
         label->setPosition({x + 69.f, y + 17.f});
         label->setScale(.36f);
-        label->limitLabelWidth(105.f, .36f, .2f);
+        label->setLimitLabelWidth(105.f, .36f, .2f);
         row->addChild(label);
 
         auto sprite = ButtonSprite::create(

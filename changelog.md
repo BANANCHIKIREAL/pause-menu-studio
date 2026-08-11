@@ -1,3 +1,49 @@
+# v4.0.1
+
+- Replaced the Updates, Layouts, and Move artwork with the supplied clean white icons.
+- Converted every new icon to a true transparent game sprite so no checkerboard or black square is rendered in Geometry Dash.
+- Fixed the selected-block inspector divider overlapping the Reset control.
+
+# v4.0.0
+
+- Added an Updates button directly to the pause-menu editor.
+- Added an in-game updater backed by the official Pause Menu Studio GitHub Releases feed, including stable and prerelease version comparison.
+- Added download progress, confirmation before downloading, SHA-256 verification when GitHub provides a digest, package identity and version validation, and Geometry Dash/Geode compatibility validation.
+- Updates are staged by safely replacing the installed `.geode` package and become active only after the player confirms or manually performs a game restart.
+- Added recovery of the original package if replacement fails, preventing a partial download from removing the working installation.
+- Expanded and evenly spaced the editor dock for eight controls, with separators centered between groups instead of touching the Reset card.
+
+# v3.3.0-beta.2
+
+- Replaced texture-pack-sensitive stretched editor tiles with stable Geometry Dash panel textures.
+- Removed the unwanted square background behind the pause-menu Edit button.
+- Increased the size, weight, contrast, and readability of toolbar captions, the studio header, version text, and the Scale label.
+- Made the mode badge substantially smaller and removed the unnecessary Ready label.
+- Added visible spacing between the Reset and Hide controls in the selected-block inspector.
+- Restored editor-panel transparency without fading the icons or labels, and removed the extra dark layer that made the dock look solid black.
+
+# v3.3.0-beta.1
+
+- Rebuilt Edit Mode as a layered GD-style studio interface with a deeper rounded dock, individual action tiles, grouped controls, mode accents, and a visible Beta 1 identity.
+- Reworked the selection inspector with a compact header, live scale and movement status, clearer action grouping, animated appearance, and mode-colored highlights.
+- Added a compact mode badge with creator/platformer colors, an unsaved-state color, and smooth entrance and exit transitions.
+- Added staggered dock-button entrance animation, refined panel pulses, improved disabled Undo/Redo states, and a redesigned Back to Edit control for Preview Mode.
+
+# v3.2.1
+
+- Added Creator Edit Mode for levels launched from the Geometry Dash level editor.
+- Added full editor support for the level-editor pause button: move, resize, reset, Hide/Trash, restore, and named layouts.
+- Separated creator and platformer-creator positions, active layouts, layout generations, and Hidden Blocks from normal and platformer menus.
+
+# v3.2.0
+
+- Updated the required Geode version from 5.8.2 to 5.9.0 and rebuilt all supported binaries against the new SDK.
+- Migrated Pause Menu Studio's editor, Saved Layouts, and Hidden Blocks labels to the new `geode::Label` API for automatic size limits and more efficient text updates.
+- Shrunk the selection contextual panel (width 420 -> 400, height 78 -> 68) and tightened its internal spacing so it covers less of the screen.
+- Added automatic Platformer Edit Mode, including readable targets for the platformer play-time display and additional pause buttons.
+- Added independent platformer position keys and layout generations without changing existing normal-mode position keys.
+- Separated normal and platformer named-layout lists, active layouts, and Hidden Blocks storage so mode-specific controls cannot leak between menus.
+
 # v3.1.0
 
 - Removed saved-layout thumbnail previews completely: no guessed icons, dots, or empty preview box.

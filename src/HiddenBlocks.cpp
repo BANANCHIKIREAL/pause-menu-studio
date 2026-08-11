@@ -6,15 +6,21 @@ using namespace geode::prelude;
 
 namespace pause_menu_studio::hidden_blocks {
 namespace {
-constexpr char const* STORAGE_KEY = "hidden-blocks-v1";
+std::string storageKey(std::string const& mode) {
+    // Keep normal mode on the original key so existing Trash data migrates
+    // without any rewrite. Every menu variant with additional controls gets
+    // an isolated recycle bin.
+    if (mode == "normal") return "hidden-blocks-v1";
+    return "hidden-blocks-v1-" + mode;
+}
 
-matjson::Value readStorage() {
-    auto value = Mod::get()->getSavedValue<matjson::Value>(STORAGE_KEY, matjson::Value::object());
+matjson::Value readStorage(std::string const& mode) {
+    auto value = Mod::get()->getSavedValue<matjson::Value>(storageKey(mode), matjson::Value::object());
     return value.type() == matjson::Type::Object ? value : matjson::Value::object();
 }
 
-void writeStorage(matjson::Value const& value) {
-    Mod::get()->setSavedValue(STORAGE_KEY, value);
+void writeStorage(matjson::Value const& value, std::string const& mode) {
+    Mod::get()->setSavedValue(storageKey(mode), value);
 }
 
 std::optional<Entry> decode(std::string id, matjson::Value const& encoded) {
@@ -47,9 +53,9 @@ std::optional<Entry> decode(std::string id, matjson::Value const& encoded) {
 }
 }
 
-std::vector<Entry> entries() {
+std::vector<Entry> entries(std::string const& mode) {
     std::vector<Entry> result;
-    for (auto const& item : readStorage()) {
+    for (auto const& item : readStorage(mode)) {
         auto id = item.getKey();
         if (!id) continue;
         if (auto entry = decode(*id, item)) result.push_back(std::move(*entry));
@@ -60,23 +66,23 @@ std::vector<Entry> entries() {
     return result;
 }
 
-std::optional<Entry> find(std::string const& id) {
-    auto storage = readStorage();
+std::optional<Entry> find(std::string const& id, std::string const& mode) {
+    auto storage = readStorage(mode);
     if (!storage.contains(id)) return std::nullopt;
     return decode(id, storage[id]);
 }
 
-std::vector<std::string> memberPaths() {
+std::vector<std::string> memberPaths(std::string const& mode) {
     std::vector<std::string> result;
-    for (auto const& entry : entries()) {
+    for (auto const& entry : entries(mode)) {
         for (auto const& member : entry.members) result.push_back(member.path);
     }
     return result;
 }
 
-std::string uniqueID(std::string const& preferred) {
+std::string uniqueID(std::string const& preferred, std::string const& mode) {
     auto base = preferred.empty() ? std::string("hidden-block") : preferred;
-    auto storage = readStorage();
+    auto storage = readStorage(mode);
     if (!storage.contains(base)) return base;
     for (size_t suffix = 2;; ++suffix) {
         auto candidate = base + "#" + std::to_string(suffix);
@@ -84,9 +90,9 @@ std::string uniqueID(std::string const& preferred) {
     }
 }
 
-bool upsert(Entry const& entry) {
+bool upsert(Entry const& entry, std::string const& mode) {
     if (entry.id.empty() || entry.members.empty()) return false;
-    auto storage = readStorage();
+    auto storage = readStorage(mode);
     auto encoded = matjson::Value::object();
     encoded.set("label", entry.label);
     if (!entry.iconFrame.empty()) encoded.set("icon-frame", entry.iconFrame);
@@ -101,17 +107,17 @@ bool upsert(Entry const& entry) {
     }
     encoded.set("members", std::move(members));
     storage.set(entry.id, std::move(encoded));
-    writeStorage(storage);
-    return find(entry.id).has_value();
+    writeStorage(storage, mode);
+    return find(entry.id, mode).has_value();
 }
 
-void erase(std::string const& id) {
-    auto storage = readStorage();
+void erase(std::string const& id, std::string const& mode) {
+    auto storage = readStorage(mode);
     storage.erase(id);
-    writeStorage(storage);
+    writeStorage(storage, mode);
 }
 
-void clear() {
-    writeStorage(matjson::Value::object());
+void clear(std::string const& mode) {
+    writeStorage(matjson::Value::object(), mode);
 }
 }

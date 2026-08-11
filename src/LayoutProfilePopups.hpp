@@ -31,6 +31,7 @@ public:
     static LayoutListPopup* create(
         std::vector<std::string> names,
         std::string activeName,
+        std::string title,
         geode::Function<void(std::string)> applyCallback,
         geode::Function<bool(std::string, std::string)> renameCallback,
         geode::Function<bool(std::string, std::string)> duplicateCallback,
@@ -49,6 +50,7 @@ private:
     bool init(
         std::vector<std::string> names,
         std::string activeName,
+        std::string title,
         geode::Function<void(std::string)> applyCallback,
         geode::Function<bool(std::string, std::string)> renameCallback,
         geode::Function<bool(std::string, std::string)> duplicateCallback,

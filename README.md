@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/BANANCHIKIREAL/pause-menu-studio?display_name=tag&style=for-the-badge&color=8b5cf6"></a>
   <img alt="Geometry Dash 2.2081" src="https://img.shields.io/badge/Geometry%20Dash-2.2081-22c55e?style=for-the-badge">
-  <img alt="Geode 5.8.2" src="https://img.shields.io/badge/Geode-5.8.2-38bdf8?style=for-the-badge">
+  <img alt="Geode 5.9.0" src="https://img.shields.io/badge/Geode-5.9.0-38bdf8?style=for-the-badge">
   <img alt="Windows and Android" src="https://img.shields.io/badge/platform-Windows%20%7C%20Android-2563eb?style=for-the-badge&logo=android">
   <img alt="Experimental" src="https://img.shields.io/badge/status-experimental-f97316?style=for-the-badge">
 </p>
@@ -35,8 +35,10 @@
 ### 🎨 Visual editor
 
 - Move almost any reachable pause-menu element with a mouse or touchscreen.
+- Automatically enter **PLATFORMER EDIT MODE** in platformer levels, including the play-time display and platformer pause buttons.
+- Automatically enter **CREATOR EDIT MODE** for levels launched from your saved level editor, including the level-editor pause button.
 - Use one compact bottom toolbar instead of separate controls scattered around the screen.
-- Use the contextual panel beside the selection for the MOVE lock, exact scaling, local reset, and Hide.
+- Use the compact contextual panel beside the selection for the MOVE lock, exact scaling, local reset, and Hide.
 - A click only selects an element. Enable **MOVE**, then drag or use the arrow keys; press MOVE again to lock it.
 - Repeated clicks at the same cursor position cycle through overlapping blocks from front to back.
 - Resize selected buttons and logical blocks with a touch-friendly slider.
@@ -60,6 +62,7 @@
 ### 💾 Named layouts
 
 - Save multiple pause-menu designs under custom names.
+- Keep normal, platformer, creator, and platformer-creator layouts separate, with independent active layouts, positions, and Hidden Blocks bins.
 - Select and apply a saved design through **LAYOUTS**.
 - Store positions, scale, hidden state, and information-card presence together.
 - Recreate cards stored in a layout even when their normal settings are disabled.
@@ -91,6 +94,20 @@ Some visual controls are made from several technical nodes. Pause Menu Studio at
 
 This lets you move a complete widget instead of accidentally selecting a `%` label, an internal sprite, or one piece of a frame.
 
+### ⬆️ In-game updates
+
+Version 4 adds an **UPDATES** button to Edit Mode. It checks the public
+[Pause Menu Studio GitHub Releases feed](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases)
+for a newer stable or prerelease version.
+
+- The game asks for confirmation before downloading anything.
+- Download progress is shown inside Geometry Dash.
+- When GitHub publishes a SHA-256 digest, the downloaded bytes must match it.
+- The package must contain the Pause Menu Studio mod ID, the advertised version, and compatible Geometry Dash/Geode targets.
+- The currently working package is kept as a temporary backup while the new package is staged.
+- The running code is never hot-swapped. The new version loads only after restarting Geometry Dash.
+- If the server is unavailable or a release has no `.geode` asset, the installed version is left untouched.
+
 ## 🚀 Quick start
 
 1. Install [Geode](https://geode-sdk.org/) for Geometry Dash.
@@ -113,6 +130,8 @@ This lets you move a complete widget instead of accidentally selecting a `%` lab
 | Action | Key / button | Notes |
 |---|---|---|
 | Enter Edit Mode | **EDIT** | The button itself can also be moved |
+| Platformer Edit Mode | Automatic in a platformer level | Uses separate positions, layouts, and Hidden Blocks |
+| Creator Edit Mode | Automatic in a level launched from your level editor | The level-editor pause button is a complete editable block |
 | Leave Edit Mode | **DONE** | Applies the current editing session |
 | Select a block | Click / tap | A single press does not move it |
 | Unlock / lock movement | Context **MOVE** button | Each block remembers its own on/off state while the editor is open |
@@ -145,7 +164,7 @@ Three base styles are available:
 | **Compact** | A denser arrangement |
 | **Showcase** | Extra space for information cards |
 
-Each style uses its own saved positions so coordinates from one style do not overwrite another.
+Each style uses its own saved positions. Normal, platformer, creator, and platformer-creator menus also use separate position namespaces, so a menu with additional controls cannot overwrite another pause-menu variant.
 
 ## 🪪 Information cards
 
@@ -198,8 +217,10 @@ Pause Menu Studio attempts to move outer button containers without overwriting t
 ## 🗃️ Layout and Hidden Blocks storage
 
 - Position and scale are stored using a node path inside `PauseLayer`.
-- Normal position keys include the selected menu style and applied-layout generation.
+- Position keys include the selected menu style, gameplay mode, and applied-layout generation. Existing normal-mode keys retain their legacy format.
 - A named layout stores position, scale, hidden state, and known information-card presence.
+- Named layouts are tagged as normal, platformer, creator, or platformer-creator and appear only in their matching editor mode.
+- Every menu variant has its own active layout and Hidden Blocks storage.
 - Hidden Blocks also stores the block's restore position and scale.
 - If a dynamic node is temporarily absent, its record remains stored instead of being deleted.
 - Opening Hidden Blocks audits the active layout and invisible nodes previously managed by the editor.
@@ -214,7 +235,7 @@ Pause Menu Studio is intentionally marked **experimental**.
 2. **Dynamic controls can be recreated.** Jukebox, Better Volume, and some texture packs rebuild UI after opening the pause menu or changing a song. Known controls are stabilized repeatedly, but a rare brief jump or a new incompatibility may still occur.
 3. **Old layouts may contain unavailable paths.** This is expected when a layout was saved with a mod that is currently disabled. The record is kept and may become available when that mod returns.
 4. **Technical invisible nodes are not recovered without evidence.** Automatic Hidden Blocks recovery only uses controls previously managed by Pause Menu Studio or marked hidden in the active layout. This avoids adding unrelated service nodes from other mods.
-5. **Only the declared platforms are supported.** The current manifest targets Geometry Dash `2.2081` and Geode `5.8.2` on Windows, Android32, and Android64. iOS and macOS are not declared or built.
+5. **Only the declared platforms are supported.** The current manifest targets Geometry Dash `2.2081` and Geode `5.9.0` on Windows, Android32, and Android64. iOS and macOS are not declared or built.
 6. **Android runtime coverage is limited.** Android32 and Android64 packages compile successfully, but the current release has not been tested on every phone, Android version, launcher version, or touch configuration.
 7. **Extreme scale and overlap remain the user's choice.** The editor helps select overlapping blocks but intentionally does not prohibit unusual designs.
 
@@ -317,6 +338,38 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.0.1
+
+- Replaces the Updates, Layouts, and Move controls with clean white transparent icons supplied for the new interface.
+- Moves the selected-block divider out of the Reset control.
+
+### v4.0.0
+
+- Added the secure GitHub Releases updater with in-game checks, download progress, validation, rollback protection, and optional immediate restart.
+- Added a dedicated Updates control and rebuilt toolbar spacing so all eight actions and group separators have clear gaps.
+
+### v3.3.0-beta.2
+
+- Polished the beta editor UI after in-game testing: stable panel textures, readable labels, a compact mode badge, separated inspector actions, and a clean Edit button without a square background.
+
+### v3.3.0-beta.1
+
+- Introduces the new layered GD-style editor dock and animated contextual inspector.
+- Adds live Ready/Unsaved, scale, movement-lock, and gameplay-mode feedback.
+- Adds individual action tiles, grouped controls, mode-colored accents, and polished editor entrance/exit animation.
+
+### v3.2.1
+
+- Added Creator Edit Mode for levels launched from the Geometry Dash level editor.
+- Added complete movement, scaling, Reset, Hide/Trash, restore, and named-layout support for the level-editor pause button.
+- Isolated creator and platformer-creator positions and saved state from the other pause-menu variants.
+
+### v3.2.0
+
+- Shrunk the selection contextual panel (width 420 -> 400, height 78 -> 68) and tightened its internal spacing so it covers less of the screen.
+- Added automatic Platformer Edit Mode for platformer-only pause controls and the play-time display.
+- Isolated platformer positions, named layouts, active layout state, and Hidden Blocks from normal-mode data.
 
 ### v3.1.0
 

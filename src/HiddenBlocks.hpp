@@ -21,11 +21,11 @@ struct Entry {
     std::string iconFrame;
 };
 
-std::vector<Entry> entries();
-std::optional<Entry> find(std::string const& id);
-std::vector<std::string> memberPaths();
-std::string uniqueID(std::string const& preferred);
-bool upsert(Entry const& entry);
-void erase(std::string const& id);
-void clear();
+std::vector<Entry> entries(std::string const& mode = "normal");
+std::optional<Entry> find(std::string const& id, std::string const& mode = "normal");
+std::vector<std::string> memberPaths(std::string const& mode = "normal");
+std::string uniqueID(std::string const& preferred, std::string const& mode = "normal");
+bool upsert(Entry const& entry, std::string const& mode = "normal");
+void erase(std::string const& id, std::string const& mode = "normal");
+void clear(std::string const& mode = "normal");
 }

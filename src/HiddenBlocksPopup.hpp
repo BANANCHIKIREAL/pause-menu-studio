@@ -3,6 +3,7 @@
 #include "HiddenBlocks.hpp"
 
 #include <Geode/Geode.hpp>
+#include <Geode/ui/Label.hpp>
 
 #include <string>
 #include <vector>
@@ -20,7 +21,7 @@ private:
     geode::Function<bool(std::string)> m_restoreCallback;
     geode::ScrollLayer* m_scroll = nullptr;
     cocos2d::CCMenu* m_pageMenu = nullptr;
-    cocos2d::CCLabelBMFont* m_pageLabel = nullptr;
+    geode::Label* m_pageLabel = nullptr;
     size_t m_page = 0;
 
     bool init(

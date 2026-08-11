@@ -2,6 +2,7 @@
 #include <Geode/modify/CustomSongWidget.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/ui/Label.hpp>
 #include <Geode/utils/Keyboard.hpp>
 #include <Geode/utils/web.hpp>
 #include <hiimjustin000.demons_in_between/include/DemonsInBetweenAPI.hpp>
@@ -11,10 +12,12 @@
 #include "HiddenBlocks.hpp"
 #include "HiddenBlocksPopup.hpp"
 #include "BlockIcons.hpp"
+#include "Sha256.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <limits>
@@ -41,6 +44,83 @@ std::string stableLevelName(PlayLayer* play, GJGameLevel* level);
 
 std::string presetName() {
     return Mod::get()->getSettingValue<std::string>("preset");
+}
+
+bool isPlatformerPause() {
+    auto play = PlayLayer::get();
+    return play && play->m_level && play->m_level->isPlatformer();
+}
+
+bool isCreatorPause() {
+    auto play = PlayLayer::get();
+    return play && play->m_level && play->m_level->m_levelType == GJLevelType::Editor;
+}
+
+std::string pauseModeKey() {
+    auto const platformer = isPlatformerPause();
+    auto const creator = isCreatorPause();
+    if (platformer && creator) return "platformer-creator";
+    if (platformer) return "platformer";
+    if (creator) return "creator";
+    return "normal";
+}
+
+std::string activeLayoutStorageKey() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer") return "active-named-layout-platformer";
+    if (mode == "creator") return "active-named-layout-creator";
+    if (mode == "platformer-creator") return "active-named-layout-platformer-creator";
+    return "active-named-layout";
+}
+
+std::string layoutGenerationStorageKey() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer") return "layout-generation-platformer";
+    if (mode == "creator") return "layout-generation-creator";
+    if (mode == "platformer-creator") return "layout-generation-platformer-creator";
+    return "layout-generation";
+}
+
+std::string positionNamespace() {
+    auto result = presetName();
+    // Normal-mode keys intentionally keep their legacy shape. Only platformer
+    // and creator variants get suffixes, so upgrading does not reset an
+    // existing normal layout or mix menus with different button sets.
+    auto const mode = pauseModeKey();
+    if (mode != "normal") result += "/" + mode;
+    return result;
+}
+
+std::string editorModeLabel() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer-creator") return "CREATOR PLATFORMER";
+    if (mode == "platformer") return "PLATFORMER MODE";
+    if (mode == "creator") return "CREATOR MODE";
+    return "EDIT MODE";
+}
+
+std::string saveLayoutTitle() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer-creator") return "Save platformer creator layout";
+    if (mode == "platformer") return "Save platformer layout";
+    if (mode == "creator") return "Save creator layout";
+    return "Save layout";
+}
+
+std::string layoutListTitle() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer-creator") return "Platformer creator layouts";
+    if (mode == "platformer") return "Platformer layouts";
+    if (mode == "creator") return "Creator layouts";
+    return "Saved layouts";
+}
+
+ccColor3B editorAccentColor() {
+    auto const mode = pauseModeKey();
+    if (mode == "platformer-creator") return {255, 105, 185};
+    if (mode == "creator") return {255, 145, 70};
+    if (mode == "platformer") return {255, 205, 75};
+    return {70, 235, 255};
 }
 
 std::string safeKey(std::string value) {
@@ -76,10 +156,10 @@ std::string nodePath(CCNode* node) {
 
 std::string nodeKey(CCNode* node) {
     if (node && node->getID() == "editor-toggle-button") {
-        return presetName() + "/persistent-editor-toggle-button";
+        return positionNamespace() + "/persistent-editor-toggle-button";
     }
-    auto generation = Mod::get()->getSavedValue<int64_t>("layout-generation", 0);
-    std::string result = presetName() + "/generation-" + std::to_string(generation);
+    auto generation = Mod::get()->getSavedValue<int64_t>(layoutGenerationStorageKey(), 0);
+    std::string result = positionNamespace() + "/generation-" + std::to_string(generation);
     return result + nodePath(node);
 }
 
@@ -115,7 +195,7 @@ std::unordered_set<std::string> informationCardsInSnapshot(
 }
 
 std::unordered_set<std::string> informationCardsInActiveLayout() {
-    auto active = Mod::get()->getSavedValue<std::string>("active-named-layout", "");
+    auto active = Mod::get()->getSavedValue<std::string>(activeLayoutStorageKey(), "");
     if (active.empty()) return {};
     if (auto snapshot = pause_menu_studio::profiles::load(active)) {
         return informationCardsInSnapshot(*snapshot);
@@ -163,7 +243,7 @@ void applyHiddenVisibility(CCNode* node, std::unordered_set<std::string> const& 
 }
 
 void applyHiddenVisibility(CCNode* root) {
-    auto storedPaths = pause_menu_studio::hidden_blocks::memberPaths();
+    auto storedPaths = pause_menu_studio::hidden_blocks::memberPaths(pauseModeKey());
     std::unordered_set<std::string> paths(storedPaths.begin(), storedPaths.end());
     applyHiddenVisibility(root, paths);
 }
@@ -1120,27 +1200,34 @@ private:
     bool m_hasEdits = false;
     bool m_hasLastSelectionPoint = false;
     CCPoint m_lastSelectionPoint = CCPointZero;
-    CCLabelBMFont* m_modeLabel = nullptr;
-    CCLabelBMFont* m_selectionLabel = nullptr;
+    Label* m_modeLabel = nullptr;
+    Label* m_statusLabel = nullptr;
+    Label* m_selectionLabel = nullptr;
+    Label* m_selectionMetaLabel = nullptr;
     CCMenuItemSpriteExtra* m_toggle = nullptr;
     CCMenu* m_toggleMenu = nullptr;
     CCMenu* m_historyMenu = nullptr;
     CCMenuItemSpriteExtra* m_undoButton = nullptr;
     CCMenuItemSpriteExtra* m_redoButton = nullptr;
+    CCMenuItemSpriteExtra* m_updateButton = nullptr;
     CCMenuItemSpriteExtra* m_resetButton = nullptr;
     CCMenuItemSpriteExtra* m_hideButton = nullptr;
     CCMenuItemSpriteExtra* m_trashButton = nullptr;
     CCMenuItemSpriteExtra* m_moveButton = nullptr;
     CCSprite* m_moveIcon = nullptr;
-    CCLabelBMFont* m_moveLabel = nullptr;
+    Label* m_moveLabel = nullptr;
     CCSprite* m_toggleEditIcon = nullptr;
     CCSprite* m_toggleDoneIcon = nullptr;
+    CCScale9Sprite* m_toggleBackground = nullptr;
+    CCScale9Sprite* m_modeBadge = nullptr;
     CCMenu* m_profileMenu = nullptr;
     CCMenu* m_scaleMenu = nullptr;
     Slider* m_scaleSlider = nullptr;
     TextInput* m_scaleInput = nullptr;
     CCScale9Sprite* m_bottomPanel = nullptr;
     CCScale9Sprite* m_contextPanel = nullptr;
+    CCLayerColor* m_bottomAccent = nullptr;
+    CCLayerColor* m_contextAccent = nullptr;
     CCMenu* m_previewReturnMenu = nullptr;
     bool m_contextWasVisible = false;
     CCDrawNode* m_selectionOutline = nullptr;
@@ -1152,6 +1239,13 @@ private:
     std::vector<EditAction> m_redo;
     std::vector<WeakRef<CCNode>> m_dirtyTransforms;
     std::unordered_map<std::string, bool> m_moveModeByNode;
+    std::unordered_map<CCMenuItemSpriteExtra*, CCScale9Sprite*> m_controlTiles;
+    std::unordered_map<CCMenuItemSpriteExtra*, ccColor3B> m_controlColors;
+    TaskHolder<web::WebResponse> m_updateCheckRequest;
+    TaskHolder<web::WebResponse> m_updateDownloadRequest;
+    Ref<Notification> m_updateNotice;
+    bool m_updateBusy = false;
+    std::string m_pendingUpdateVersion;
     ListenerHandle m_undoKey;
     ListenerHandle m_redoKey;
     ListenerHandle m_leftKey;
@@ -1270,6 +1364,14 @@ private:
         if (hasLogicalID(node, "song-card")) return "Music info";
         if (hasLogicalID(node, "coins-card")) return "Coins";
         if (hasLogicalID(node, "difficulty-card")) return "Difficulty";
+        if (hasLogicalID(node, "play-time")) return "Platformer time";
+        if (hasLogicalID(node, "full-restart-button")) return "Full restart";
+        if (hasLogicalID(node, "retry-button")) return "Retry button";
+        if (hasLogicalID(node, "play-button")) return "Resume button";
+        if (hasLogicalID(node, "exit-button")) return "Exit button";
+        if (hasLogicalID(node, "options-button")) return "Options button";
+        if (hasLogicalID(node, "practice-button")) return "Practice button";
+        if (hasLogicalID(node, "edit-button")) return "Level editor button";
         if (node == m_toggle) return "Edit button";
         auto id = std::string(node->getID());
         return id.empty() ? "Unnamed block" : id;
@@ -1311,7 +1413,7 @@ private:
             auto preferredID = transform.hiddenID.value_or(path);
             auto id = preferredID;
             if (auto found = entriesByID.find(id); found == entriesByID.end()) {
-                id = pause_menu_studio::hidden_blocks::uniqueID(preferredID);
+                id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey());
             }
             auto& entry = entriesByID[id];
             entry.id = id;
@@ -1333,7 +1435,7 @@ private:
     }
 
     size_t reconcileInvisibleManagedBlocks() {
-        auto storedEntries = pause_menu_studio::hidden_blocks::entries();
+        auto storedEntries = pause_menu_studio::hidden_blocks::entries(pauseModeKey());
         std::map<std::string, pause_menu_studio::hidden_blocks::Entry> entriesByID;
         std::unordered_map<std::string, std::string> pathToID;
         for (auto const& entry : storedEntries) {
@@ -1375,7 +1477,7 @@ private:
                     if (processedGroups.insert(signature).second) {
                         auto preferredID = *std::ranges::min_element(missingPaths);
                         auto id = existingID.empty()
-                            ? pause_menu_studio::hidden_blocks::uniqueID(preferredID)
+                            ? pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey())
                             : existingID;
                         auto& entry = entriesByID[id];
                         entry.id = id;
@@ -1402,18 +1504,18 @@ private:
         visit(m_owner);
 
         for (auto const& id : changedIDs) {
-            pause_menu_studio::hidden_blocks::upsert(entriesByID[id]);
+            pause_menu_studio::hidden_blocks::upsert(entriesByID[id], pauseModeKey());
         }
         return recovered;
     }
 
     size_t reconcileHiddenBlocks() {
         size_t recovered = 0;
-        auto entries = pause_menu_studio::hidden_blocks::entries();
+        auto entries = pause_menu_studio::hidden_blocks::entries(pauseModeKey());
         std::map<std::string, pause_menu_studio::hidden_blocks::Entry> entriesByID;
         for (auto const& entry : entries) entriesByID[entry.id] = entry;
 
-        auto active = Mod::get()->getSavedValue<std::string>("active-named-layout", "");
+        auto active = Mod::get()->getSavedValue<std::string>(activeLayoutStorageKey(), "");
         if (!active.empty()) {
             if (auto snapshot = pause_menu_studio::profiles::load(active)) {
                 auto before = entriesByID;
@@ -1421,7 +1523,7 @@ private:
                 for (auto const& [id, entry] : entriesByID) {
                     auto old = before.find(id);
                     if (old == before.end() || old->second.members.size() != entry.members.size()) {
-                        pause_menu_studio::hidden_blocks::upsert(entry);
+                        pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
                     }
                 }
             }
@@ -1464,7 +1566,7 @@ private:
             if (auto node = reference.lock()) savePosition(node.data());
         }
         m_dirtyTransforms.clear();
-        Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
     }
 
     static bool statesDiffer(std::vector<NodeState> const& before, std::vector<NodeState> const& after) {
@@ -1591,15 +1693,29 @@ private:
             return icon;
         };
 
+        auto addPanelDepth = [](CCScale9Sprite* panel, CCSize panelSize) {
+            auto shadow = CCScale9Sprite::create("square02_001.png");
+            shadow->setAnchorPoint({0.f, 0.f});
+            shadow->setPosition({3.f, -3.f});
+            shadow->setContentSize(panelSize);
+            shadow->setColor({0, 0, 0});
+            shadow->setOpacity(145);
+            panel->addChild(shadow, -3);
+        };
+
         m_toggleMenu = CCMenu::create();
         m_toggleMenu->setID("editor-controls");
-        m_toggleMenu->setPosition({size.width - 38.f, size.height - 22.f});
+        m_toggleMenu->setPosition({size.width - 35.f, size.height - 25.f});
         auto toggleVisual = CCNode::create();
-        toggleVisual->setContentSize({44.f, 44.f});
-        m_toggleEditIcon = makeIcon("GJ_editBtn_001.png", 34.f);
-        m_toggleDoneIcon = makeIcon("GJ_checkOn_001.png", 31.f);
+        toggleVisual->setContentSize({42.f, 42.f});
+        // Keep the pause-menu EDIT button as the original GD icon. A stretched
+        // panel texture behind it clashes with texture packs and looks like a
+        // broken square around the button.
+        m_toggleBackground = nullptr;
+        m_toggleEditIcon = makeIcon("GJ_editBtn_001.png", 32.f);
+        m_toggleDoneIcon = makeIcon("GJ_checkOn_001.png", 29.f);
         for (auto icon : {m_toggleEditIcon, m_toggleDoneIcon}) {
-            icon->setPosition(toggleVisual->getContentSize() / 2.f);
+            icon->setPosition({21.f, 21.f});
             toggleVisual->addChild(icon);
         }
         m_toggle = CCMenuItemSpriteExtra::create(toggleVisual, this, menu_selector(PauseEditor::onToggle));
@@ -1612,20 +1728,47 @@ private:
         });
         restorePositions(m_toggleMenu);
 
-        auto toolbarWidth = std::min(430.f, size.width - 16.f);
-        m_bottomPanel = CCScale9Sprite::create("GJ_square02.png");
-        m_bottomPanel->setContentSize({toolbarWidth, 58.f});
-        m_bottomPanel->setColor({28, 23, 68});
-        m_bottomPanel->setOpacity(238);
-        m_bottomPanel->setCascadeOpacityEnabled(true);
+        auto toolbarWidth = std::min(520.f, size.width - 8.f);
+        m_bottomPanel = CCScale9Sprite::create("square02_001.png");
+        m_bottomPanel->setContentSize({toolbarWidth, 70.f});
+        m_bottomPanel->setColor({52, 35, 105});
+        m_bottomPanel->setOpacity(190);
+        m_bottomPanel->setCascadeOpacityEnabled(false);
         m_bottomPanel->setID("editor-bottom-toolbar");
-        m_bottomPanel->setPosition({(size.width - toolbarWidth) / 2.f, 4.f});
+        m_bottomPanel->setPosition({(size.width - toolbarWidth) / 2.f, 3.f});
         m_bottomPanel->setAnchorPoint({0.f, 0.f});
+        addPanelDepth(m_bottomPanel, m_bottomPanel->getContentSize());
+        auto const initialAccent = editorAccentColor();
+        m_bottomAccent = CCLayerColor::create(
+            {initialAccent.r, initialAccent.g, initialAccent.b, 255}, toolbarWidth - 12.f, 2.f
+        );
+        m_bottomAccent->setPosition({6.f, 65.f});
+        m_bottomAccent->setOpacity(235);
+        m_bottomPanel->addChild(m_bottomAccent, 4);
+
+        auto brand = Label::create("PAUSE MENU STUDIO", "bigFont.fnt");
+        brand->setAnchorPoint({0.f, .5f});
+        brand->setPosition({10.f, 60.5f});
+        brand->setScale(.25f);
+        brand->setColor(editorAccentColor());
+        brand->setOpacity(255);
+        m_bottomPanel->addChild(brand, 4);
+        auto beta = Label::create("V4.0.1", "bigFont.fnt");
+        beta->setAnchorPoint({1.f, .5f});
+        beta->setPosition({toolbarWidth - 10.f, 60.5f});
+        beta->setScale(.20f);
+        beta->setColor({190, 155, 255});
+        beta->setOpacity(255);
+        m_bottomPanel->addChild(beta, 4);
+
         addChild(m_bottomPanel, 20);
         m_historyMenu = CCMenu::create();
         m_historyMenu->setID("editor-history-controls");
         m_historyMenu->setPosition({toolbarWidth / 2.f, 29.f});
         m_bottomPanel->addChild(m_historyMenu);
+        auto downloadIconFrame = Mod::get()->expandSpriteName("download-icon.png");
+        auto layoutsIconFrame = Mod::get()->expandSpriteName("layouts-icon.png");
+        auto moveIconFrame = Mod::get()->expandSpriteName("move-icon.png");
         auto resetIconFrame = Mod::get()->expandSpriteName("reset-icon.png");
         auto viewIconFrame = Mod::get()->expandSpriteName("view-icon.png");
 
@@ -1635,13 +1778,21 @@ private:
             float x,
             SEL_MenuHandler callback,
             char const* id,
-            float maxSize = 27.f
+            float maxSize,
+            ccColor3B tileColor
         ) {
             auto icon = makeIcon(frame, maxSize);
             icon->setID(std::string(id) + "-icon");
             auto visual = CCNode::create();
-            visual->setContentSize({42.f, 42.f});
-            icon->setPosition({21.f, 24.f});
+            visual->setContentSize({48.f, 50.f});
+            auto tile = CCScale9Sprite::create("square02_001.png");
+            tile->setContentSize({46.f, 48.f});
+            tile->setPosition({24.f, 25.f});
+            tile->setColor(tileColor);
+            tile->setOpacity(170);
+            tile->setID(std::string(id) + "-tile");
+            visual->addChild(tile, -2);
+            icon->setPosition({24.f, 30.f});
             visual->addChild(icon);
             std::string caption;
             auto controlID = std::string(id);
@@ -1649,6 +1800,7 @@ private:
             else if (controlID == "redo-button") caption = "REDO";
             else if (controlID == "save-layout-button") caption = "SAVE";
             else if (controlID == "saved-layouts-button") caption = "LAYOUTS";
+            else if (controlID == "updates-button") caption = "UPDATES";
             else if (controlID == "hidden-blocks-button") caption = "TRASH";
             else if (controlID == "reset-button") caption = "RESET";
             else if (controlID == "preview-button") caption = "VIEW";
@@ -1656,11 +1808,12 @@ private:
             else if (controlID == "scale-reset-button") caption = "RESET";
             else if (controlID == "hide-block-button") caption = "HIDE";
             if (!caption.empty()) {
-                auto label = CCLabelBMFont::create(caption.c_str(), "chatFont.fnt");
-                label->setPosition({21.f, 4.f});
-                label->setScale(.32f);
-                label->setOpacity(210);
-                label->limitLabelWidth(39.f, .32f, .2f);
+                auto label = Label::create(caption, "bigFont.fnt");
+                label->setPosition({24.f, 6.5f});
+                label->setScale(.22f);
+                label->setColor(ccWHITE);
+                label->setOpacity(255);
+                label->setLimitLabelWidth(42.f, .22f, .16f);
                 label->setID(controlID + "-label");
                 visual->addChild(label);
             }
@@ -1669,75 +1822,142 @@ private:
             button->setPositionX(x);
             targetMenu->addChild(button);
             m_controlItems.push_back(button);
+            m_controlTiles[button] = tile;
+            m_controlColors[button] = tileColor;
             return button;
         };
-        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", -168.f, menu_selector(PauseEditor::onUndo), "undo-button");
-        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", -112.f, menu_selector(PauseEditor::onRedo), "redo-button");
-        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", -56.f, menu_selector(PauseEditor::onSaveProfile), "save-layout-button");
-        makeControl(m_historyMenu, "GJ_viewListsBtn_001.png", 0.f, menu_selector(PauseEditor::onLayouts), "saved-layouts-button");
-        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", 56.f, menu_selector(PauseEditor::onTrash), "hidden-blocks-button");
-        m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), 112.f, menu_selector(PauseEditor::onReset), "reset-button", 25.f);
-        makeControl(m_historyMenu, viewIconFrame.c_str(), 168.f, menu_selector(PauseEditor::onPreview), "preview-button", 25.f);
+        std::array<float, 8> controlPositions {};
+        auto const controlStep = (toolbarWidth - 72.f) / 7.f;
+        for (size_t index = 0; index < controlPositions.size(); ++index) {
+            controlPositions[index] = (static_cast<float>(index) - 3.5f) * controlStep;
+        }
+        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", controlPositions[0], menu_selector(PauseEditor::onUndo), "undo-button", 26.f, {48, 62, 112});
+        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", controlPositions[1], menu_selector(PauseEditor::onRedo), "redo-button", 26.f, {48, 62, 112});
+        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", controlPositions[2], menu_selector(PauseEditor::onSaveProfile), "save-layout-button", 26.f, {45, 105, 88});
+        makeControl(m_historyMenu, layoutsIconFrame.c_str(), controlPositions[3], menu_selector(PauseEditor::onLayouts), "saved-layouts-button", 26.f, {76, 52, 128});
+        m_updateButton = makeControl(m_historyMenu, downloadIconFrame.c_str(), controlPositions[4], menu_selector(PauseEditor::onUpdates), "updates-button", 26.f, {38, 118, 105});
+        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 26.f, {116, 52, 86});
+        m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), controlPositions[6], menu_selector(PauseEditor::onReset), "reset-button", 24.f, {132, 76, 38});
+        makeControl(m_historyMenu, viewIconFrame.c_str(), controlPositions[7], menu_selector(PauseEditor::onPreview), "preview-button", 24.f, {38, 96, 132});
 
-        auto contextWidth = std::min(420.f, size.width - 8.f);
-        m_contextPanel = CCScale9Sprite::create("GJ_square02.png");
-        m_contextPanel->setContentSize({contextWidth, 78.f});
-        m_contextPanel->setColor({30, 25, 72});
-        m_contextPanel->setOpacity(242);
-        m_contextPanel->setCascadeOpacityEnabled(true);
+        for (auto pair : {std::pair {1u, 2u}, std::pair {3u, 4u}, std::pair {5u, 6u}}) {
+            auto const localX = (controlPositions[pair.first] + controlPositions[pair.second]) / 2.f;
+            auto separator = CCLayerColor::create({130, 100, 210, 75}, 1.f, 38.f);
+            separator->setPosition({toolbarWidth / 2.f + localX, 8.f});
+            m_bottomPanel->addChild(separator, 3);
+        }
+
+        auto contextWidth = std::min(404.f, size.width - 8.f);
+        m_contextPanel = CCScale9Sprite::create("square02_001.png");
+        m_contextPanel->setContentSize({contextWidth, 82.f});
+        m_contextPanel->setColor({50, 34, 102});
+        m_contextPanel->setOpacity(190);
+        m_contextPanel->setCascadeOpacityEnabled(false);
         m_contextPanel->setAnchorPoint({0.f, 0.f});
         m_contextPanel->setID("selection-context-panel");
         m_contextPanel->setVisible(false);
+        addPanelDepth(m_contextPanel, m_contextPanel->getContentSize());
+        m_contextAccent = CCLayerColor::create(
+            {initialAccent.r, initialAccent.g, initialAccent.b, 255}, contextWidth - 12.f, 2.f
+        );
+        m_contextAccent->setPosition({6.f, 77.f});
+        m_contextAccent->setOpacity(245);
+        m_contextPanel->addChild(m_contextAccent, 4);
         addChild(m_contextPanel, 22);
         m_scaleMenu = CCMenu::create();
         m_scaleMenu->setID("editor-scale-controls");
-        m_scaleMenu->setPosition({contextWidth / 2.f, 31.f});
+        m_scaleMenu->setPosition({contextWidth / 2.f, 27.f});
         m_moveButton = makeControl(
-            m_scaleMenu, "edit_freeMoveBtn_001.png", -contextWidth / 2.f + 31.f,
-            menu_selector(PauseEditor::onMoveToggle), "move-hint-button", 24.f
+            m_scaleMenu, moveIconFrame.c_str(), -contextWidth / 2.f + 31.f,
+            menu_selector(PauseEditor::onMoveToggle), "move-hint-button", 23.f, {62, 54, 118}
         );
         if (auto visual = m_moveButton ? m_moveButton->getNormalImage() : nullptr) {
             m_moveIcon = typeinfo_cast<CCSprite*>(visual->getChildByID("move-hint-button-icon"));
-            m_moveLabel = typeinfo_cast<CCLabelBMFont*>(visual->getChildByID("move-hint-button-label"));
+            m_moveLabel = typeinfo_cast<Label*>(visual->getChildByID("move-hint-button-label"));
         }
         makeControl(
-            m_scaleMenu, resetIconFrame.c_str(), contextWidth / 2.f - 75.f,
-            menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 23.f
+            m_scaleMenu, resetIconFrame.c_str(), contextWidth / 2.f - 82.f,
+            menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 22.f, {124, 72, 38}
         );
         m_hideButton = makeControl(
-            m_scaleMenu, "hideBtn_001.png", contextWidth / 2.f - 25.f,
-            menu_selector(PauseEditor::onHide), "hide-block-button", 23.f
+            m_scaleMenu, "hideBtn_001.png", contextWidth / 2.f - 24.f,
+            menu_selector(PauseEditor::onHide), "hide-block-button", 22.f, {112, 48, 76}
         );
         m_contextPanel->addChild(m_scaleMenu);
-        m_scaleSlider = Slider::create(this, menu_selector(PauseEditor::onScaleSlider), .62f);
+        m_scaleSlider = Slider::create(this, menu_selector(PauseEditor::onScaleSlider), .56f);
         m_scaleSlider->setID("selection-scale-slider");
-        m_scaleSlider->setPosition({170.f, 31.f});
+        m_scaleSlider->setPosition({168.f, 27.f});
         m_scaleSlider->setLiveDragging(true);
         m_contextPanel->addChild(m_scaleSlider, 3);
-        m_scaleInput = TextInput::create(70.f, "Scale");
+        m_scaleInput = TextInput::create(62.f, "Scale");
         m_scaleInput->setID("selection-scale-input");
         m_scaleInput->setCommonFilter(CommonFilter::Float);
         m_scaleInput->setMaxCharCount(4);
-        m_scaleInput->setScale(.72f);
-        m_scaleInput->setPosition({278.f, 31.f});
+        m_scaleInput->setScale(.65f);
+        m_scaleInput->setPosition({269.f, 27.f});
         m_scaleInput->setCallback([this](std::string const& value) { onScaleInput(value); });
         m_contextPanel->addChild(m_scaleInput, 5);
         m_controlItems.push_back(m_scaleInput);
 
-        m_modeLabel = CCLabelBMFont::create("", "bigFont.fnt");
-        m_modeLabel->setAnchorPoint({1.f, .5f});
-        m_modeLabel->setPosition({size.width - 8.f, size.height - 43.f});
-        m_modeLabel->setScale(.25f);
-        m_modeLabel->setColor({100, 255, 170});
-        addChild(m_modeLabel, 20);
+        auto scaleCaption = Label::create("SCALE", "bigFont.fnt");
+        scaleCaption->setPosition({168.f, 49.f});
+        scaleCaption->setScale(.30f);
+        scaleCaption->setColor(ccWHITE);
+        scaleCaption->setOpacity(255);
+        m_contextPanel->addChild(scaleCaption, 3);
 
-        m_selectionLabel = CCLabelBMFont::create("", "chatFont.fnt");
+        // Keep the divider in the gap between the scale input and Reset.
+        // contextWidth - 95 placed the line inside the Reset tile.
+        for (auto x : {59.f, contextWidth - 110.f}) {
+            auto separator = CCLayerColor::create({130, 100, 210, 65}, 1.f, 38.f);
+            separator->setPosition({x, 8.f});
+            m_contextPanel->addChild(separator, 3);
+        }
+
+        auto const mode = pauseModeKey();
+        auto requestedBadgeWidth = 92.f;
+        if (mode == "creator") requestedBadgeWidth = 112.f;
+        else if (mode == "platformer") requestedBadgeWidth = 124.f;
+        else if (mode == "platformer-creator") requestedBadgeWidth = 158.f;
+        auto badgeWidth = std::min(requestedBadgeWidth, size.width - 92.f);
+        m_modeBadge = CCScale9Sprite::create("square02_001.png");
+        m_modeBadge->setContentSize({badgeWidth, 25.f});
+        m_modeBadge->setPosition({size.width - 62.f - badgeWidth / 2.f, size.height - 24.f});
+        m_modeBadge->setColor({43, 31, 88});
+        m_modeBadge->setOpacity(200);
+        m_modeBadge->setCascadeOpacityEnabled(true);
+        m_modeBadge->setVisible(false);
+        addChild(m_modeBadge, 20);
+        auto badgeAccent = CCLayerColor::create(
+            {initialAccent.r, initialAccent.g, initialAccent.b, 255}, 3.f, 15.f
+        );
+        badgeAccent->setPosition({7.f, 5.f});
+        m_modeBadge->addChild(badgeAccent, 2);
+        m_modeLabel = Label::create("", "bigFont.fnt");
+        m_modeLabel->setAnchorPoint({0.f, .5f});
+        m_modeLabel->setPosition({15.f, 13.f});
+        m_modeLabel->setScale(.21f);
+        m_modeLabel->setColor(editorAccentColor());
+        m_modeLabel->setLimitLabelWidth(badgeWidth - 24.f, .21f, .14f);
+        m_modeBadge->addChild(m_modeLabel, 3);
+        m_statusLabel = nullptr;
+
+        m_selectionLabel = Label::create("", "chatFont.fnt");
         m_selectionLabel->setAnchorPoint({0.f, .5f});
-        m_selectionLabel->setPosition({12.f, 66.f});
-        m_selectionLabel->setScale(.36f);
-        m_selectionLabel->setOpacity(220);
-        m_selectionLabel->limitLabelWidth(contextWidth - 24.f, .36f, .2f);
+        m_selectionLabel->setPosition({12.f, 68.f});
+        m_selectionLabel->setScale(.34f);
+        m_selectionLabel->setColor(editorAccentColor());
+        m_selectionLabel->setOpacity(245);
+        m_selectionLabel->setLimitLabelWidth(contextWidth - 170.f, .34f, .2f);
         m_contextPanel->addChild(m_selectionLabel, 2);
+        m_selectionMetaLabel = Label::create("", "chatFont.fnt");
+        m_selectionMetaLabel->setAnchorPoint({1.f, .5f});
+        m_selectionMetaLabel->setPosition({contextWidth - 10.f, 68.f});
+        m_selectionMetaLabel->setScale(.22f);
+        m_selectionMetaLabel->setColor({200, 185, 240});
+        m_selectionMetaLabel->setOpacity(225);
+        m_selectionMetaLabel->setLimitLabelWidth(142.f, .22f, .15f);
+        m_contextPanel->addChild(m_selectionMetaLabel, 2);
 
         m_selectionOutline = CCDrawNode::create();
         m_selectionOutline->setID("selection-outline");
@@ -1752,8 +1972,8 @@ private:
 
         m_previewReturnMenu = CCMenu::create();
         m_previewReturnMenu->setID("preview-return-menu");
-        m_previewReturnMenu->setPosition({size.width - 56.f, size.height - 24.f});
-        auto returnSprite = ButtonSprite::create("RETURN", 92, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .38f);
+        m_previewReturnMenu->setPosition({size.width - 70.f, size.height - 25.f});
+        auto returnSprite = ButtonSprite::create("BACK TO EDIT", 118, true, "bigFont.fnt", "GJ_button_01.png", 20.f, .34f);
         auto returnButton = CCMenuItemSpriteExtra::create(returnSprite, this, menu_selector(PauseEditor::onPreview));
         returnButton->setID("preview-return-button");
         m_previewReturnMenu->addChild(returnButton);
@@ -1809,7 +2029,32 @@ private:
         if (m_moveLabel) {
             m_moveLabel->setString(m_moveEnabled ? "MOVE ON" : "MOVE");
             m_moveLabel->setColor(m_moveEnabled ? ccColor3B {90, 255, 170} : ccWHITE);
-            m_moveLabel->limitLabelWidth(40.f, .3f, .2f);
+            m_moveLabel->setLimitLabelWidth(40.f, .3f, .2f);
+        }
+        if (auto found = m_controlTiles.find(m_moveButton); found != m_controlTiles.end()) {
+            found->second->setColor(m_moveEnabled ? ccColor3B {38, 132, 102} : m_controlColors[m_moveButton]);
+            found->second->setOpacity(m_moveEnabled ? 220 : 170);
+        }
+    }
+
+    void updateChromeState() {
+        auto accent = editorAccentColor();
+        if (m_bottomAccent) m_bottomAccent->setColor(accent);
+        if (m_contextAccent) m_contextAccent->setColor(accent);
+        if (m_selectionLabel) m_selectionLabel->setColor(accent);
+        if (m_modeLabel) m_modeLabel->setColor(accent);
+        if (m_statusLabel) {
+            m_statusLabel->setString(m_hasEdits ? "UNSAVED" : "READY");
+            m_statusLabel->setColor(m_hasEdits ? ccColor3B {255, 155, 70} : ccColor3B {100, 255, 170});
+        }
+        if (m_modeBadge) {
+            m_modeBadge->setColor(m_hasEdits ? ccColor3B {78, 40, 58} : ccColor3B {43, 31, 88});
+        }
+        if (m_toggleBackground) {
+            m_toggleBackground->setColor(
+                m_editing ? (m_hasEdits ? ccColor3B {112, 54, 76} : ccColor3B {36, 105, 92})
+                          : ccColor3B {45, 32, 92}
+            );
         }
     }
     void onMoveToggle(CCObject*) {
@@ -1819,10 +2064,232 @@ private:
         rememberMoveModeForSelection();
         m_hasLastSelectionPoint = false;
         updateMoveToggle();
+        updateSelectionLabel();
         pulseContextPanel();
     }
     void onHide(CCObject*) { hideSelection(); }
     void onPreview(CCObject*) { setPreview(!m_preview); }
+    void showUpdateNotice(std::string const& text, NotificationIcon icon, float time = 0.f) {
+        if (m_updateNotice) m_updateNotice->cancel();
+        m_updateNotice = Notification::create(text, icon, time);
+        m_updateNotice->show();
+    }
+
+    void showRestartForUpdate(std::string const& version) {
+        createQuickPopup(
+            "Update installed",
+            "Pause Menu Studio <cg>" + version + "</c> is ready. Restart Geometry Dash to load it.",
+            "Later", "Restart",
+            [](FLAlertLayer*, bool restart) {
+                if (restart) utils::game::restart(true);
+            }
+        );
+    }
+
+    void failUpdate(std::string const& message) {
+        m_updateBusy = false;
+        showUpdateNotice(message, NotificationIcon::Error, NOTIFICATION_LONG_TIME);
+    }
+
+    void installDownloadedUpdate(
+        web::WebResponse response,
+        VersionInfo expectedVersion,
+        std::string const& expectedDigest
+    ) {
+        if (!response.ok()) {
+            failUpdate(fmt::format("Update download failed (HTTP {})", response.code()));
+            return;
+        }
+        auto const& data = response.data();
+        if (data.empty() || data.size() > 100u * 1024u * 1024u) {
+            failUpdate("Downloaded update has an invalid size");
+            return;
+        }
+        if (expectedDigest.starts_with("sha256:")) {
+            auto actual = pause_menu_studio::crypto::sha256Hex(
+                std::span<std::uint8_t const>(data.data(), data.size())
+            );
+            if (actual != expectedDigest.substr(7)) {
+                failUpdate("Update checksum verification failed");
+                return;
+            }
+        }
+
+        auto target = Mod::get()->getPackagePath();
+        auto temporary = target;
+        temporary += ".download";
+        auto backup = target;
+        backup += ".pre-update";
+        std::error_code error;
+        std::filesystem::remove(temporary, error);
+        error.clear();
+        auto write = response.into(temporary);
+        if (write.isErr()) {
+            failUpdate("Could not write the downloaded update");
+            return;
+        }
+
+        auto metadata = ModMetadata::createFromGeodeFile(temporary);
+        auto const correctID = std::string(metadata.getID()) == std::string(Mod::get()->getID());
+        auto const correctVersion = metadata.getVersion() == expectedVersion;
+        auto targetCheck = metadata.checkTargetVersions();
+        if (metadata.hasErrors() || !correctID || !correctVersion || targetCheck.isErr()) {
+            std::filesystem::remove(temporary, error);
+            failUpdate("Downloaded package is not a valid compatible update");
+            return;
+        }
+
+        std::filesystem::remove(backup, error);
+        error.clear();
+        std::filesystem::rename(target, backup, error);
+        if (error) {
+            std::filesystem::remove(temporary, error);
+            failUpdate("Could not prepare the installed mod for replacement");
+            return;
+        }
+        std::filesystem::rename(temporary, target, error);
+        if (error) {
+            std::error_code restoreError;
+            std::filesystem::rename(backup, target, restoreError);
+            std::filesystem::remove(temporary, restoreError);
+            failUpdate("Could not install the downloaded package");
+            return;
+        }
+        std::filesystem::remove(backup, error);
+
+        m_updateBusy = false;
+        m_pendingUpdateVersion = expectedVersion.toVString();
+        showUpdateNotice("Update installed - restart required", NotificationIcon::Success, 3.f);
+        showRestartForUpdate(m_pendingUpdateVersion);
+    }
+
+    void startUpdateDownload(
+        std::string const& url,
+        VersionInfo version,
+        std::string const& digest
+    ) {
+        m_updateBusy = true;
+        showUpdateNotice("Downloading update: 0%", NotificationIcon::Loading);
+        auto self = WeakRef<PauseEditor>(this);
+        auto request = web::WebRequest();
+        request.userAgent("Pause-Menu-Studio-Updater/4.0.1");
+        request.header("Accept", "application/octet-stream");
+        request.timeout(std::chrono::seconds(120));
+        request.onProgress([self](web::WebProgress const& progress) {
+            auto editor = self.lock();
+            if (!editor || !editor->m_updateNotice) return;
+            auto percent = progress.downloadProgress();
+            if (percent) editor->m_updateNotice->setString(fmt::format("Downloading update: {:.0f}%", *percent));
+        });
+        m_updateDownloadRequest.spawn(
+            request.get(url),
+            [self, version, digest](web::WebResponse response) {
+                if (auto editor = self.lock()) {
+                    editor->installDownloadedUpdate(std::move(response), version, digest);
+                }
+            }
+        );
+    }
+
+    void handleUpdateCheck(web::WebResponse response) {
+        m_updateBusy = false;
+        if (!response.ok()) {
+            failUpdate(fmt::format("Update check failed (HTTP {})", response.code()));
+            return;
+        }
+        auto parsed = response.json();
+        if (parsed.isErr()) {
+            failUpdate("Update server returned invalid data");
+            return;
+        }
+        auto releases = parsed.unwrap().asArray();
+        if (releases.isErr()) {
+            failUpdate("Update server returned an invalid release list");
+            return;
+        }
+
+        struct Candidate {
+            VersionInfo version;
+            std::string url;
+            std::string digest;
+        };
+        std::optional<Candidate> best;
+        auto const current = Mod::get()->getVersion();
+        for (auto const& release : releases.unwrap()) {
+            auto draft = release.get<bool>("draft");
+            if (draft.isOk() && draft.unwrap()) continue;
+            auto tag = release.get<std::string>("tag_name");
+            if (tag.isErr()) continue;
+            auto version = VersionInfo::parse(tag.unwrap());
+            if (version.isErr() || version.unwrap() <= current) continue;
+
+            auto assets = release.get<std::vector<matjson::Value>>("assets");
+            if (assets.isErr()) continue;
+            std::string selectedURL;
+            std::string selectedDigest;
+            for (auto const& asset : assets.unwrap()) {
+                auto name = asset.get<std::string>("name");
+                auto url = asset.get<std::string>("browser_download_url");
+                if (name.isErr() || url.isErr() || !name.unwrap().ends_with(".geode")) continue;
+                auto digest = asset.get<std::string>("digest");
+                auto const exact = name.unwrap() == "bananchikireal.pause-menu-studio.geode";
+                if (selectedURL.empty() || exact) {
+                    selectedURL = url.unwrap();
+                    selectedDigest = digest.isOk() ? digest.unwrap() : "";
+                }
+                if (exact) break;
+            }
+            if (selectedURL.empty()) continue;
+            if (!best || version.unwrap() > best->version) {
+                best = Candidate {version.unwrap(), std::move(selectedURL), std::move(selectedDigest)};
+            }
+        }
+
+        if (!best) {
+            showUpdateNotice("Pause Menu Studio is up to date", NotificationIcon::Success, 2.5f);
+            return;
+        }
+        if (m_updateNotice) m_updateNotice->cancel();
+        auto self = WeakRef<PauseEditor>(this);
+        auto versionText = best->version.toVString();
+        createQuickPopup(
+            "Update available",
+            "Pause Menu Studio <cg>" + versionText + "</c> is available. Download and install it for the next restart?",
+            "Later", "Download",
+            [self, candidate = *best](FLAlertLayer*, bool download) {
+                if (!download) return;
+                if (auto editor = self.lock()) {
+                    editor->startUpdateDownload(candidate.url, candidate.version, candidate.digest);
+                }
+            }
+        );
+    }
+
+    void onUpdates(CCObject*) {
+        if (!m_pendingUpdateVersion.empty()) {
+            showRestartForUpdate(m_pendingUpdateVersion);
+            return;
+        }
+        if (m_updateBusy) {
+            showUpdateNotice("Update request is already running", NotificationIcon::Info, 2.f);
+            return;
+        }
+        m_updateBusy = true;
+        showUpdateNotice("Checking for updates...", NotificationIcon::Loading);
+        auto self = WeakRef<PauseEditor>(this);
+        auto request = web::WebRequest();
+        request.userAgent("Pause-Menu-Studio-Updater/4.0.1");
+        request.header("Accept", "application/vnd.github+json");
+        request.header("X-GitHub-Api-Version", "2022-11-28");
+        request.timeout(std::chrono::seconds(20));
+        m_updateCheckRequest.spawn(
+            request.get("https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10"),
+            [self](web::WebResponse response) {
+                if (auto editor = self.lock()) editor->handleUpdateCheck(std::move(response));
+            }
+        );
+    }
+
     void onTrash(CCObject*) {
         auto recovered = reconcileHiddenBlocks();
         refreshHiddenBlockIcons();
@@ -1836,7 +2303,7 @@ private:
         }
         auto self = WeakRef<PauseEditor>(this);
         if (auto popup = pause_menu_studio::HiddenBlocksPopup::create(
-            pause_menu_studio::hidden_blocks::entries(),
+            pause_menu_studio::hidden_blocks::entries(pauseModeKey()),
             [self](std::string id) -> bool {
                 if (auto editor = self.lock()) return editor->restoreHiddenBlock(id);
                 return false;
@@ -1845,23 +2312,30 @@ private:
     }
     void onSaveProfile(CCObject*) {
         auto self = WeakRef<PauseEditor>(this);
-        if (auto popup = pause_menu_studio::LayoutNamePopup::create([self](std::string name) {
-            if (auto editor = self.lock()) editor->saveNamedLayout(name);
-        })) popup->show();
+        auto title = saveLayoutTitle();
+        if (auto popup = pause_menu_studio::LayoutNamePopup::create(
+            [self](std::string name) {
+                if (auto editor = self.lock()) editor->saveNamedLayout(name);
+            },
+            title
+        )) popup->show();
     }
     void onLayouts(CCObject*) {
         auto self = WeakRef<PauseEditor>(this);
-        auto active = Mod::get()->getSavedValue<std::string>("active-named-layout", "");
+        auto mode = pauseModeKey();
+        auto activeKey = activeLayoutStorageKey();
+        auto active = Mod::get()->getSavedValue<std::string>(activeKey, "");
         if (auto popup = pause_menu_studio::LayoutListPopup::create(
-            pause_menu_studio::profiles::names(),
+            pause_menu_studio::profiles::names(mode),
             active,
+            layoutListTitle(),
             [self](std::string name) {
                 if (auto editor = self.lock()) editor->applyNamedLayout(name);
             },
-            [](std::string oldName, std::string newName) {
+            [activeKey](std::string oldName, std::string newName) {
                 if (!pause_menu_studio::profiles::rename(oldName, newName)) return false;
-                if (Mod::get()->getSavedValue<std::string>("active-named-layout", "") == oldName) {
-                    Mod::get()->setSavedValue<std::string>("active-named-layout", newName);
+                if (Mod::get()->getSavedValue<std::string>(activeKey, "") == oldName) {
+                    Mod::get()->setSavedValue<std::string>(activeKey, newName);
                 }
                 Notification::create("Layout renamed", NotificationIcon::Success)->show();
                 return true;
@@ -1871,10 +2345,10 @@ private:
                 Notification::create("Layout duplicated", NotificationIcon::Success)->show();
                 return true;
             },
-            [self](std::string name) {
+            [self, activeKey](std::string name) {
                 pause_menu_studio::profiles::erase(name);
-                if (Mod::get()->getSavedValue<std::string>("active-named-layout", "") == name) {
-                    Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+                if (Mod::get()->getSavedValue<std::string>(activeKey, "") == name) {
+                    Mod::get()->setSavedValue<std::string>(activeKey, "");
                 }
                 if (auto editor = self.lock()) {
                     Notification::create("Layout deleted", NotificationIcon::Success)->show();
@@ -1924,7 +2398,7 @@ private:
         if (m_previewReturnMenu) m_previewReturnMenu->setVisible(preview);
         if (m_toggleMenu) m_toggleMenu->setVisible(!preview);
         if (m_bottomPanel) m_bottomPanel->setVisible(m_editing && !preview);
-        if (m_modeLabel) m_modeLabel->setVisible(m_editing && !preview);
+        if (m_modeBadge) m_modeBadge->setVisible(m_editing && !preview);
         if (preview) {
             if (m_contextPanel) m_contextPanel->setVisible(false);
             for (auto shade : m_focusShade) if (shade) shade->setVisible(false);
@@ -1950,24 +2424,57 @@ private:
         m_pendingDrag = false;
         if (!editing) clearSelection();
         if (!editing) m_hasLastSelectionPoint = false;
-        if (editing) m_modeLabel->setString("EDIT MODE");
+        if (editing) {
+            m_modeLabel->setString(editorModeLabel().c_str());
+        }
         else if (!leavingEditor) m_modeLabel->setString("");
-        m_modeLabel->setVisible(editing || leavingEditor);
-        m_modeLabel->stopAllActions();
-        m_modeLabel->setOpacity(255);
-        if (leavingEditor) m_modeLabel->runAction(CCFadeOut::create(.18f));
+        if (m_modeBadge) {
+            m_modeBadge->stopAllActions();
+            if (editing) {
+                m_modeBadge->setVisible(true);
+                m_modeBadge->setOpacity(0);
+                m_modeBadge->setScale(.9f);
+                m_modeBadge->runAction(CCSpawn::create(
+                    CCFadeTo::create(.18f, 200),
+                    CCEaseBackOut::create(CCScaleTo::create(.2f, 1.f)),
+                    nullptr
+                ));
+            } else if (leavingEditor) {
+                m_modeBadge->setVisible(true);
+                m_modeBadge->runAction(CCSpawn::create(
+                    CCFadeOut::create(.16f),
+                    CCEaseSineIn::create(CCScaleTo::create(.16f, .92f)),
+                    nullptr
+                ));
+            } else {
+                m_modeBadge->setVisible(false);
+            }
+        }
         if (m_toggleEditIcon) m_toggleEditIcon->setVisible(!editing);
         if (m_toggleDoneIcon) m_toggleDoneIcon->setVisible(editing);
+        updateChromeState();
         for (auto line : m_gridLines) line->setVisible(editing);
         if (m_bottomPanel) {
             m_bottomPanel->stopAllActions();
             if (editing) {
                 m_bottomPanel->setVisible(true);
-                m_bottomPanel->setOpacity(238);
+                m_bottomPanel->setOpacity(190);
                 m_bottomPanel->setPositionY(-m_bottomPanel->getContentHeight());
                 m_bottomPanel->runAction(CCEaseBackOut::create(CCMoveTo::create(
-                    .24f, {m_bottomPanel->getPositionX(), 4.f}
+                    .26f, {m_bottomPanel->getPositionX(), 3.f}
                 )));
+                if (m_historyMenu) {
+                    size_t index = 0;
+                    for (auto child : CCArrayExt<CCNode*>(m_historyMenu->getChildren())) {
+                        child->stopAllActions();
+                        child->setScale(.62f);
+                        child->runAction(CCSequence::create(
+                            CCDelayTime::create(.025f * static_cast<float>(index++)),
+                            CCEaseBackOut::create(CCScaleTo::create(.2f, 1.f)),
+                            nullptr
+                        ));
+                    }
+                }
             } else if (leavingEditor) {
                 m_bottomPanel->setVisible(true);
                 m_bottomPanel->runAction(CCSequence::create(
@@ -1985,7 +2492,7 @@ private:
         if (m_contextPanel) {
             m_contextPanel->stopAllActions();
             if (editing) {
-                m_contextPanel->setOpacity(242);
+                m_contextPanel->setOpacity(190);
                 m_contextPanel->setScale(1.f);
             } else if (leavingEditor && m_contextPanel->isVisible()) {
                 m_contextPanel->runAction(CCSpawn::create(
@@ -2008,13 +2515,17 @@ private:
         if (m_bottomPanel) m_bottomPanel->setVisible(false);
         if (m_contextPanel) {
             m_contextPanel->setVisible(false);
-            m_contextPanel->setOpacity(242);
+            m_contextPanel->setOpacity(190);
             m_contextPanel->setScale(1.f);
         }
         if (m_modeLabel) {
             m_modeLabel->setString("");
-            m_modeLabel->setVisible(false);
             m_modeLabel->setOpacity(255);
+        }
+        if (m_modeBadge) {
+            m_modeBadge->setVisible(false);
+            m_modeBadge->setOpacity(200);
+            m_modeBadge->setScale(1.f);
         }
         m_contextWasVisible = false;
     }
@@ -2062,14 +2573,15 @@ private:
     void resetLayout() {
         if (!m_editing) return;
         m_hasEdits = true;
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
             for (auto const& member : entry.members) {
                 if (auto node = findNodeByStoredPath(m_owner, member.path)) node->setVisible(true);
             }
         }
-        pause_menu_studio::hidden_blocks::clear();
-        auto generation = Mod::get()->getSavedValue<int64_t>("layout-generation", 0);
-        Mod::get()->setSavedValue<int64_t>("layout-generation", generation + 1);
+        pause_menu_studio::hidden_blocks::clear(pauseModeKey());
+        auto generationKey = layoutGenerationStorageKey();
+        auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
+        Mod::get()->setSavedValue<int64_t>(generationKey, generation + 1);
         clearSelection();
         rebuildInformationCards({});
         for (auto const& initial : m_initialPositions) {
@@ -2084,7 +2596,7 @@ private:
         m_pendingDrag = false;
         m_undo.clear();
         m_redo.clear();
-        Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
@@ -2113,7 +2625,7 @@ private:
             m_redo.clear();
             m_hasEdits = true;
         }
-        Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         updateHistoryButtons();
         updateSelectionLabel();
         updateSelectionOutline();
@@ -2146,12 +2658,12 @@ private:
             auto preferredID = std::ranges::min_element(
                 entry.members, {}, &pause_menu_studio::hidden_blocks::Member::path
             )->path;
-            entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID);
+            entry.id = pause_menu_studio::hidden_blocks::uniqueID(preferredID, pauseModeKey());
             entry.iconFrame = pause_menu_studio::block_icons::frameForNodes(group);
             if (entry.iconFrame.empty()) entry.iconFrame = "GJ_infoBtn_001.png";
             // Never make a node disappear unless its complete restore record
             // can immediately be read back from the mod's saved storage.
-            if (!pause_menu_studio::hidden_blocks::upsert(entry)) {
+            if (!pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey())) {
                 Notification::create("Could not move block to trash", NotificationIcon::Error)->show();
                 continue;
             }
@@ -2162,11 +2674,12 @@ private:
         clearSelection();
         m_dragging = false;
         m_pendingDrag = false;
-        Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         updateSelectionLabel();
         updateSelectionOutline();
         if (hiddenCount > 0) {
             m_hasEdits = true;
+            updateChromeState();
             if (m_trashButton) {
                 m_trashButton->stopAllActions();
                 m_trashButton->setScale(1.f);
@@ -2195,7 +2708,7 @@ private:
     }
 
     void refreshHiddenBlockIcons() {
-        for (auto entry : pause_menu_studio::hidden_blocks::entries()) {
+        for (auto entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
             std::vector<CCNode*> nodes;
             nodes.reserve(entry.members.size());
             for (auto const& member : entry.members) {
@@ -2205,12 +2718,12 @@ private:
             if (captured.empty()) captured = "GJ_infoBtn_001.png";
             if (entry.iconFrame == captured) continue;
             entry.iconFrame = std::move(captured);
-            pause_menu_studio::hidden_blocks::upsert(entry);
+            pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
         }
     }
 
     bool restoreHiddenBlock(std::string const& id) {
-        auto entry = pause_menu_studio::hidden_blocks::find(id);
+        auto entry = pause_menu_studio::hidden_blocks::find(id, pauseModeKey());
         if (!entry) {
             Notification::create("Hidden block could not be loaded", NotificationIcon::Error)->show();
             return false;
@@ -2233,9 +2746,10 @@ private:
             )->show();
             return false;
         }
-        pause_menu_studio::hidden_blocks::erase(id);
-        Mod::get()->setSavedValue<std::string>("active-named-layout", "");
+        pause_menu_studio::hidden_blocks::erase(id, pauseModeKey());
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         m_hasEdits = true;
+        updateChromeState();
         Notification::create("Block restored: " + entry->label, NotificationIcon::Success)->show();
         return true;
     }
@@ -2255,6 +2769,12 @@ private:
 
     void saveNamedLayout(std::string const& name) {
         if (pause_menu_studio::profiles::exists(name)) {
+            if (pause_menu_studio::profiles::mode(name) != pauseModeKey()) {
+                Notification::create(
+                    "That name belongs to the other editor mode", NotificationIcon::Warning
+                )->show();
+                return;
+            }
             auto self = WeakRef<PauseEditor>(this);
             createQuickPopup(
                 "Overwrite layout",
@@ -2275,7 +2795,7 @@ private:
         refreshHiddenBlockIcons();
         pause_menu_studio::profiles::Snapshot snapshot;
         std::unordered_map<std::string, HiddenSnapshotInfo> hiddenMembership;
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
             for (auto const& member : entry.members) {
                 hiddenMembership[member.path] = {entry.id, entry.label, entry.iconFrame};
             }
@@ -2304,7 +2824,7 @@ private:
         }
         // Keep every Trash member in the profile even when a dynamic mod node
         // is temporarily absent from this particular pause-menu instance.
-        for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
+        for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
             for (auto const& member : entry.members) {
                 auto found = snapshot.find(member.path);
                 if (found == snapshot.end()) {
@@ -2324,12 +2844,18 @@ private:
                 }
             }
         }
-        pause_menu_studio::profiles::save(name, snapshot);
-        Mod::get()->setSavedValue<std::string>("active-named-layout", name);
+        pause_menu_studio::profiles::save(name, snapshot, pauseModeKey());
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), name);
         Notification::create("Layout saved: " + name, NotificationIcon::Success)->show();
     }
 
     void applyNamedLayout(std::string const& name) {
+        if (pause_menu_studio::profiles::mode(name) != pauseModeKey()) {
+            Notification::create(
+                "This layout belongs to the other editor mode", NotificationIcon::Warning
+            )->show();
+            return;
+        }
         auto snapshot = pause_menu_studio::profiles::load(name);
         if (!snapshot) {
             Notification::create("Layout could not be loaded", NotificationIcon::Error)->show();
@@ -2347,28 +2873,31 @@ private:
             // hidden by this mod before replacing that state with the profile.
             // Entries whose dynamic nodes are unavailable are retained instead
             // of being silently deleted from Trash.
-            for (auto const& entry : pause_menu_studio::hidden_blocks::entries()) {
+            for (auto const& entry : pause_menu_studio::hidden_blocks::entries(pauseModeKey())) {
                 for (auto const& member : entry.members) {
                     if (auto node = findNodeByStoredPath(m_owner, member.path)) node->setVisible(true);
                 }
             }
-            pause_menu_studio::hidden_blocks::clear();
+            pause_menu_studio::hidden_blocks::clear(pauseModeKey());
         }
-        auto generation = Mod::get()->getSavedValue<int64_t>("layout-generation", 0);
-        Mod::get()->setSavedValue<int64_t>("layout-generation", generation + 1);
+        auto generationKey = layoutGenerationStorageKey();
+        auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
+        Mod::get()->setSavedValue<int64_t>(generationKey, generation + 1);
         applySnapshot(m_owner, *snapshot);
         if (hasHiddenState) {
             mergeHiddenSnapshot(*snapshot, hiddenEntries);
             for (auto& [id, entry] : hiddenEntries) {
-                if (entry.id.empty()) entry.id = pause_menu_studio::hidden_blocks::uniqueID("hidden-block");
-                pause_menu_studio::hidden_blocks::upsert(entry);
+                if (entry.id.empty()) {
+                    entry.id = pause_menu_studio::hidden_blocks::uniqueID("hidden-block", pauseModeKey());
+                }
+                pause_menu_studio::hidden_blocks::upsert(entry, pauseModeKey());
             }
         }
         // Old profiles have no visibility metadata, so their Apply operation
         // preserves the current Trash instead of revealing hidden controls.
         applyHiddenVisibility(m_owner);
         m_hasEdits = true;
-        Mod::get()->setSavedValue<std::string>("active-named-layout", name);
+        Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), name);
         clearSelection();
         m_dragging = false;
         m_pendingDrag = false;
@@ -2410,20 +2939,26 @@ private:
     }
 
     void updateHistoryButtons() {
-        auto update = [](CCMenuItemSpriteExtra* button, bool enabled) {
+        auto update = [this](CCMenuItemSpriteExtra* button, bool enabled) {
             if (!button) return;
             button->setEnabled(enabled);
             if (auto image = typeinfo_cast<CCRGBAProtocol*>(button->getNormalImage())) {
                 image->setOpacity(enabled ? 255 : 90);
             }
+            if (auto found = m_controlTiles.find(button); found != m_controlTiles.end()) {
+                found->second->setColor(enabled ? m_controlColors[button] : ccColor3B {34, 31, 55});
+                found->second->setOpacity(enabled ? 170 : 75);
+            }
         };
         update(m_undoButton, !m_undo.empty());
         update(m_redoButton, !m_redo.empty());
+        updateChromeState();
     }
 
     void updateSelectionLabel() {
         if (!m_editing || m_preview || m_selectedNodes.empty()) {
             m_selectionLabel->setString("");
+            if (m_selectionMetaLabel) m_selectionMetaLabel->setString("");
             return;
         }
         if (m_scaleSlider && m_selected) {
@@ -2437,6 +2972,14 @@ private:
                 m_scaleInput->setString(fmt::format("{:.2f}", scale), false);
             }
             m_updatingScaleControls = false;
+            if (m_selectionMetaLabel) {
+                m_selectionMetaLabel->setString(fmt::format(
+                    "{:.2f}x  /  {}", scale, m_moveEnabled ? "MOVE ON" : "LOCKED"
+                ).c_str());
+                m_selectionMetaLabel->setColor(
+                    m_moveEnabled ? ccColor3B {100, 255, 170} : ccColor3B {200, 185, 240}
+                );
+            }
         }
         auto const logicalCount = logicalSelectionCount();
         if (logicalCount > 1) {
@@ -2502,6 +3045,7 @@ private:
         auto const children = node->getChildrenCount();
         auto const visualNode =
             typeinfo_cast<CCSprite*>(node) ||
+            typeinfo_cast<Label*>(node) ||
             typeinfo_cast<CCLabelBMFont*>(node) ||
             typeinfo_cast<CCLabelTTF*>(node) ||
             typeinfo_cast<CCMenuItem*>(node) ||
@@ -2535,7 +3079,7 @@ private:
         m_contextPanel->stopAllActions();
         m_contextPanel->setScale(1.f);
         m_contextPanel->runAction(CCSequence::create(
-            CCEaseSineOut::create(CCScaleTo::create(.08f, 1.06f)),
+            CCEaseSineOut::create(CCScaleTo::create(.08f, 1.035f)),
             CCEaseSineIn::create(CCScaleTo::create(.12f, 1.f)),
             nullptr
         ));
@@ -2560,9 +3104,12 @@ private:
             return;
         }
         auto const multiple = logicalSelectionCount() > 1;
+        auto const accent = editorAccentColor();
         ccColor4F const color = multiple
             ? ccColor4F {1.f, .48f, .08f, 1.f}
-            : ccColor4F {.15f, 1.f, 1.f, 1.f};
+            : ccColor4F {
+                accent.r / 255.f, accent.g / 255.f, accent.b / 255.f, 1.f
+            };
 
         OutlineBounds contextBounds;
         std::unordered_set<CCNode*> groupedNodes;
@@ -2608,12 +3155,17 @@ private:
             if (y + panelSize.height > screen.height - 4.f) {
                 y = contextBounds.minY - panelSize.height - 8.f;
             }
-            y = std::clamp(y, 68.f, std::max(68.f, screen.height - panelSize.height - 4.f));
+            y = std::clamp(y, 78.f, std::max(78.f, screen.height - panelSize.height - 4.f));
             m_contextPanel->setPosition({x, y});
             m_contextPanel->setVisible(true);
             if (!m_contextWasVisible) {
-                m_contextPanel->setScale(.88f);
-                m_contextPanel->runAction(CCEaseBackOut::create(CCScaleTo::create(.18f, 1.f)));
+                m_contextPanel->setOpacity(0);
+                m_contextPanel->setScale(.9f);
+                m_contextPanel->runAction(CCSpawn::create(
+                    CCFadeTo::create(.16f, 190),
+                    CCEaseBackOut::create(CCScaleTo::create(.19f, 1.f)),
+                    nullptr
+                ));
             }
             m_contextWasVisible = true;
         }
@@ -2832,12 +3384,17 @@ class $modify(PauseMenuStudioLayer, PauseLayer) {
 
     void customSetup() {
         PauseLayer::customSetup();
+        // Platformer adds a different top-level play-time node and a different
+        // center-button set. Ask the registered NodeIDs provider to finish its
+        // IDs before the editor captures paths or builds logical selections.
+        NodeIDs::provideFor(this);
         if (!Mod::get()->getSettingValue<bool>("enabled")) return;
 
         auto const savedSchema = Mod::get()->getSavedValue<int>("layout-schema", 0);
         if (savedSchema < LAYOUT_SCHEMA) {
-            auto generation = Mod::get()->getSavedValue<int64_t>("layout-generation", 0);
-            Mod::get()->setSavedValue<int64_t>("layout-generation", generation + 1);
+            auto generationKey = layoutGenerationStorageKey();
+            auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
+            Mod::get()->setSavedValue<int64_t>(generationKey, generation + 1);
             Mod::get()->setSavedValue<int>("layout-schema", LAYOUT_SCHEMA);
         }
 

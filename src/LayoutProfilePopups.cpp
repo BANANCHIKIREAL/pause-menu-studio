@@ -1,6 +1,8 @@
 #include "LayoutProfilePopups.hpp"
 #include "LayoutProfiles.hpp"
 
+#include <Geode/ui/Label.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <ctime>
@@ -94,6 +96,7 @@ void LayoutNamePopup::onSave(CCObject*) {
 LayoutListPopup* LayoutListPopup::create(
     std::vector<std::string> names,
     std::string activeName,
+    std::string title,
     Function<void(std::string)> applyCallback,
     Function<bool(std::string, std::string)> renameCallback,
     Function<bool(std::string, std::string)> duplicateCallback,
@@ -101,7 +104,7 @@ LayoutListPopup* LayoutListPopup::create(
 ) {
     auto ret = new LayoutListPopup();
     if (ret && ret->init(
-        std::move(names), std::move(activeName),
+        std::move(names), std::move(activeName), std::move(title),
         std::move(applyCallback), std::move(renameCallback),
         std::move(duplicateCallback), std::move(deleteCallback)
     )) {
@@ -115,6 +118,7 @@ LayoutListPopup* LayoutListPopup::create(
 bool LayoutListPopup::init(
     std::vector<std::string> names,
     std::string activeName,
+    std::string title,
     Function<void(std::string)> applyCallback,
     Function<bool(std::string, std::string)> renameCallback,
     Function<bool(std::string, std::string)> duplicateCallback,
@@ -127,7 +131,7 @@ bool LayoutListPopup::init(
     m_renameCallback = std::move(renameCallback);
     m_duplicateCallback = std::move(duplicateCallback);
     m_deleteCallback = std::move(deleteCallback);
-    setTitle("Saved layouts");
+    setTitle(title.c_str());
 
     m_scroll = ScrollLayer::create({390.f, 235.f});
     m_scroll->setPosition({25.f, 25.f});
@@ -146,7 +150,7 @@ void LayoutListPopup::rebuildList() {
     content->setPositionY(235.f - height);
 
     if (m_names.empty()) {
-        auto empty = CCLabelBMFont::create("No saved layouts", "bigFont.fnt");
+        auto empty = Label::create("No saved layouts", "bigFont.fnt");
         empty->setScale(.45f);
         empty->setOpacity(150);
         empty->setPosition({195.f, height - 110.f});
@@ -168,15 +172,15 @@ void LayoutListPopup::rebuildList() {
         card->setOpacity(235);
         row->addChild(card, -2);
 
-        auto label = CCLabelBMFont::create(name.c_str(), "bigFont.fnt");
+        auto label = Label::create(name, "bigFont.fnt");
         label->setAnchorPoint({0.f, .5f});
         label->setPosition({18.f, y + 12.f});
         label->setScale(.44f);
-        label->limitLabelWidth(220.f, .44f, .2f);
+        label->setLimitLabelWidth(220.f, .44f, .2f);
         if (name == m_activeName) label->setColor({100, 255, 170});
         row->addChild(label);
 
-        auto date = CCLabelBMFont::create(savedDate(name).c_str(), "chatFont.fnt");
+        auto date = Label::create(savedDate(name), "chatFont.fnt");
         date->setAnchorPoint({0.f, .5f});
         date->setPosition({18.f, y - 9.f});
         date->setScale(.42f);
