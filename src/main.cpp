@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CustomSongWidget.hpp>
+#include <Geode/modify/LoadingLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/ui/Label.hpp>
@@ -21,6 +22,7 @@
 #include <functional>
 #include <map>
 #include <limits>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -32,6 +34,10 @@ using namespace geode::prelude;
 namespace {
 constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
+constexpr char const* UPDATE_RELEASES_URL =
+    "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.0.2";
+constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
 constexpr std::array<std::string_view, 4> INFO_CARD_IDS {
@@ -39,6 +45,91 @@ constexpr std::array<std::string_view, 4> INFO_CARD_IDS {
 };
 
 std::map<int, LadderDemon> g_dibDemons;
+bool g_startupUpdateCheckStarted = false;
+std::optional<std::string> g_cachedAvailableUpdateVersion;
+
+struct UpdateCandidate {
+    VersionInfo version;
+    std::string url;
+    std::string digest;
+};
+
+template <class Releases>
+std::optional<UpdateCandidate> latestUpdateCandidate(Releases const& releases) {
+    std::optional<UpdateCandidate> best;
+    auto const current = Mod::get()->getVersion();
+    for (auto const& release : releases) {
+        auto draft = release.template get<bool>("draft");
+        if (draft.isOk() && draft.unwrap()) continue;
+        auto tag = release.template get<std::string>("tag_name");
+        if (tag.isErr()) continue;
+        auto version = VersionInfo::parse(tag.unwrap());
+        if (version.isErr() || version.unwrap() <= current) continue;
+
+        auto assets = release.template get<std::vector<matjson::Value>>("assets");
+        if (assets.isErr()) continue;
+        std::string selectedURL;
+        std::string selectedDigest;
+        for (auto const& asset : assets.unwrap()) {
+            auto name = asset.template get<std::string>("name");
+            auto url = asset.template get<std::string>("browser_download_url");
+            if (name.isErr() || url.isErr() || !name.unwrap().ends_with(".geode")) continue;
+            auto digest = asset.template get<std::string>("digest");
+            auto const exact = name.unwrap() == "bananchikireal.pause-menu-studio.geode";
+            if (selectedURL.empty() || exact) {
+                selectedURL = url.unwrap();
+                selectedDigest = digest.isOk() ? digest.unwrap() : "";
+            }
+            if (exact) break;
+        }
+        if (selectedURL.empty()) continue;
+        if (!best || version.unwrap() > best->version) {
+            best = UpdateCandidate {version.unwrap(), std::move(selectedURL), std::move(selectedDigest)};
+        }
+    }
+    return best;
+}
+
+void rememberAvailableUpdate(std::optional<UpdateCandidate> const& candidate) {
+    auto value = candidate ? candidate->version.toVString() : std::string();
+    g_cachedAvailableUpdateVersion = value;
+    Mod::get()->setSavedValue<std::string>(UPDATE_CACHE_KEY, value);
+}
+
+std::string cachedAvailableUpdateVersion() {
+    if (g_cachedAvailableUpdateVersion.has_value()) return *g_cachedAvailableUpdateVersion;
+    auto cached = Mod::get()->getSavedValue<std::string>(UPDATE_CACHE_KEY, "");
+    auto version = VersionInfo::parse(cached);
+    if (version.isOk() && version.unwrap() > Mod::get()->getVersion()) {
+        g_cachedAvailableUpdateVersion = version.unwrap().toVString();
+    } else {
+        g_cachedAvailableUpdateVersion = std::string();
+        if (!cached.empty()) Mod::get()->setSavedValue<std::string>(UPDATE_CACHE_KEY, "");
+    }
+    return *g_cachedAvailableUpdateVersion;
+}
+
+TaskHolder<web::WebResponse>& startupUpdateRequest() {
+    static TaskHolder<web::WebResponse> request;
+    return request;
+}
+
+void showLoadingUpdateBanner(
+    CCNode* banner,
+    CCLabelBMFont* label,
+    std::string const& version
+) {
+    if (!banner || !label || version.empty()) return;
+    label->setString(fmt::format("PAUSE MENU STUDIO {} AVAILABLE!", version).c_str());
+    auto scale = .38f;
+    auto const availableWidth = banner->getContentWidth() - 18.f;
+    auto const textWidth = label->getContentWidth();
+    if (textWidth * scale > availableWidth && textWidth > .001f) {
+        scale = availableWidth / textWidth;
+    }
+    label->setScale(scale);
+    banner->setVisible(true);
+}
 
 std::string stableLevelName(PlayLayer* play, GJGameLevel* level);
 
@@ -1035,6 +1126,7 @@ public:
         };
         m_deleteKey = bindRemove(KEY_Delete);
         buildControls();
+        schedule(schedule_selector(PauseEditor::pollUpdateBadge), .5f);
         setEditing(Mod::get()->getSettingValue<bool>("edit-on-open"));
         return true;
     }
@@ -1210,6 +1302,7 @@ private:
     CCMenuItemSpriteExtra* m_undoButton = nullptr;
     CCMenuItemSpriteExtra* m_redoButton = nullptr;
     CCMenuItemSpriteExtra* m_updateButton = nullptr;
+    CCNode* m_updateBadge = nullptr;
     CCMenuItemSpriteExtra* m_resetButton = nullptr;
     CCMenuItemSpriteExtra* m_hideButton = nullptr;
     CCMenuItemSpriteExtra* m_trashButton = nullptr;
@@ -1753,7 +1846,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.0.1", "bigFont.fnt");
+        auto beta = Label::create("V4.0.2", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -1836,6 +1929,24 @@ private:
         makeControl(m_historyMenu, "GJ_downloadBtn_001.png", controlPositions[2], menu_selector(PauseEditor::onSaveProfile), "save-layout-button", 26.f, {45, 105, 88});
         makeControl(m_historyMenu, layoutsIconFrame.c_str(), controlPositions[3], menu_selector(PauseEditor::onLayouts), "saved-layouts-button", 26.f, {76, 52, 128});
         m_updateButton = makeControl(m_historyMenu, downloadIconFrame.c_str(), controlPositions[4], menu_selector(PauseEditor::onUpdates), "updates-button", 26.f, {38, 118, 105});
+        if (auto visual = m_updateButton ? m_updateButton->getNormalImage() : nullptr) {
+            auto badge = CCScale9Sprite::create("square02_001.png");
+            badge->setID("updates-available-badge");
+            badge->setContentSize({15.f, 15.f});
+            badge->setPosition({39.f, 43.f});
+            badge->setColor({225, 45, 55});
+            badge->setOpacity(255);
+            auto mark = Label::create("!", "bigFont.fnt");
+            mark->setPosition({7.5f, 7.5f});
+            mark->setScale(.38f);
+            mark->setColor(ccWHITE);
+            mark->setOpacity(255);
+            badge->addChild(mark);
+            badge->setVisible(false);
+            visual->addChild(badge, 8);
+            m_updateBadge = badge;
+        }
+        refreshUpdateBadge();
         m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 26.f, {116, 52, 86});
         m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), controlPositions[6], menu_selector(PauseEditor::onReset), "reset-button", 24.f, {132, 76, 38});
         makeControl(m_historyMenu, viewIconFrame.c_str(), controlPositions[7], menu_selector(PauseEditor::onPreview), "preview-button", 24.f, {38, 96, 132});
@@ -1953,10 +2064,10 @@ private:
         m_selectionMetaLabel = Label::create("", "chatFont.fnt");
         m_selectionMetaLabel->setAnchorPoint({1.f, .5f});
         m_selectionMetaLabel->setPosition({contextWidth - 10.f, 68.f});
-        m_selectionMetaLabel->setScale(.22f);
-        m_selectionMetaLabel->setColor({200, 185, 240});
-        m_selectionMetaLabel->setOpacity(225);
-        m_selectionMetaLabel->setLimitLabelWidth(142.f, .22f, .15f);
+        m_selectionMetaLabel->setScale(.34f);
+        m_selectionMetaLabel->setColor({225, 215, 255});
+        m_selectionMetaLabel->setOpacity(255);
+        m_selectionMetaLabel->setLimitLabelWidth(150.f, .34f, .24f);
         m_contextPanel->addChild(m_selectionMetaLabel, 2);
 
         m_selectionOutline = CCDrawNode::create();
@@ -2069,6 +2180,14 @@ private:
     }
     void onHide(CCObject*) { hideSelection(); }
     void onPreview(CCObject*) { setPreview(!m_preview); }
+    void pollUpdateBadge(float) { refreshUpdateBadge(); }
+    void refreshUpdateBadge() {
+        if (m_updateBadge) {
+            m_updateBadge->setVisible(
+                m_pendingUpdateVersion.empty() && !cachedAvailableUpdateVersion().empty()
+            );
+        }
+    }
     void showUpdateNotice(std::string const& text, NotificationIcon icon, float time = 0.f) {
         if (m_updateNotice) m_updateNotice->cancel();
         m_updateNotice = Notification::create(text, icon, time);
@@ -2159,6 +2278,8 @@ private:
 
         m_updateBusy = false;
         m_pendingUpdateVersion = expectedVersion.toVString();
+        rememberAvailableUpdate(std::nullopt);
+        refreshUpdateBadge();
         showUpdateNotice("Update installed - restart required", NotificationIcon::Success, 3.f);
         showRestartForUpdate(m_pendingUpdateVersion);
     }
@@ -2172,7 +2293,7 @@ private:
         showUpdateNotice("Downloading update: 0%", NotificationIcon::Loading);
         auto self = WeakRef<PauseEditor>(this);
         auto request = web::WebRequest();
-        request.userAgent("Pause-Menu-Studio-Updater/4.0.1");
+        request.userAgent(UPDATE_USER_AGENT);
         request.header("Accept", "application/octet-stream");
         request.timeout(std::chrono::seconds(120));
         request.onProgress([self](web::WebProgress const& progress) {
@@ -2208,47 +2329,16 @@ private:
             return;
         }
 
-        struct Candidate {
-            VersionInfo version;
-            std::string url;
-            std::string digest;
-        };
-        std::optional<Candidate> best;
-        auto const current = Mod::get()->getVersion();
-        for (auto const& release : releases.unwrap()) {
-            auto draft = release.get<bool>("draft");
-            if (draft.isOk() && draft.unwrap()) continue;
-            auto tag = release.get<std::string>("tag_name");
-            if (tag.isErr()) continue;
-            auto version = VersionInfo::parse(tag.unwrap());
-            if (version.isErr() || version.unwrap() <= current) continue;
-
-            auto assets = release.get<std::vector<matjson::Value>>("assets");
-            if (assets.isErr()) continue;
-            std::string selectedURL;
-            std::string selectedDigest;
-            for (auto const& asset : assets.unwrap()) {
-                auto name = asset.get<std::string>("name");
-                auto url = asset.get<std::string>("browser_download_url");
-                if (name.isErr() || url.isErr() || !name.unwrap().ends_with(".geode")) continue;
-                auto digest = asset.get<std::string>("digest");
-                auto const exact = name.unwrap() == "bananchikireal.pause-menu-studio.geode";
-                if (selectedURL.empty() || exact) {
-                    selectedURL = url.unwrap();
-                    selectedDigest = digest.isOk() ? digest.unwrap() : "";
-                }
-                if (exact) break;
-            }
-            if (selectedURL.empty()) continue;
-            if (!best || version.unwrap() > best->version) {
-                best = Candidate {version.unwrap(), std::move(selectedURL), std::move(selectedDigest)};
-            }
-        }
+        auto best = latestUpdateCandidate(releases.unwrap());
 
         if (!best) {
+            rememberAvailableUpdate(std::nullopt);
+            refreshUpdateBadge();
             showUpdateNotice("Pause Menu Studio is up to date", NotificationIcon::Success, 2.5f);
             return;
         }
+        rememberAvailableUpdate(best);
+        refreshUpdateBadge();
         if (m_updateNotice) m_updateNotice->cancel();
         auto self = WeakRef<PauseEditor>(this);
         auto versionText = best->version.toVString();
@@ -2278,12 +2368,12 @@ private:
         showUpdateNotice("Checking for updates...", NotificationIcon::Loading);
         auto self = WeakRef<PauseEditor>(this);
         auto request = web::WebRequest();
-        request.userAgent("Pause-Menu-Studio-Updater/4.0.1");
+        request.userAgent(UPDATE_USER_AGENT);
         request.header("Accept", "application/vnd.github+json");
         request.header("X-GitHub-Api-Version", "2022-11-28");
         request.timeout(std::chrono::seconds(20));
         m_updateCheckRequest.spawn(
-            request.get("https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10"),
+            request.get(UPDATE_RELEASES_URL),
             [self](web::WebResponse response) {
                 if (auto editor = self.lock()) editor->handleUpdateCheck(std::move(response));
             }
@@ -3214,6 +3304,87 @@ void applyPreset(PauseLayer* layer) {
     }
 }
 }
+
+class $modify(PauseMenuStudioLoadingLayer, LoadingLayer) {
+    struct Fields {
+        CCNode* updateBanner = nullptr;
+        CCLabelBMFont* updateLabel = nullptr;
+    };
+
+    void buildUpdateBanner() {
+        auto const screen = CCDirector::sharedDirector()->getWinSize();
+        auto const width = std::min(360.f, screen.width - 20.f);
+        auto banner = CCNode::create();
+        banner->setID("pause-menu-studio-update-banner");
+        banner->setContentSize({width, 30.f});
+        banner->setAnchorPoint({.5f, .5f});
+        banner->setPosition({screen.width / 2.f, 44.f});
+        banner->setVisible(false);
+
+        auto border = CCLayerColor::create({70, 235, 255, 255}, width, 30.f);
+        banner->addChild(border);
+        auto background = CCLayerColor::create({25, 15, 55, 235}, width - 4.f, 26.f);
+        background->setPosition({2.f, 2.f});
+        banner->addChild(background, 1);
+
+        auto label = CCLabelBMFont::create("", "bigFont.fnt");
+        label->setPosition({width / 2.f, 15.f});
+        label->setColor({255, 235, 75});
+        label->setOpacity(255);
+        banner->addChild(label, 2);
+
+        m_fields->updateBanner = banner;
+        m_fields->updateLabel = label;
+        addChild(banner, 1000);
+    }
+
+    void showAvailableUpdate(std::string const& version) {
+        showLoadingUpdateBanner(m_fields->updateBanner, m_fields->updateLabel, version);
+    }
+
+    bool init(bool refresh) {
+        if (!LoadingLayer::init(refresh)) return false;
+        buildUpdateBanner();
+        showAvailableUpdate(cachedAvailableUpdateVersion());
+
+        if (!g_startupUpdateCheckStarted) {
+            g_startupUpdateCheckStarted = true;
+            auto request = web::WebRequest();
+            request.userAgent(UPDATE_USER_AGENT);
+            request.header("Accept", "application/vnd.github+json");
+            request.header("X-GitHub-Api-Version", "2022-11-28");
+            request.timeout(std::chrono::seconds(20));
+            // Keep the request alive after the loading scene closes so the
+            // Pause Edit Mode badge is still updated during this launch. The
+            // WeakRefs retain only the child banner and label, never their
+            // LoadingLayer parent, so they cannot keep the loading scene open.
+            auto banner = WeakRef<CCNode>(m_fields->updateBanner);
+            auto label = WeakRef<CCLabelBMFont>(m_fields->updateLabel);
+            startupUpdateRequest().spawn(
+                request.get(UPDATE_RELEASES_URL),
+                [banner, label](web::WebResponse response) {
+                    if (!response.ok()) return;
+                    auto parsed = response.json();
+                    if (parsed.isErr()) return;
+                    auto releases = parsed.unwrap().asArray();
+                    if (releases.isErr()) return;
+                    auto candidate = latestUpdateCandidate(releases.unwrap());
+                    rememberAvailableUpdate(candidate);
+                    auto bannerNode = banner.lock();
+                    auto labelNode = label.lock();
+                    if (candidate && bannerNode && labelNode && bannerNode->getParent()) {
+                        showLoadingUpdateBanner(
+                            bannerNode.data(), labelNode.data(), candidate->version.toVString()
+                        );
+                    } else if (!candidate && bannerNode) {
+                        bannerNode->setVisible(false);
+                    }
+                }
+            );
+        }
+        return true;
+    }
+};
 
 class $modify(PauseMenuStudioPlayLayer, PlayLayer) {
     struct Fields {

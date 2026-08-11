@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v4.0.1</c>
+# <cy>Pause Menu Studio</c> <cg>v4.0.2</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -88,6 +88,8 @@ In v3.0.2, Hidden Blocks uses a visual two-column grid, stores the actual reusab
 ## <cg>IN-GAME UPDATES</c>
 
 Press <cy>UPDATES</c> in Edit Mode to check the public Pause Menu Studio GitHub Releases server.
+
+The same check runs automatically while Geometry Dash loads. A visible loading-screen banner and a red <cr>!</c> above UPDATES remain available until the newer package is installed.
 
 If a newer release is available, the mod asks before downloading it, shows progress, validates the package identity, version, compatibility, and published SHA-256 digest, then stages it for the next restart. The currently running code is never hot-swapped.
 

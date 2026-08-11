@@ -101,6 +101,7 @@ Version 4 adds an **UPDATES** button to Edit Mode. It checks the public
 for a newer stable or prerelease version.
 
 - The game asks for confirmation before downloading anything.
+- Geometry Dash checks the feed while its loading screen is visible. A banner announces a newer version, and a red **!** stays above **UPDATES** in Edit Mode.
 - Download progress is shown inside Geometry Dash.
 - When GitHub publishes a SHA-256 digest, the downloaded bytes must match it.
 - The package must contain the Pause Menu Studio mod ID, the advertised version, and compatible Geometry Dash/Geode targets.
@@ -338,6 +339,12 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.0.2
+
+- Checks GitHub Releases during the Geometry Dash loading screen and shows a visible update banner when a newer version exists.
+- Keeps a red `!` above the Updates control until the update is installed.
+- Makes the selected block's scale and movement-lock status substantially easier to read.
 
 ### v4.0.1
 

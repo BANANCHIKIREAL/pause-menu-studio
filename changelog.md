@@ -1,3 +1,10 @@
+# v4.0.2
+
+- Added an automatic GitHub Releases check while Geometry Dash is loading.
+- Added a loading-screen banner when a newer Pause Menu Studio release is available.
+- Added a persistent red `!` above the Updates icon while an update is available.
+- Increased the size, brightness, and minimum scale of the selected block's scale/movement status text.
+
 # v4.0.1
 
 - Replaced the Updates, Layouts, and Move artwork with the supplied clean white icons.
