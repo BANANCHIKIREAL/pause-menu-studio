@@ -36,9 +36,9 @@ using namespace geode::prelude;
 namespace {
 constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
-constexpr char const* UPDATE_RELEASES_URL =
-    "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.4";
+constexpr char const* UPDATE_MANIFEST_URL =
+    "https://pause-menu-studio.vercel.app/update.json";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.5";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -57,46 +57,35 @@ struct UpdateCandidate {
     std::string releaseNotes;
 };
 
-template <class Releases>
-std::optional<UpdateCandidate> latestUpdateCandidate(Releases const& releases) {
-    std::optional<UpdateCandidate> best;
-    auto const current = Mod::get()->getVersion();
-    for (auto const& release : releases) {
-        auto draft = release.template get<bool>("draft");
-        if (draft.isOk() && draft.unwrap()) continue;
-        auto tag = release.template get<std::string>("tag_name");
-        if (tag.isErr()) continue;
-        auto version = VersionInfo::parse(tag.unwrap());
-        if (version.isErr() || version.unwrap() <= current) continue;
+struct ParsedUpdateManifest {
+    bool valid = false;
+    std::optional<UpdateCandidate> candidate;
+};
 
-        auto assets = release.template get<std::vector<matjson::Value>>("assets");
-        if (assets.isErr()) continue;
-        std::string selectedURL;
-        std::string selectedDigest;
-        for (auto const& asset : assets.unwrap()) {
-            auto name = asset.template get<std::string>("name");
-            auto url = asset.template get<std::string>("browser_download_url");
-            if (name.isErr() || url.isErr() || !name.unwrap().ends_with(".geode")) continue;
-            auto digest = asset.template get<std::string>("digest");
-            auto const exact = name.unwrap() == "bananchikireal.pause-menu-studio.geode";
-            if (selectedURL.empty() || exact) {
-                selectedURL = url.unwrap();
-                selectedDigest = digest.isOk() ? digest.unwrap() : "";
-            }
-            if (exact) break;
+ParsedUpdateManifest updateCandidateFromManifest(matjson::Value const& manifest) {
+    auto tag = manifest.get<std::string>("version");
+    auto url = manifest.get<std::string>("url");
+    auto digest = manifest.get<std::string>("digest");
+    if (tag.isErr() || url.isErr() || digest.isErr()) return {};
+
+    auto version = VersionInfo::parse(tag.unwrap());
+    auto const expectedURLPrefix =
+        "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/";
+    auto const validURL = url.unwrap().starts_with(expectedURLPrefix) && url.unwrap().ends_with(".geode");
+    auto const validDigest = digest.unwrap().size() == 71 && digest.unwrap().starts_with("sha256:");
+    if (version.isErr() || !validURL || !validDigest) return {};
+    if (version.unwrap() <= Mod::get()->getVersion()) return {true, std::nullopt};
+
+    auto releaseNotes = manifest.get<std::string>("release_notes");
+    return {
+        true,
+        UpdateCandidate {
+            version.unwrap(),
+            url.unwrap(),
+            digest.unwrap(),
+            releaseNotes.isOk() ? releaseNotes.unwrap() : std::string()
         }
-        if (selectedURL.empty()) continue;
-        if (!best || version.unwrap() > best->version) {
-            auto releaseNotes = release.template get<std::string>("body");
-            best = UpdateCandidate {
-                version.unwrap(),
-                std::move(selectedURL),
-                std::move(selectedDigest),
-                releaseNotes.isOk() ? releaseNotes.unwrap() : std::string()
-            };
-        }
-    }
-    return best;
+    };
 }
 
 void rememberAvailableUpdate(std::optional<UpdateCandidate> const& candidate) {
@@ -2030,7 +2019,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.4", "bigFont.fnt");
+        auto beta = Label::create("V4.1.5", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2563,13 +2552,13 @@ private:
             failUpdate("Update server returned invalid data");
             return;
         }
-        auto releases = parsed.unwrap().asArray();
-        if (releases.isErr()) {
-            failUpdate("Update server returned an invalid release list");
+        auto manifest = updateCandidateFromManifest(parsed.unwrap());
+        if (!manifest.valid) {
+            failUpdate("Update server returned an invalid manifest");
             return;
         }
 
-        auto best = latestUpdateCandidate(releases.unwrap());
+        auto best = std::move(manifest.candidate);
 
         if (!best) {
             rememberAvailableUpdate(std::nullopt);
@@ -2612,11 +2601,10 @@ private:
         auto self = WeakRef<PauseEditor>(this);
         auto request = web::WebRequest();
         request.userAgent(UPDATE_USER_AGENT);
-        request.header("Accept", "application/vnd.github+json");
-        request.header("X-GitHub-Api-Version", "2022-11-28");
+        request.header("Accept", "application/json");
         request.timeout(std::chrono::seconds(20));
         m_updateCheckRequest.spawn(
-            request.get(UPDATE_RELEASES_URL),
+            request.get(UPDATE_MANIFEST_URL),
             [self](web::WebResponse response) {
                 if (auto editor = self.lock()) editor->handleUpdateCheck(std::move(response));
             }
@@ -3653,8 +3641,7 @@ public:
             g_startupUpdateCheckStarted = true;
             auto request = web::WebRequest();
             request.userAgent(UPDATE_USER_AGENT);
-            request.header("Accept", "application/vnd.github+json");
-            request.header("X-GitHub-Api-Version", "2022-11-28");
+            request.header("Accept", "application/json");
             request.timeout(std::chrono::seconds(20));
             // Keep the request alive after the loading scene closes so the
             // Pause Edit Mode badge is still updated during this launch. The
@@ -3663,14 +3650,14 @@ public:
             auto banner = WeakRef<CCNode>(m_fields->updateBanner);
             auto label = WeakRef<CCLabelBMFont>(m_fields->updateLabel);
             startupUpdateRequest().spawn(
-                request.get(UPDATE_RELEASES_URL),
+                request.get(UPDATE_MANIFEST_URL),
                 [banner, label](web::WebResponse response) {
                     if (!response.ok()) return;
                     auto parsed = response.json();
                     if (parsed.isErr()) return;
-                    auto releases = parsed.unwrap().asArray();
-                    if (releases.isErr()) return;
-                    auto candidate = latestUpdateCandidate(releases.unwrap());
+                    auto manifest = updateCandidateFromManifest(parsed.unwrap());
+                    if (!manifest.valid) return;
+                    auto candidate = std::move(manifest.candidate);
                     rememberAvailableUpdate(candidate);
                     auto bannerNode = banner.lock();
                     auto labelNode = label.lock();

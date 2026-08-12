@@ -349,6 +349,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.5
+
+- Replaced unauthenticated GitHub REST API update checks with a small first-party `update.json` manifest hosted on the mod website.
+- Update checks no longer consume GitHub's IP-based 60-request hourly REST API allowance.
+- The manifest validates the release URL, version, and required SHA-256 digest before offering a download.
+
 ### v4.1.4
 
 - The in-game updater now displays the selected GitHub Release's `What's New & Fixed` notes before downloading.

@@ -1,3 +1,10 @@
+# v4.1.5
+
+- Fixed update checks failing with `HTTP 403` after GitHub's unauthenticated REST API allowance for the current public IP reached `60/60` requests.
+- Replaced GitHub REST API release discovery with the first-party `https://pause-menu-studio.vercel.app/update.json` manifest.
+- The updater now validates the manifest version, official GitHub release URL, and required SHA-256 digest before showing or installing an update.
+- GitHub remains the package download host, but checking for an update no longer consumes its REST API rate limit.
+
 # v4.1.4
 
 - Added a dedicated update-details window to the in-game updater.
