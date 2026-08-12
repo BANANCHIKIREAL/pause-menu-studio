@@ -1,3 +1,10 @@
+# v4.1.6
+
+- Replaced the Edit Mode **Save**, **Layouts**, **Trash**, **Undo**, and **Redo** graphics with a matching pure-white icon set.
+- Save now uses a folder with a downward arrow; Layouts uses a clean open-folder symbol; Trash uses the requested solid bin design.
+- Undo and Redo are exact mirrored variants of the same curved arrow, keeping their weight, padding, and scale consistent.
+- Normalized all five icons to transparent `128x128` PNG resources and equalized their visible size in the toolbar.
+
 # v4.1.5
 
 - Fixed update checks failing with `HTTP 403` after GitHub's unauthenticated REST API allowance for the current public IP reached `60/60` requests.

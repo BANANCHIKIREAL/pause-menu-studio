@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.1.5",
+    "version": "v4.1.6",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -24,7 +24,11 @@
             "resources/download-icon.png",
             "resources/layouts-icon.png",
             "resources/move-icon.png",
+            "resources/redo-icon.png",
             "resources/reset-icon.png",
+            "resources/save-icon.png",
+            "resources/trash-icon.png",
+            "resources/undo-icon.png",
             "resources/view-icon.png"
         ]
     },

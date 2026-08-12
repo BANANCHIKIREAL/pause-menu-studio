@@ -38,7 +38,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.5";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.6";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -2019,7 +2019,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.5", "bigFont.fnt");
+        auto beta = Label::create("V4.1.6", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2035,7 +2035,11 @@ private:
         auto downloadIconFrame = Mod::get()->expandSpriteName("download-icon.png");
         auto layoutsIconFrame = Mod::get()->expandSpriteName("layouts-icon.png");
         auto moveIconFrame = Mod::get()->expandSpriteName("move-icon.png");
+        auto redoIconFrame = Mod::get()->expandSpriteName("redo-icon.png");
         auto resetIconFrame = Mod::get()->expandSpriteName("reset-icon.png");
+        auto saveIconFrame = Mod::get()->expandSpriteName("save-icon.png");
+        auto trashIconFrame = Mod::get()->expandSpriteName("trash-icon.png");
+        auto undoIconFrame = Mod::get()->expandSpriteName("undo-icon.png");
         auto viewIconFrame = Mod::get()->expandSpriteName("view-icon.png");
 
         auto makeControl = [this, &makeIcon](
@@ -2097,9 +2101,9 @@ private:
         for (size_t index = 0; index < controlPositions.size(); ++index) {
             controlPositions[index] = (static_cast<float>(index) - 3.5f) * controlStep;
         }
-        m_undoButton = makeControl(m_historyMenu, "GJ_undoBtn_001.png", controlPositions[0], menu_selector(PauseEditor::onUndo), "undo-button", 26.f, {48, 62, 112});
-        m_redoButton = makeControl(m_historyMenu, "GJ_redoBtn_001.png", controlPositions[1], menu_selector(PauseEditor::onRedo), "redo-button", 26.f, {48, 62, 112});
-        makeControl(m_historyMenu, "GJ_downloadBtn_001.png", controlPositions[2], menu_selector(PauseEditor::onSaveProfile), "save-layout-button", 26.f, {45, 105, 88});
+        m_undoButton = makeControl(m_historyMenu, undoIconFrame.c_str(), controlPositions[0], menu_selector(PauseEditor::onUndo), "undo-button", 25.f, {48, 62, 112});
+        m_redoButton = makeControl(m_historyMenu, redoIconFrame.c_str(), controlPositions[1], menu_selector(PauseEditor::onRedo), "redo-button", 25.f, {48, 62, 112});
+        makeControl(m_historyMenu, saveIconFrame.c_str(), controlPositions[2], menu_selector(PauseEditor::onSaveProfile), "save-layout-button", 25.f, {45, 105, 88});
         makeControl(m_historyMenu, layoutsIconFrame.c_str(), controlPositions[3], menu_selector(PauseEditor::onLayouts), "saved-layouts-button", 26.f, {76, 52, 128});
         m_updateButton = makeControl(m_historyMenu, downloadIconFrame.c_str(), controlPositions[4], menu_selector(PauseEditor::onUpdates), "updates-button", 26.f, {38, 118, 105});
         if (auto visual = m_updateButton ? m_updateButton->getNormalImage() : nullptr) {
@@ -2107,7 +2111,7 @@ private:
             visual->addChild(m_updateBadge, 8);
         }
         refreshUpdateBadge();
-        m_trashButton = makeControl(m_historyMenu, "GJ_trashBtn_001.png", controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 26.f, {116, 52, 86});
+        m_trashButton = makeControl(m_historyMenu, trashIconFrame.c_str(), controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 25.f, {116, 52, 86});
         m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), controlPositions[6], menu_selector(PauseEditor::onReset), "reset-button", 24.f, {132, 76, 38});
         makeControl(m_historyMenu, viewIconFrame.c_str(), controlPositions[7], menu_selector(PauseEditor::onPreview), "preview-button", 24.f, {38, 96, 132});
 

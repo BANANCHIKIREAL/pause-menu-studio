@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.1.5",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.1.5/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:1cd90840cf3410197a7acd806924044ae6b494bbcbf43fa92c2c0cabb63f4322",
-  "release_notes": "## What's New & Fixed\n\n- Fixed update checks failing with HTTP 403 after GitHub's unauthenticated REST API limit reached 60/60 requests for the current public IP.\n- Replaced GitHub REST API release discovery with the first-party Pause Menu Studio update manifest.\n- Checking for updates no longer consumes GitHub's hourly REST API allowance.\n- The updater validates the official release URL, version, and required SHA-256 digest before offering the download.\n- GitHub remains the download host for the verified .geode package."
+  "version": "v4.1.6",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.1.6/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:cc49984aa3f49f1df623148e975a12b05398063fee1b8dd12b94145c17fcd12b",
+  "release_notes": "## What's New & Fixed\n\n- Replaced the Save, Layouts, Trash, Undo, and Redo toolbar graphics with a matching pure-white icon set.\n- Save now uses a folder with a downward arrow.\n- Layouts now uses a clean open-folder symbol.\n- Trash now uses the requested solid bin design.\n- Undo and Redo are exact mirrored versions of the same curved arrow.\n- Normalized all five graphics to transparent 128x128 PNG resources with consistent padding and visible size."
 }

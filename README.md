@@ -349,6 +349,13 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.6
+
+- Replaced the Save, Layouts, Trash, Undo, and Redo toolbar graphics with a matching pure-white icon set.
+- Save now uses a folder with a downward arrow, while Layouts uses a clean open folder.
+- Undo and Redo use mirrored versions of the same curved-arrow design for perfect visual consistency.
+- All five icons use transparent `128x128` PNG resources with consistent padding and sizing.
+
 ### v4.1.5
 
 - Replaced unauthenticated GitHub REST API update checks with a small first-party `update.json` manifest hosted on the mod website.
