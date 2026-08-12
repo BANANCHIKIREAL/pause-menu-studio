@@ -1,5 +1,5 @@
 #include "HiddenBlocksPopup.hpp"
-#include "BlockIcons.hpp"
+#include "ModIcons.hpp"
 
 #include <algorithm>
 
@@ -13,19 +13,8 @@ std::string entryID(CCObject* sender) {
     return value ? std::string(value->getCString()) : std::string();
 }
 
-CCSprite* iconForEntry(hidden_blocks::Entry const& entry) {
-    if (!entry.iconFrame.empty()) {
-        if (auto icon = CCSprite::createWithSpriteFrameName(entry.iconFrame.c_str())) {
-            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
-            if (largest > .001f) icon->setScale(42.f / largest);
-            return icon;
-        }
-    }
-    auto icon = CCSprite::createWithSpriteFrameName("GJ_infoBtn_001.png");
-    if (!icon) return nullptr;
-    auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
-    if (largest > .001f) icon->setScale(42.f / largest);
-    return icon;
+CCSprite* iconForEntry(hidden_blocks::Entry const&) {
+    return mod_icons::create("generic-block-icon.png", 38.f);
 }
 }
 
@@ -50,6 +39,7 @@ bool HiddenBlocksPopup::init(
     m_entries = std::move(entries);
     m_restoreCallback = std::move(restoreCallback);
     setTitle("Hidden blocks");
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     m_scroll = ScrollLayer::create({390.f, 220.f});
     m_scroll->setPosition({25.f, 31.f});
@@ -59,17 +49,15 @@ bool HiddenBlocksPopup::init(
     m_pageMenu = CCMenu::create();
     m_pageMenu->setPosition({m_size.width / 2.f, 16.f});
     m_pageMenu->setID("hidden-blocks-pages");
-    auto previousSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    previousSprite->setScale(.38f);
+    auto previousSprite = mod_icons::create("arrow-icon.png", 22.f);
+    previousSprite->setFlipX(true);
     auto previous = CCMenuItemSpriteExtra::create(
         previousSprite, this, menu_selector(HiddenBlocksPopup::onPage)
     );
     previous->setTag(-1);
     previous->setPositionX(-62.f);
     m_pageMenu->addChild(previous);
-    auto nextSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    nextSprite->setFlipX(true);
-    nextSprite->setScale(.38f);
+    auto nextSprite = mod_icons::create("arrow-icon.png", 22.f);
     auto next = CCMenuItemSpriteExtra::create(
         nextSprite, this, menu_selector(HiddenBlocksPopup::onPage)
     );
@@ -155,8 +143,8 @@ void HiddenBlocksPopup::rebuildList() {
         label->setLimitLabelWidth(105.f, .36f, .2f);
         row->addChild(label);
 
-        auto sprite = ButtonSprite::create(
-            "RESTORE", 104, true, "bigFont.fnt", "GJ_button_01.png", 19.f, .34f
+        auto sprite = mod_icons::labeledButton(
+            "restore-icon.png", "RESTORE", {104.f, 28.f}, 19.f, {54, 108, 88}
         );
         auto restore = CCMenuItemSpriteExtra::create(
             sprite, this, menu_selector(HiddenBlocksPopup::onRestore)

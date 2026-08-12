@@ -17,6 +17,7 @@
 #include "BlockIcons.hpp"
 #include "Sha256.hpp"
 #include "UpdatePopup.hpp"
+#include "ModIcons.hpp"
 
 #include <algorithm>
 #include <array>
@@ -39,7 +40,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.3.2";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.4.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -2012,8 +2013,8 @@ private:
         // panel texture behind it clashes with texture packs and looks like a
         // broken square around the button.
         m_toggleBackground = nullptr;
-        m_toggleEditIcon = makeIcon("GJ_editBtn_001.png", 32.f);
-        m_toggleDoneIcon = makeIcon("GJ_checkOn_001.png", 29.f);
+        m_toggleEditIcon = pause_menu_studio::mod_icons::create("edit-icon.png", 32.f);
+        m_toggleDoneIcon = pause_menu_studio::mod_icons::create("done-icon.png", 29.f);
         for (auto icon : {m_toggleEditIcon, m_toggleDoneIcon}) {
             icon->setPosition({21.f, 21.f});
             toggleVisual->addChild(icon);
@@ -2055,7 +2056,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.3.2", "bigFont.fnt");
+        auto beta = Label::create("V4.4.0", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2221,7 +2222,7 @@ private:
             menu_selector(PauseEditor::onScaleReset), "scale-reset-button", 22.f, {124, 72, 38}
         );
         m_hideButton = makeControl(
-            m_scaleMenu, "hideBtn_001.png", contextWidth / 2.f - 24.f,
+            m_scaleMenu, viewIconFrame.c_str(), contextWidth / 2.f - 24.f,
             menu_selector(PauseEditor::onHide), "hide-block-button", 22.f, {112, 48, 76}
         );
         m_contextPanel->addChild(m_scaleMenu);
@@ -2300,11 +2301,7 @@ private:
         m_selectionMetaLabel->setLimitLabelWidth(120.f, .34f, .24f);
         m_contextPanel->addChild(m_selectionMetaLabel, 2);
 
-        auto transformIcon = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
-        auto const transformLargest = std::max(
-            transformIcon->getContentWidth(), transformIcon->getContentHeight()
-        );
-        if (transformLargest > .001f) transformIcon->setScale(22.f / transformLargest);
+        auto transformIcon = pause_menu_studio::mod_icons::create("transform-icon.png", 22.f);
         m_transformButton = CCMenuItemSpriteExtra::create(
             transformIcon, this, menu_selector(PauseEditor::onAdvancedTransform)
         );
@@ -2332,7 +2329,9 @@ private:
         m_previewReturnMenu = CCMenu::create();
         m_previewReturnMenu->setID("preview-return-menu");
         m_previewReturnMenu->setPosition({size.width - 70.f, size.height - 25.f});
-        auto returnSprite = ButtonSprite::create("BACK TO EDIT", 118, true, "bigFont.fnt", "GJ_button_01.png", 20.f, .34f);
+        auto returnSprite = pause_menu_studio::mod_icons::labeledButton(
+            "arrow-icon.png", "BACK TO EDIT", {126.f, 30.f}, 18.f, {60, 52, 108}
+        );
         auto returnButton = CCMenuItemSpriteExtra::create(returnSprite, this, menu_selector(PauseEditor::onPreview));
         returnButton->setID("preview-return-button");
         m_previewReturnMenu->addChild(returnButton);

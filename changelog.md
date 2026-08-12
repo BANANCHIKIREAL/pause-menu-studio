@@ -1,3 +1,12 @@
+# v4.4.0
+
+- Added a complete white-on-transparent action icon suite for the editor and its popups.
+- Replaced the Geometry Dash Edit, Done, Advanced Transform, Hide, pagination, layout-management, Trash restore, and popup close icons.
+- Added custom Rename, Copy, Restore, Close, navigation, Transform, Generic Block, Apply Layout, and Update Layout resources.
+- Reused the exact Layouts folder contour for Apply Layout and Update Layout; their inner marks sit in a deliberate transparent contour gap like the Save icon.
+- Trash cards now use one stable Generic Block symbol instead of random sprites captured from Geometry Dash or another installed mod.
+- Added shared icon and labeled-button builders in separate source files instead of adding more UI construction code to `main.cpp`.
+
 # v4.3.2
 
 - Added a short original C5-E5 two-note chime for the loading-screen update notification.

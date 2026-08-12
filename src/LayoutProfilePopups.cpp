@@ -1,5 +1,6 @@
 #include "LayoutProfilePopups.hpp"
 #include "LayoutProfiles.hpp"
+#include "ModIcons.hpp"
 
 #include <Geode/ui/Label.hpp>
 
@@ -63,6 +64,7 @@ bool LayoutNamePopup::init(
     if (!Popup::init(310.f, 155.f)) return false;
     m_callback = std::move(callback);
     setTitle(title.c_str());
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     m_input = TextInput::create(230.f, "Layout name");
     m_input->setCommonFilter(CommonFilter::Name);
@@ -71,7 +73,9 @@ bool LayoutNamePopup::init(
     m_input->setPosition({m_size.width / 2.f, 82.f});
     m_mainLayer->addChild(m_input);
 
-    auto sprite = ButtonSprite::create("SAVE", 80, true, "bigFont.fnt", "GJ_button_01.png", 24.f, .55f);
+    auto sprite = mod_icons::labeledButton(
+        "save-icon.png", "SAVE", {92.f, 30.f}, 20.f, {45, 105, 88}
+    );
     auto button = CCMenuItemSpriteExtra::create(sprite, this, menu_selector(LayoutNamePopup::onSave));
     auto saveMenu = CCMenu::create();
     saveMenu->setID("save-layout-menu");
@@ -126,6 +130,7 @@ bool SaveLayoutPopup::init(
     m_saveNewCallback = std::move(saveNewCallback);
     m_updateCallback = std::move(updateCallback);
     setTitle(title.c_str());
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     auto newLabel = Label::create("CREATE NEW", "bigFont.fnt");
     newLabel->setAnchorPoint({0.f, .5f});
@@ -140,8 +145,8 @@ bool SaveLayoutPopup::init(
     m_input->setPosition({151.f, 216.f});
     m_mainLayer->addChild(m_input);
 
-    auto saveSprite = ButtonSprite::create(
-        "SAVE NEW", 105, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .42f
+    auto saveSprite = mod_icons::labeledButton(
+        "save-icon.png", "SAVE NEW", {108.f, 30.f}, 20.f, {45, 105, 88}
     );
     auto save = CCMenuItemSpriteExtra::create(
         saveSprite, this, menu_selector(SaveLayoutPopup::onSaveNew)
@@ -213,8 +218,8 @@ void SaveLayoutPopup::rebuildList() {
         if (name == m_activeName) label->setColor({105, 255, 175});
         row->addChild(label);
 
-        auto updateSprite = ButtonSprite::create(
-            "UPDATE", 82, true, "bigFont.fnt", "GJ_button_04.png", 20.f, .36f
+        auto updateSprite = mod_icons::labeledButton(
+            "update-layout-icon.png", "UPDATE", {92.f, 28.f}, 19.f, {76, 52, 128}
         );
         auto update = CCMenuItemSpriteExtra::create(
             updateSprite, this, menu_selector(SaveLayoutPopup::onUpdate)
@@ -300,6 +305,7 @@ bool LayoutListPopup::init(
     m_duplicateCallback = std::move(duplicateCallback);
     m_deleteCallback = std::move(deleteCallback);
     setTitle(title.c_str());
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     m_scroll = ScrollLayer::create({390.f, 235.f});
     m_scroll->setPosition({25.f, 25.f});
@@ -355,31 +361,36 @@ void LayoutListPopup::rebuildList() {
         date->setOpacity(150);
         row->addChild(date);
 
-        auto applySprite = ButtonSprite::create(
-            name == m_activeName ? "ACTIVE" : "APPLY",
-            64, true, "bigFont.fnt", "GJ_button_04.png", 18.f, .36f
+        auto applySprite = mod_icons::labeledButton(
+            "apply-layout-icon.png", name == m_activeName ? "ACTIVE" : "APPLY",
+            {92.f, 28.f}, 19.f, name == m_activeName ? ccColor3B {38, 112, 85} : ccColor3B {76, 52, 128}
         );
         auto apply = CCMenuItemSpriteExtra::create(applySprite, this, menu_selector(LayoutListPopup::onApply));
-        apply->setPosition({300.f, y + 13.f});
+        apply->setPosition({315.f, y + 13.f});
         apply->setUserObject(CCString::create(name));
         row->addChild(apply);
 
-        auto renameSprite = ButtonSprite::create("REN", 42, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .3f);
+        auto renameSprite = mod_icons::iconButton(
+            "rename-icon.png", {30.f, 26.f}, 18.f, {60, 52, 108}
+        );
         auto rename = CCMenuItemSpriteExtra::create(renameSprite, this, menu_selector(LayoutListPopup::onRename));
-        rename->setPosition({252.f, y - 17.f});
+        rename->setPosition({286.f, y - 17.f});
         rename->setUserObject(CCString::create(name));
         row->addChild(rename);
 
-        auto copySprite = ButtonSprite::create("COPY", 50, true, "bigFont.fnt", "GJ_button_05.png", 16.f, .28f);
+        auto copySprite = mod_icons::iconButton(
+            "copy-icon.png", {30.f, 26.f}, 18.f, {60, 52, 108}
+        );
         auto copy = CCMenuItemSpriteExtra::create(copySprite, this, menu_selector(LayoutListPopup::onDuplicate));
-        copy->setPosition({337.f, y - 17.f});
+        copy->setPosition({326.f, y - 17.f});
         copy->setUserObject(CCString::create(name));
         row->addChild(copy);
 
-        auto trashSprite = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
-        trashSprite->setScale(.42f);
+        auto trashSprite = mod_icons::iconButton(
+            "trash-icon.png", {30.f, 26.f}, 18.f, {116, 52, 86}
+        );
         auto trash = CCMenuItemSpriteExtra::create(trashSprite, this, menu_selector(LayoutListPopup::onDelete));
-        trash->setPosition({371.f, y + 13.f});
+        trash->setPosition({366.f, y - 17.f});
         trash->setUserObject(CCString::create(name));
         row->addChild(trash);
         content->addChild(row);

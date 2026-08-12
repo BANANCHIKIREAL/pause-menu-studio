@@ -1,4 +1,5 @@
 #include "UpdatePopup.hpp"
+#include "ModIcons.hpp"
 
 #include <Geode/ui/Label.hpp>
 
@@ -126,6 +127,7 @@ bool UpdatePopup::init(
     if (!Popup::init(440.f, 320.f)) return false;
     m_downloadCallback = std::move(downloadCallback);
     setTitle("Update available");
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     auto versionLabel = Label::create("PAUSE MENU STUDIO  " + version, "bigFont.fnt");
     versionLabel->setScale(.48f);
@@ -174,8 +176,8 @@ bool UpdatePopup::init(
 
     auto menu = CCMenu::create();
     menu->setPosition({m_size.width / 2.f, 31.f});
-    auto laterSprite = ButtonSprite::create(
-        "LATER", 100, true, "bigFont.fnt", "GJ_button_05.png", 27.f, .48f
+    auto laterSprite = mod_icons::labeledButton(
+        "arrow-icon.png", "LATER", {102.f, 32.f}, 20.f, {60, 52, 108}
     );
     auto later = CCMenuItemSpriteExtra::create(
         laterSprite, this, menu_selector(UpdatePopup::onLater)
@@ -183,8 +185,8 @@ bool UpdatePopup::init(
     later->setPositionX(-67.f);
     menu->addChild(later);
 
-    auto downloadSprite = ButtonSprite::create(
-        "DOWNLOAD", 118, true, "bigFont.fnt", "GJ_button_01.png", 27.f, .45f
+    auto downloadSprite = mod_icons::labeledButton(
+        "download-icon.png", "DOWNLOAD", {122.f, 32.f}, 20.f, {45, 105, 88}
     );
     auto download = CCMenuItemSpriteExtra::create(
         downloadSprite, this, menu_selector(UpdatePopup::onDownload)

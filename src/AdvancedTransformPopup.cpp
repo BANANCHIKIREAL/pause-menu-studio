@@ -1,4 +1,5 @@
 #include "AdvancedTransformPopup.hpp"
+#include "ModIcons.hpp"
 
 #include <Geode/ui/Label.hpp>
 
@@ -32,6 +33,7 @@ bool AdvancedTransformPopup::init(
     m_callback = std::move(callback);
     m_opacityAvailable = opacity.has_value();
     setTitle("Advanced transform");
+    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
 
     auto subtitle = Label::create("EDIT THE SELECTED BLOCK'S VISUAL TRANSFORM", "chatFont.fnt");
     subtitle->setPosition({m_size.width / 2.f, 160.f});
@@ -84,8 +86,8 @@ bool AdvancedTransformPopup::init(
         CommonFilter::Int, 5
     );
 
-    auto applySprite = ButtonSprite::create(
-        "APPLY TRANSFORM", 150, true, "bigFont.fnt", "GJ_button_01.png", 24.f, .45f
+    auto applySprite = mod_icons::labeledButton(
+        "transform-icon.png", "APPLY TRANSFORM", {158.f, 32.f}, 21.f, {76, 52, 128}
     );
     auto apply = CCMenuItemSpriteExtra::create(
         applySprite, this, menu_selector(AdvancedTransformPopup::onApply)

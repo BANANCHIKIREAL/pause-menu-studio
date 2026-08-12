@@ -354,6 +354,14 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.4.0
+
+- Replaced the remaining editor action icons with a unified white, transparent icon set instead of Geometry Dash sprite frames.
+- Added custom Edit, Done, Transform, Restore, Rename, Copy, Close, navigation, Apply Layout, and Update Layout icons.
+- Apply Layout and Update Layout use the exact same folder silhouette as Layouts, with a clean contour gap behind their internal symbol.
+- Replaced the random Trash-card previews with one neutral custom block icon so entries stay visually consistent.
+- Added reusable custom icon-button components to keep popup actions aligned and readable.
+
 ### v4.3.2
 
 - Added an original, bundled two-note update chime for the loading-screen update notification.

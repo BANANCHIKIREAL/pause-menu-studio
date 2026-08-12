@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.3.2",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.3.2/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:4adfc083ed126e123233a7d0ee3a1af559c855ef809da901a69b5c16e62c5db2",
-  "release_notes": "## Calm update chime\n\n- Added an original, bundled C5-E5 two-note chime for the loading-screen update notification.\n- The chime plays only once per game launch and only when an available-update banner is actually shown.\n- Added an Update notification sound setting so the sound can be disabled without disabling update checks or badges.\n- The cross-platform OGG resource is included in the Windows, Android32, and Android64 package."
+  "version": "v4.4.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.4.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:f5496636f1d804fe1a333098aa24d022b3d86963fe5b8f5ef9ccbc6405282cf7",
+  "release_notes": "## Unified custom icon suite\n\n- Replaced the remaining editor action icons with white transparent resources instead of Geometry Dash icon frames.\n- Added custom Edit, Done, Transform, Restore, Rename, Copy, Close, navigation, Apply Layout, and Update Layout icons.\n- Apply Layout and Update Layout reuse the exact Layouts folder contour with a clean transparent gap behind the inner symbol.\n- Trash cards now use one stable Generic Block icon instead of random sprites captured from Geometry Dash or another mod.\n- Added shared custom icon-button components and included the complete suite on Windows, Android32, and Android64."
 }
