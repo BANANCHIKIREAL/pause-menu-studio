@@ -1,3 +1,12 @@
+# v4.3.0
+
+- Made the complete bottom editor toolbar selectable through its empty background.
+- Added full toolbar editing through the existing MOVE, exact scale, advanced transform, Reset, arrow-key, and Hide controls.
+- Saved the toolbar position, scale, rotation, opacity, drawing layer, and hidden state independently for each menu style and separated gameplay mode.
+- Added a compact **SHOW TOOLBAR** recovery handle outside the hidden panel so editor controls cannot be lost on desktop or Android.
+- Updated Edit Mode entrance and exit animations to preserve and animate from the toolbar's custom saved position.
+- Full layout Reset now restores and unhides the toolbar together with the other persistent editor controls.
+
 # v4.2.0
 
 - Rebuilt the Save Layout window with separate **Save New** and **Update Existing** sections.

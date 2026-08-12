@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.2.0",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.2.0/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:cb3a3dcf564085ef0d9762384c068109ccef27308e6d89af7702de0b77558874",
-  "release_notes": "## What's New & Fixed\n\n- Rebuilt the Save Layout window with separate Save New and Update Existing sections.\n- Existing layouts for the current Normal, Platformer, Creator, or Platformer Creator mode can now be selected and updated directly.\n- Added confirmation before replacing an existing layout.\n- Updating captures the current transforms, information cards, and complete Trash state.\n- The Android keyboard no longer opens automatically when the Save window appears."
+  "version": "v4.3.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.3.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:6a5e1664374dafbb536566e0aff3e45dddcae56b6828c363c2ddd9ea37306949",
+  "release_notes": "## What's New & Fixed\n\n- The complete bottom editor toolbar can now be selected by tapping or clicking its empty background.\n- MOVE, exact scale, advanced transform, Reset, arrow keys, and Hide now work on the toolbar as one block.\n- The toolbar transform and hidden state persist for the current menu style and separated editor mode.\n- Hiding the panel reveals a compact SHOW TOOLBAR recovery button outside it on desktop and Android.\n- Entrance and exit animations now preserve the toolbar's custom saved position.\n- Full layout Reset restores and unhides the editor toolbar."
 }

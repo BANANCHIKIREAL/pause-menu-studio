@@ -48,6 +48,8 @@
 - Move multiple selected blocks together.
 - Optional 5-unit grid snapping without a bright overlay.
 - Move the **EDIT / DONE** button itself.
+- Select the empty background of the bottom editor toolbar to move, resize, rotate, fade, reset, or hide the complete panel as one block.
+- A persistent **SHOW TOOLBAR** handle remains available after hiding the panel, so all editor controls can always be restored on desktop and Android.
 - Enter **Preview Mode** to inspect a clean, read-only pause menu without editor chrome.
 - Keep the selected block clear while the surrounding pause menu is softly dimmed.
 
@@ -140,6 +142,8 @@ for a newer stable or prerelease version.
 | Select a block | Click / tap | A single press does not move it |
 | Unlock / lock movement | Context **MOVE** button | Each block remembers its own on/off state while the editor is open |
 | Drag a block | Enable MOVE, then click / touch + movement | Dragging starts after a small movement threshold |
+| Edit the bottom toolbar | Select an empty part of the toolbar | The complete panel is one editable block; toolbar buttons remain clickable |
+| Hide / restore the bottom toolbar | Context **HIDE** / **SHOW TOOLBAR** | Hidden state and the panel transform persist for the current menu style and editor mode |
 | Select the next overlapping block | Repeated click / tap at the same point | No object movement is required |
 | Add a block to selection | `Ctrl + click` | Requires a keyboard; multi-selection uses an orange outline |
 | Precise movement | `←` `↑` `↓` `→` | Optional physical-keyboard shortcut; moves by 1 game unit |
@@ -349,6 +353,14 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.3.0
+
+- The complete bottom editor toolbar is now a selectable logical block.
+- Its position, scale, rotation, opacity, and drawing layer can be edited with the same contextual controls as pause-menu blocks.
+- Toolbar transforms persist independently for each configured menu style and separated gameplay mode.
+- Hiding the toolbar reveals a compact **SHOW TOOLBAR** recovery handle outside the panel, including on Android.
+- Editor entrance and exit animations now travel from the toolbar's saved position instead of resetting it to the default bottom edge.
 
 ### v4.2.0
 
