@@ -1,3 +1,8 @@
+# v4.1.7
+
+- Fixed the update-details window incorrectly reporting that release notes were missing even when `update.json` contained them.
+- Release notes are now copied before the update candidate is moved into the download callback, removing the argument-evaluation-order bug.
+
 # v4.1.6
 
 - Replaced the Edit Mode **Save**, **Layouts**, **Trash**, **Undo**, and **Redo** graphics with a matching pure-white icon set.

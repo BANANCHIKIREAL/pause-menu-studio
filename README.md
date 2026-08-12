@@ -349,6 +349,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.7
+
+- Fixed the in-game updater showing `Release notes were not provided for this update` for manifests that contain release notes.
+- Update details are now preserved before the download callback takes ownership of the update package data.
+
 ### v4.1.6
 
 - Replaced the Save, Layouts, Trash, Undo, and Redo toolbar graphics with a matching pure-white icon set.

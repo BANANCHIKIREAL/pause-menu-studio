@@ -38,7 +38,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.6";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.7";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -2019,7 +2019,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.6", "bigFont.fnt");
+        auto beta = Label::create("V4.1.7", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2576,14 +2576,16 @@ private:
         auto self = WeakRef<PauseEditor>(this);
         auto versionText = best->version.toVString();
         auto candidate = *best;
+        auto releaseNotes = candidate.releaseNotes;
+        auto downloadCallback = [self, candidate = std::move(candidate)] {
+            if (auto editor = self.lock()) {
+                editor->startUpdateDownload(candidate.url, candidate.version, candidate.digest);
+            }
+        };
         if (auto popup = pause_menu_studio::UpdatePopup::create(
             versionText,
-            candidate.releaseNotes,
-            [self, candidate = std::move(candidate)] {
-                if (auto editor = self.lock()) {
-                    editor->startUpdateDownload(candidate.url, candidate.version, candidate.digest);
-                }
-            }
+            std::move(releaseNotes),
+            std::move(downloadCallback)
         )) {
             popup->show();
         } else {
