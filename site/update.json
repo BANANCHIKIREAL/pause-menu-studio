@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.1.7",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.1.7/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:608001252a60aefe176bb3dafcea2486599e1c221ee1552031c58ece016c8a2d",
-  "release_notes": "## What's New & Fixed\n\n- Fixed the update-details window incorrectly reporting that release notes were missing even though the server manifest contained them.\n- Release notes are now preserved before the update package data is moved into the download callback.\n- The update description will now appear correctly before you choose Download."
+  "version": "v4.2.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.2.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:cb3a3dcf564085ef0d9762384c068109ccef27308e6d89af7702de0b77558874",
+  "release_notes": "## What's New & Fixed\n\n- Rebuilt the Save Layout window with separate Save New and Update Existing sections.\n- Existing layouts for the current Normal, Platformer, Creator, or Platformer Creator mode can now be selected and updated directly.\n- Added confirmation before replacing an existing layout.\n- Updating captures the current transforms, information cards, and complete Trash state.\n- The Android keyboard no longer opens automatically when the Save window appears."
 }

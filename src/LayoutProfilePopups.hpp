@@ -26,6 +26,36 @@ private:
     void onSave(cocos2d::CCObject*);
 };
 
+class SaveLayoutPopup final : public geode::Popup {
+public:
+    static SaveLayoutPopup* create(
+        std::vector<std::string> names,
+        std::string activeName,
+        std::string title,
+        geode::Function<void(std::string)> saveNewCallback,
+        geode::Function<void(std::string)> updateCallback
+    );
+
+private:
+    std::vector<std::string> m_names;
+    std::string m_activeName;
+    geode::TextInput* m_input = nullptr;
+    geode::ScrollLayer* m_scroll = nullptr;
+    geode::Function<void(std::string)> m_saveNewCallback;
+    geode::Function<void(std::string)> m_updateCallback;
+
+    bool init(
+        std::vector<std::string> names,
+        std::string activeName,
+        std::string title,
+        geode::Function<void(std::string)> saveNewCallback,
+        geode::Function<void(std::string)> updateCallback
+    );
+    void rebuildList();
+    void onSaveNew(cocos2d::CCObject*);
+    void onUpdate(cocos2d::CCObject*);
+};
+
 class LayoutListPopup final : public geode::Popup {
 public:
     static LayoutListPopup* create(

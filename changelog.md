@@ -1,3 +1,11 @@
+# v4.2.0
+
+- Rebuilt the Save Layout window with separate **Save New** and **Update Existing** sections.
+- Existing layouts from the current Normal, Platformer, Creator, or Platformer Creator mode can now be selected and updated directly without retyping their names.
+- Added a confirmation step before replacing an existing layout.
+- Updating a layout captures the current positions, scale, rotation, opacity, drawing layer, information cards, and complete Trash state.
+- Kept the new-name input unfocused by default so the Android keyboard does not cover the existing-layout list.
+
 # v4.1.7
 
 - Fixed the update-details window incorrectly reporting that release notes were missing even when `update.json` contained them.

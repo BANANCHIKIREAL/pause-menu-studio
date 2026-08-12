@@ -64,6 +64,7 @@
 ### 💾 Named layouts
 
 - Save multiple pause-menu designs under custom names.
+- Update any existing layout for the current gameplay mode directly from the Save window.
 - Optionally keep normal, platformer, creator, and platformer-creator layouts separate, with independent active layouts, positions, and Hidden Blocks bins.
 - Select and apply a saved design through **LAYOUTS**.
 - Store position, scale, rotation, opacity, drawing layer, hidden state, and information-card presence together.
@@ -348,6 +349,13 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.2.0
+
+- The Save Layout window now offers separate **Save New** and **Update Existing** actions.
+- Existing layouts for the current gameplay mode are displayed in a scrollable list and can be replaced after confirmation.
+- Updating preserves the full current layout state, including transforms, information cards, and Trash contents.
+- The new-name field no longer opens the Android keyboard until the player selects it.
 
 ### v4.1.7
 

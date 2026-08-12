@@ -38,7 +38,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.7";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.2.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -2019,7 +2019,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.7", "bigFont.fnt");
+        auto beta = Label::create("V4.2.0", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2640,11 +2640,18 @@ private:
     void onSaveProfile(CCObject*) {
         auto self = WeakRef<PauseEditor>(this);
         auto title = saveLayoutTitle();
-        if (auto popup = pause_menu_studio::LayoutNamePopup::create(
+        auto mode = layoutModeKey();
+        auto active = Mod::get()->getSavedValue<std::string>(activeLayoutStorageKey(), "");
+        if (auto popup = pause_menu_studio::SaveLayoutPopup::create(
+            pause_menu_studio::profiles::names(mode),
+            active,
+            title,
             [self](std::string name) {
                 if (auto editor = self.lock()) editor->saveNamedLayout(name);
             },
-            title
+            [self](std::string name) {
+                if (auto editor = self.lock()) editor->writeNamedLayout(name, true);
+            }
         )) popup->show();
     }
     void onLayouts(CCObject*) {
@@ -3119,7 +3126,7 @@ private:
                 "Cancel", "Replace",
                 [self, name](FLAlertLayer*, bool confirmed) {
                     if (!confirmed) return;
-                    if (auto editor = self.lock()) editor->writeNamedLayout(name);
+                    if (auto editor = self.lock()) editor->writeNamedLayout(name, true);
                 }
             );
             return;
@@ -3127,7 +3134,7 @@ private:
         writeNamedLayout(name);
     }
 
-    void writeNamedLayout(std::string const& name) {
+    void writeNamedLayout(std::string const& name, bool updated = false) {
         // SAVE is available while Edit Mode is still open. Persist pending
         // transforms first so newly rotated, faded, resized, or moved blocks
         // are included even if the user has not pressed DONE yet.
@@ -3193,7 +3200,10 @@ private:
         }
         pause_menu_studio::profiles::save(name, snapshot, layoutModeKey());
         Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), name);
-        Notification::create("Layout saved: " + name, NotificationIcon::Success)->show();
+        Notification::create(
+            std::string(updated ? "Layout updated: " : "Layout saved: ") + name,
+            NotificationIcon::Success
+        )->show();
     }
 
     void applyNamedLayout(std::string const& name) {

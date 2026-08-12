@@ -93,6 +93,174 @@ void LayoutNamePopup::onSave(CCObject*) {
     if (callback) callback(name);
 }
 
+SaveLayoutPopup* SaveLayoutPopup::create(
+    std::vector<std::string> names,
+    std::string activeName,
+    std::string title,
+    Function<void(std::string)> saveNewCallback,
+    Function<void(std::string)> updateCallback
+) {
+    auto ret = new SaveLayoutPopup();
+    if (ret && ret->init(
+        std::move(names), std::move(activeName), std::move(title),
+        std::move(saveNewCallback), std::move(updateCallback)
+    )) {
+        ret->autorelease();
+        return ret;
+    }
+    CC_SAFE_DELETE(ret);
+    return nullptr;
+}
+
+bool SaveLayoutPopup::init(
+    std::vector<std::string> names,
+    std::string activeName,
+    std::string title,
+    Function<void(std::string)> saveNewCallback,
+    Function<void(std::string)> updateCallback
+) {
+    if (!Popup::init(430.f, 300.f)) return false;
+    m_names = std::move(names);
+    std::ranges::sort(m_names);
+    m_activeName = std::move(activeName);
+    m_saveNewCallback = std::move(saveNewCallback);
+    m_updateCallback = std::move(updateCallback);
+    setTitle(title.c_str());
+
+    auto newLabel = Label::create("CREATE NEW", "bigFont.fnt");
+    newLabel->setAnchorPoint({0.f, .5f});
+    newLabel->setPosition({28.f, 248.f});
+    newLabel->setScale(.38f);
+    newLabel->setColor({80, 235, 255});
+    m_mainLayer->addChild(newLabel);
+
+    m_input = TextInput::create(245.f, "New layout name");
+    m_input->setCommonFilter(CommonFilter::Name);
+    m_input->setMaxCharCount(24);
+    m_input->setPosition({151.f, 216.f});
+    m_mainLayer->addChild(m_input);
+
+    auto saveSprite = ButtonSprite::create(
+        "SAVE NEW", 105, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .42f
+    );
+    auto save = CCMenuItemSpriteExtra::create(
+        saveSprite, this, menu_selector(SaveLayoutPopup::onSaveNew)
+    );
+    auto saveMenu = CCMenu::create();
+    saveMenu->setID("save-new-layout-menu");
+    saveMenu->setPosition({352.f, 216.f});
+    saveMenu->addChild(save);
+    m_mainLayer->addChild(saveMenu);
+
+    auto divider = CCScale9Sprite::create("square02_001.png");
+    divider->setContentSize({374.f, 1.f});
+    divider->setColor({75, 60, 130});
+    divider->setOpacity(150);
+    divider->setPosition({215.f, 182.f});
+    m_mainLayer->addChild(divider);
+
+    auto updateLabel = Label::create("UPDATE EXISTING", "bigFont.fnt");
+    updateLabel->setAnchorPoint({0.f, .5f});
+    updateLabel->setPosition({28.f, 164.f});
+    updateLabel->setScale(.38f);
+    updateLabel->setColor({185, 135, 255});
+    m_mainLayer->addChild(updateLabel);
+
+    m_scroll = ScrollLayer::create({378.f, 125.f});
+    m_scroll->setPosition({26.f, 25.f});
+    m_scroll->setID("update-layout-list");
+    m_mainLayer->addChild(m_scroll);
+    rebuildList();
+    return true;
+}
+
+void SaveLayoutPopup::rebuildList() {
+    auto content = m_scroll->m_contentLayer;
+    content->removeAllChildren();
+    constexpr float rowHeight = 44.f;
+    auto height = std::max(125.f, static_cast<float>(m_names.size()) * rowHeight);
+    content->setContentSize({378.f, height});
+    content->setPositionY(125.f - height);
+
+    if (m_names.empty()) {
+        auto empty = Label::create("NO LAYOUTS TO UPDATE", "bigFont.fnt");
+        empty->setScale(.34f);
+        empty->setOpacity(125);
+        empty->setPosition({189.f, height / 2.f});
+        content->addChild(empty);
+        return;
+    }
+
+    for (size_t index = 0; index < m_names.size(); ++index) {
+        auto const& name = m_names[index];
+        auto y = height - rowHeight / 2.f - static_cast<float>(index) * rowHeight;
+        auto row = CCMenu::create();
+        row->setPosition({0.f, 0.f});
+        row->setContentSize({378.f, rowHeight});
+
+        auto card = CCScale9Sprite::create("GJ_square02.png");
+        card->setContentSize({370.f, 38.f});
+        card->setPosition({189.f, y});
+        card->setColor(name == m_activeName ? ccColor3B {38, 104, 86} : ccColor3B {35, 31, 75});
+        card->setOpacity(225);
+        row->addChild(card, -2);
+
+        auto label = Label::create(name, "bigFont.fnt");
+        label->setAnchorPoint({0.f, .5f});
+        label->setPosition({15.f, y});
+        label->setScale(.38f);
+        label->setLimitLabelWidth(235.f, .38f, .2f);
+        if (name == m_activeName) label->setColor({105, 255, 175});
+        row->addChild(label);
+
+        auto updateSprite = ButtonSprite::create(
+            "UPDATE", 82, true, "bigFont.fnt", "GJ_button_04.png", 20.f, .36f
+        );
+        auto update = CCMenuItemSpriteExtra::create(
+            updateSprite, this, menu_selector(SaveLayoutPopup::onUpdate)
+        );
+        update->setPosition({323.f, y});
+        update->setUserObject(CCString::create(name));
+        row->addChild(update);
+        content->addChild(row);
+    }
+    m_scroll->scrollToTop();
+}
+
+void SaveLayoutPopup::onSaveNew(CCObject*) {
+    auto name = trim(m_input ? std::string(m_input->getString()) : std::string());
+    if (name.empty()) {
+        Notification::create("Enter a layout name", NotificationIcon::Warning)->show();
+        return;
+    }
+    if (std::ranges::find(m_names, name) != m_names.end()) {
+        Notification::create("That layout already exists - use Update", NotificationIcon::Warning)->show();
+        return;
+    }
+    auto callback = std::move(m_saveNewCallback);
+    onClose(nullptr);
+    if (callback) callback(name);
+}
+
+void SaveLayoutPopup::onUpdate(CCObject* sender) {
+    auto name = itemName(sender);
+    if (name.empty()) return;
+    auto self = WeakRef<SaveLayoutPopup>(this);
+    createQuickPopup(
+        "Update layout",
+        "Replace <cy>" + name + "</c> with the current pause-menu layout?",
+        "Cancel", "Update",
+        [self, name](FLAlertLayer*, bool confirmed) {
+            if (!confirmed) return;
+            auto popup = self.lock();
+            if (!popup) return;
+            auto callback = std::move(popup->m_updateCallback);
+            popup->onClose(nullptr);
+            if (callback) callback(name);
+        }
+    );
+}
+
 LayoutListPopup* LayoutListPopup::create(
     std::vector<std::string> names,
     std::string activeName,
