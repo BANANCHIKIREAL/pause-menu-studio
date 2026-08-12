@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.3.0",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.3.0/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:6a5e1664374dafbb536566e0aff3e45dddcae56b6828c363c2ddd9ea37306949",
-  "release_notes": "## What's New & Fixed\n\n- The complete bottom editor toolbar can now be selected by tapping or clicking its empty background.\n- MOVE, exact scale, advanced transform, Reset, arrow keys, and Hide now work on the toolbar as one block.\n- The toolbar transform and hidden state persist for the current menu style and separated editor mode.\n- Hiding the panel reveals a compact SHOW TOOLBAR recovery button outside it on desktop and Android.\n- Entrance and exit animations now preserve the toolbar's custom saved position.\n- Full layout Reset restores and unhides the editor toolbar."
+  "version": "v4.3.1",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.3.1/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:3ee8da721535023c6f536b3e9ab3c9655974f4cbeb21ab4e87d7b3d893b87d9d",
+  "release_notes": "## Toolbar behavior corrected\n\n- The bottom editor toolbar is no longer selectable, movable, scalable, rotatable, or saved as a pause-menu block.\n- The eye button now collapses only the toolbar while Edit Mode remains active.\n- Ordinary pause-menu blocks remain selectable, movable, scalable, hideable, and editable while the toolbar is collapsed.\n- A compact eye button at the lower-right edge restores the toolbar without clearing the current block selection.\n- Entering Edit Mode again always shows the toolbar in its normal position."
 }

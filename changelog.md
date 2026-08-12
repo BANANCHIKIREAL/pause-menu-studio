@@ -1,3 +1,12 @@
+# v4.3.1
+
+- Corrected the misunderstood bottom-toolbar feature from v4.3.0.
+- Removed selection, movement, scaling, advanced transforms, persistence, and Trash handling from the editor toolbar itself.
+- Changed the toolbar eye button to collapse only the bottom toolbar while keeping Edit Mode active.
+- Kept normal pause-menu block selection, MOVE, scaling, advanced transforms, Hide, Reset, keyboard movement, Undo, and Redo available while the toolbar is collapsed.
+- Added a small eye button at the lower-right edge to restore the toolbar without clearing the selected block.
+- The toolbar is shown normally each time Edit Mode is entered.
+
 # v4.3.0
 
 - Made the complete bottom editor toolbar selectable through its empty background.

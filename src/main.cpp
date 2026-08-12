@@ -38,7 +38,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.3.0";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.3.1";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -292,16 +292,9 @@ std::string nodeKey(CCNode* node) {
     if (node && node->getID() == "editor-toggle-button") {
         return positionNamespace() + "/persistent-editor-toggle-button";
     }
-    if (node && node->getID() == "editor-bottom-toolbar") {
-        return positionNamespace() + "/persistent-editor-bottom-toolbar";
-    }
     auto generation = Mod::get()->getSavedValue<int64_t>(layoutGenerationStorageKey(), 0);
     std::string result = positionNamespace() + "/generation-" + std::to_string(generation);
     return result + nodePath(node);
-}
-
-std::string editorToolbarHiddenStorageKey() {
-    return "editor-toolbar-hidden/" + positionNamespace();
 }
 
 std::string xKey(CCNode* node) { return "position-x/" + nodeKey(node); }
@@ -1286,19 +1279,6 @@ public:
             auto onThumb = thumb && pointInside(thumb, world);
             if (onGroove || onThumb) return false;
         }
-        // The editor toolbar lives under PauseEditor instead of PauseLayer, so
-        // it is not part of the normal pause-menu hit traversal. Treat its
-        // empty background as one logical editable block while leaving every
-        // toolbar button clickable through m_controlItems above.
-        if (m_bottomPanel && pointInside(m_bottomPanel, world)) {
-            selectOnly({m_bottomPanel});
-            m_lastSelectionPoint = world;
-            m_hasLastSelectionPoint = true;
-            if (m_moveEnabled) beginPendingDrag(world, false);
-            updateSelectionLabel();
-            updateSelectionOutline();
-            return true;
-        }
         auto ctrl = CCKeyboardDispatcher::get()->getControlKeyPressed();
         auto selections = logicalSelectionsAt(m_owner, world);
         if (selections.empty()) {
@@ -1467,8 +1447,8 @@ private:
     CCLayerColor* m_contextAccent = nullptr;
     CCMenu* m_previewReturnMenu = nullptr;
     bool m_contextWasVisible = false;
-    bool m_toolbarHidden = false;
-    CCPoint m_bottomPanelRestingPosition = CCPointZero;
+    bool m_toolbarCollapsed = false;
+    CCPoint m_bottomPanelHomePosition = CCPointZero;
     CCDrawNode* m_selectionOutline = nullptr;
     std::array<CCLayerColor*, 4> m_focusShade {};
     std::vector<CCDrawNode*> m_gridLines;
@@ -1612,7 +1592,6 @@ private:
         if (hasLogicalID(node, "practice-button")) return "Practice button";
         if (hasLogicalID(node, "edit-button")) return "Level editor button";
         if (node == m_toggle) return "Edit button";
-        if (node == m_bottomPanel) return "Editor toolbar";
         auto id = std::string(node->getID());
         return id.empty() ? "Unnamed block" : id;
     }
@@ -1804,42 +1783,27 @@ private:
         }
     }
 
-    bool editorToolbarSelected() const {
-        return m_bottomPanel &&
-            std::ranges::find(m_selectedNodes, m_bottomPanel) != m_selectedNodes.end();
-    }
-
-    void syncEditorToolbarRestingPosition(CCNode* node = nullptr) {
-        if (m_bottomPanel && (!node || node == m_bottomPanel)) {
-            m_bottomPanelRestingPosition = m_bottomPanel->getPosition();
-        }
-    }
-
     void refreshEditorToolbarVisibility() {
         auto const showEditorChrome = m_editing && !m_preview && !m_animatingExit;
         if (m_bottomPanel) {
-            m_bottomPanel->setVisible(showEditorChrome && !m_toolbarHidden);
+            m_bottomPanel->setVisible(showEditorChrome && !m_toolbarCollapsed);
         }
         if (m_toolbarRestoreMenu) {
-            m_toolbarRestoreMenu->setVisible(showEditorChrome && m_toolbarHidden);
+            m_toolbarRestoreMenu->setVisible(showEditorChrome && m_toolbarCollapsed);
         }
     }
 
-    void setEditorToolbarHidden(bool hidden, bool persist = true) {
-        m_toolbarHidden = hidden;
-        if (persist) {
-            Mod::get()->setSavedValue<bool>(editorToolbarHiddenStorageKey(), hidden);
-        }
+    void setEditorToolbarCollapsed(bool collapsed) {
+        m_toolbarCollapsed = collapsed;
         if (m_bottomPanel) {
             m_bottomPanel->stopAllActions();
-            if (!hidden) m_bottomPanel->setPosition(m_bottomPanelRestingPosition);
+            if (!collapsed) m_bottomPanel->setPosition(m_bottomPanelHomePosition);
         }
         refreshEditorToolbarVisibility();
     }
 
     void markTransformDirty(CCNode* node) {
         if (!node) return;
-        syncEditorToolbarRestingPosition(node);
         auto found = std::ranges::any_of(m_dirtyTransforms, [node](auto const& reference) {
             auto stored = reference.lock();
             return stored && stored.data() == node;
@@ -2078,7 +2042,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.3.0", "bigFont.fnt");
+        auto beta = Label::create("V4.3.1", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2087,16 +2051,7 @@ private:
         m_bottomPanel->addChild(beta, 4);
 
         addChild(m_bottomPanel, 20);
-        m_initialPositions.push_back({
-            WeakRef<CCNode>(m_bottomPanel), m_bottomPanel->getPosition(),
-            m_bottomPanel->getScaleX(), m_bottomPanel->getScaleY(),
-            m_bottomPanel->getRotation(), nodeOpacity(m_bottomPanel), m_bottomPanel->getZOrder()
-        });
-        restorePositions(m_bottomPanel);
-        syncEditorToolbarRestingPosition();
-        m_toolbarHidden = Mod::get()->getSavedValue<bool>(
-            editorToolbarHiddenStorageKey(), false
-        );
+        m_bottomPanelHomePosition = m_bottomPanel->getPosition();
         m_historyMenu = CCMenu::create();
         m_historyMenu->setID("editor-history-controls");
         m_historyMenu->setPosition({toolbarWidth / 2.f, 29.f});
@@ -2142,7 +2097,7 @@ private:
             else if (controlID == "updates-button") caption = "UPDATES";
             else if (controlID == "hidden-blocks-button") caption = "TRASH";
             else if (controlID == "reset-button") caption = "RESET";
-            else if (controlID == "preview-button") caption = "VIEW";
+            else if (controlID == "hide-toolbar-button") caption = "HIDE";
             else if (controlID == "move-hint-button") caption = "MOVE";
             else if (controlID == "scale-reset-button") caption = "RESET";
             else if (controlID == "hide-block-button") caption = "HIDE";
@@ -2182,7 +2137,10 @@ private:
         refreshUpdateBadge();
         m_trashButton = makeControl(m_historyMenu, trashIconFrame.c_str(), controlPositions[5], menu_selector(PauseEditor::onTrash), "hidden-blocks-button", 25.f, {116, 52, 86});
         m_resetButton = makeControl(m_historyMenu, resetIconFrame.c_str(), controlPositions[6], menu_selector(PauseEditor::onReset), "reset-button", 24.f, {132, 76, 38});
-        makeControl(m_historyMenu, viewIconFrame.c_str(), controlPositions[7], menu_selector(PauseEditor::onPreview), "preview-button", 24.f, {38, 96, 132});
+        makeControl(
+            m_historyMenu, viewIconFrame.c_str(), controlPositions[7],
+            menu_selector(PauseEditor::onHideEditorToolbar), "hide-toolbar-button", 24.f, {38, 96, 132}
+        );
 
         for (auto pair : {std::pair {1u, 2u}, std::pair {3u, 4u}, std::pair {5u, 6u}}) {
             auto const localX = (controlPositions[pair.first] + controlPositions[pair.second]) / 2.f;
@@ -2191,15 +2149,23 @@ private:
             m_bottomPanel->addChild(separator, 3);
         }
 
-        // Hiding the toolbar must never strand the user without editor
-        // controls. This compact handle is deliberately outside the toolbar
-        // and restores it in one tap on both desktop and Android.
+        // Collapsing the toolbar leaves Edit Mode fully active. A small eye at
+        // the screen edge restores the controls without covering the blocks
+        // the player is editing.
         m_toolbarRestoreMenu = CCMenu::create();
         m_toolbarRestoreMenu->setID("editor-toolbar-restore-menu");
-        m_toolbarRestoreMenu->setPosition({size.width / 2.f, 15.f});
-        auto restoreToolbarSprite = ButtonSprite::create(
-            "SHOW TOOLBAR", 134, true, "bigFont.fnt", "GJ_button_04.png", 24.f, .32f
-        );
+        m_toolbarRestoreMenu->setPosition({size.width - 20.f, 19.f});
+        auto restoreToolbarSprite = CCNode::create();
+        restoreToolbarSprite->setContentSize({36.f, 34.f});
+        auto restoreToolbarTile = CCScale9Sprite::create("square02_001.png");
+        restoreToolbarTile->setContentSize({34.f, 32.f});
+        restoreToolbarTile->setPosition({18.f, 17.f});
+        restoreToolbarTile->setColor({38, 96, 132});
+        restoreToolbarTile->setOpacity(190);
+        restoreToolbarSprite->addChild(restoreToolbarTile, -1);
+        auto restoreToolbarIcon = makeIcon(viewIconFrame.c_str(), 22.f);
+        restoreToolbarIcon->setPosition({18.f, 17.f});
+        restoreToolbarSprite->addChild(restoreToolbarIcon);
         m_toolbarRestoreButton = CCMenuItemSpriteExtra::create(
             restoreToolbarSprite, this, menu_selector(PauseEditor::onRestoreEditorToolbar)
         );
@@ -2498,15 +2464,17 @@ private:
         pulseContextPanel();
     }
     void onHide(CCObject*) { hideSelection(); }
-    void onRestoreEditorToolbar(CCObject*) {
-        if (!m_editing || m_preview || !m_bottomPanel) return;
-        setEditorToolbarHidden(false);
-        selectOnly({m_bottomPanel});
-        m_hasEdits = true;
-        updateChromeState();
+    void onHideEditorToolbar(CCObject*) {
+        if (!m_editing || m_preview) return;
+        setEditorToolbarCollapsed(true);
         updateSelectionLabel();
         updateSelectionOutline();
-        Notification::create("Editor toolbar restored", NotificationIcon::Success)->show();
+    }
+    void onRestoreEditorToolbar(CCObject*) {
+        if (!m_editing || m_preview || !m_bottomPanel) return;
+        setEditorToolbarCollapsed(false);
+        updateSelectionLabel();
+        updateSelectionOutline();
     }
     void onPreview(CCObject*) { setPreview(!m_preview); }
     void pollUpdateBadge(float) { refreshUpdateBadge(); }
@@ -2849,7 +2817,10 @@ private:
             m_hasEdits = false;
             m_animatingExit = true;
         }
-        if (editing) m_animatingExit = false;
+        if (editing) {
+            m_animatingExit = false;
+            m_toolbarCollapsed = false;
+        }
         m_editing = editing;
         m_dragging = false;
         m_pendingDrag = false;
@@ -2888,18 +2859,16 @@ private:
         if (m_bottomPanel) {
             m_bottomPanel->stopAllActions();
             if (editing) {
-                if (m_toolbarRestoreMenu) m_toolbarRestoreMenu->setVisible(m_toolbarHidden);
-                if (!m_toolbarHidden) {
-                    auto const target = m_bottomPanelRestingPosition;
-                    auto const entranceOffset =
-                        m_bottomPanel->getContentHeight() * std::abs(m_bottomPanel->getScaleY()) + 10.f;
+                if (m_toolbarRestoreMenu) m_toolbarRestoreMenu->setVisible(false);
+                if (!m_toolbarCollapsed) {
+                    auto const target = m_bottomPanelHomePosition;
                     m_bottomPanel->setVisible(true);
-                    m_bottomPanel->setPosition({target.x, target.y - entranceOffset});
+                    m_bottomPanel->setPosition({target.x, -m_bottomPanel->getContentHeight()});
                     m_bottomPanel->runAction(CCEaseBackOut::create(CCMoveTo::create(.26f, target)));
                 } else {
                     m_bottomPanel->setVisible(false);
                 }
-                if (!m_toolbarHidden && m_historyMenu) {
+                if (!m_toolbarCollapsed && m_historyMenu) {
                     size_t index = 0;
                     for (auto child : CCArrayExt<CCNode*>(m_historyMenu->getChildren())) {
                         child->stopAllActions();
@@ -2913,14 +2882,11 @@ private:
                 }
             } else if (leavingEditor) {
                 if (m_toolbarRestoreMenu) m_toolbarRestoreMenu->setVisible(false);
-                if (!m_toolbarHidden) {
-                    auto const exitOffset =
-                        m_bottomPanel->getContentHeight() * std::abs(m_bottomPanel->getScaleY()) + 10.f;
+                if (!m_toolbarCollapsed) {
                     m_bottomPanel->setVisible(true);
                     m_bottomPanel->runAction(CCSequence::create(
                         CCEaseIn::create(CCMoveTo::create(
-                            .2f,
-                            {m_bottomPanelRestingPosition.x, m_bottomPanelRestingPosition.y - exitOffset}
+                            .2f, {m_bottomPanelHomePosition.x, -m_bottomPanel->getContentHeight()}
                         ), 2.f),
                         CCHide::create(),
                         CCCallFunc::create(this, callfunc_selector(PauseEditor::finishEditorExitAnimation)),
@@ -3034,7 +3000,6 @@ private:
         auto generation = Mod::get()->getSavedValue<int64_t>(generationKey, 0);
         Mod::get()->setSavedValue<int64_t>(generationKey, generation + 1);
         clearSelection();
-        setEditorToolbarHidden(false);
         rebuildInformationCards({});
         for (auto const& initial : m_initialPositions) {
             if (auto node = initial.node.lock()) {
@@ -3043,16 +3008,9 @@ private:
                 node->setRotation(initial.rotation);
                 if (initial.opacity) setNodeOpacity(node.data(), *initial.opacity);
                 node->setZOrder(initial.zOrder);
-                if (
-                    node->getID() == "editor-toggle-button" ||
-                    node->getID() == "editor-bottom-toolbar"
-                ) {
-                    savePosition(node);
-                }
+                if (node->getID() == "editor-toggle-button") savePosition(node);
             }
         }
-        syncEditorToolbarRestingPosition();
-        refreshEditorToolbarVisibility();
         m_dragging = false;
         m_pendingDrag = false;
         m_undo.clear();
@@ -3097,8 +3055,7 @@ private:
     void hideSelection() {
         if (!m_editing || m_selectedNodes.empty()) return;
         if (m_dragging || m_pendingDrag) finishDrag();
-        size_t trashedCount = 0;
-        bool hiddenEditorToolbar = false;
+        size_t hiddenCount = 0;
         bool skippedEditButton = false;
         for (auto const& group : selectedLogicalGroups()) {
             if (group.empty()) continue;
@@ -3106,13 +3063,6 @@ private:
                 skippedEditButton = true;
                 continue;
             }
-            if (std::ranges::find(group, m_bottomPanel) != group.end()) {
-                syncEditorToolbarRestingPosition();
-                setEditorToolbarHidden(true);
-                hiddenEditorToolbar = true;
-                continue;
-            }
-
             pause_menu_studio::hidden_blocks::Entry entry;
             entry.label = groupLabel(group);
             for (auto node : group) {
@@ -3141,7 +3091,7 @@ private:
                 continue;
             }
             for (auto node : group) if (node) node->setVisible(false);
-            ++trashedCount;
+            ++hiddenCount;
         }
 
         clearSelection();
@@ -3150,10 +3100,10 @@ private:
         Mod::get()->setSavedValue<std::string>(activeLayoutStorageKey(), "");
         updateSelectionLabel();
         updateSelectionOutline();
-        if (trashedCount > 0 || hiddenEditorToolbar) {
+        if (hiddenCount > 0) {
             m_hasEdits = true;
             updateChromeState();
-            if (trashedCount > 0 && m_trashButton) {
+            if (m_trashButton) {
                 m_trashButton->stopAllActions();
                 m_trashButton->setScale(1.f);
                 m_trashButton->runAction(CCSequence::create(
@@ -3162,17 +3112,10 @@ private:
                     nullptr
                 ));
             }
-            if (trashedCount > 0) {
-                Notification::create(
-                    trashedCount == 1 ? "Block moved to trash" : "Blocks moved to trash",
-                    NotificationIcon::Success
-                )->show();
-            } else {
-                Notification::create(
-                    "Toolbar hidden - tap SHOW TOOLBAR to restore it",
-                    NotificationIcon::Success
-                )->show();
-            }
+            Notification::create(
+                hiddenCount == 1 ? "Block moved to trash" : "Blocks moved to trash",
+                NotificationIcon::Success
+            )->show();
         } else if (skippedEditButton) {
             Notification::create("The Edit button cannot be hidden", NotificationIcon::Warning)->show();
         }
@@ -3602,8 +3545,6 @@ private:
 
     void updateSelectionOutline() {
         m_selectionOutline->clear();
-        m_selectionOutline->_setZOrder(editorToolbarSelected() ? 24 : 19);
-        sortAllChildren();
         if (!m_editing || m_preview || m_selectedNodes.empty()) {
             if (m_contextPanel && !m_animatingExit) m_contextPanel->setVisible(false);
             for (auto shade : m_focusShade) if (shade) shade->setVisible(false);
