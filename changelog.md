@@ -1,3 +1,10 @@
+# v4.3.2
+
+- Added a short original C5-E5 two-note chime for the loading-screen update notification.
+- Bundled the sound as a cross-platform OGG resource instead of relying on a Geometry Dash or texture-pack sound.
+- The chime plays at most once per game launch and only after a real available-update banner is shown.
+- Added the **Update notification sound** setting, enabled by default and available independently of update badges.
+
 # v4.3.1
 
 - Corrected the misunderstood bottom-toolbar feature from v4.3.0.

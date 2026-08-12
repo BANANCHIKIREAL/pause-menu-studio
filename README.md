@@ -204,6 +204,7 @@ Cards can be enabled separately in the mod settings.
 | **Undo history size** | Keeps between 10 and 200 editor actions | `50` |
 | **Check on startup** | Checks GitHub Releases while Geode loads | `On` |
 | **Loading-screen banner** | Shows the available-version banner during loading | `On` |
+| **Update notification sound** | Plays the bundled calm two-note chime once when the loading banner appears | `On` |
 | **Update badges** | Shows a red `!` above Edit and Updates | `On` |
 
 ## 🤝 Compatibility
@@ -352,6 +353,12 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.3.2
+
+- Added an original, bundled two-note update chime for the loading-screen update notification.
+- The sound plays only once per game launch and only when an available-update banner is actually shown.
+- Added an **Update notification sound** setting so the chime can be disabled without disabling update checks or badges.
 
 ### v4.3.1
 

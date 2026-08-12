@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/modify/CustomSongWidget.hpp>
 #include <Geode/modify/LoadingLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
@@ -38,7 +39,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.3.1";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.3.2";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -48,6 +49,7 @@ constexpr std::array<std::string_view, 4> INFO_CARD_IDS {
 
 std::map<int, LadderDemon> g_dibDemons;
 bool g_startupUpdateCheckStarted = false;
+bool g_updateSoundPlayedThisLaunch = false;
 std::optional<std::string> g_cachedAvailableUpdateVersion;
 
 struct UpdateCandidate {
@@ -138,6 +140,17 @@ void showLoadingUpdateBanner(
         scale = availableWidth / textWidth;
     }
     label->setScale(scale);
+
+    if (
+        Mod::get()->getSettingValue<bool>("play-update-sound") &&
+        !g_updateSoundPlayedThisLaunch
+    ) {
+        auto const soundPath = Mod::get()->getResourcesDir() / "update-chime.ogg";
+        if (std::filesystem::exists(soundPath)) {
+            FMODAudioEngine::get()->playEffect(soundPath.string(), 1.f, 0.f, .62f);
+            g_updateSoundPlayedThisLaunch = true;
+        }
+    }
 
     constexpr int toastActionTag = 0x504D54;
     auto const screen = CCDirector::sharedDirector()->getWinSize();
@@ -2042,7 +2055,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.3.1", "bigFont.fnt");
+        auto beta = Label::create("V4.3.2", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);

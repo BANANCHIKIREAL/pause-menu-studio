@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.3.1",
+    "version": "v4.3.2",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -20,6 +20,9 @@
         "online"
     ],
     "resources": {
+        "files": [
+            "resources/update-chime.ogg"
+        ],
         "sprites": [
             "resources/download-icon.png",
             "resources/layouts-icon.png",
@@ -191,6 +194,13 @@
             "description": "Shows the available-version banner on Geometry Dash's Geode loading screen.",
             "default": true,
             "enable-if": "enabled && check-updates-on-startup"
+        },
+        "play-update-sound": {
+            "type": "bool",
+            "name": "Update notification sound",
+            "description": "Plays a short, calm two-note chime once when the loading-screen update banner appears.",
+            "default": true,
+            "enable-if": "enabled && check-updates-on-startup && show-update-loading-banner"
         },
         "show-update-badges": {
             "type": "bool",
