@@ -1,3 +1,9 @@
+# v4.1.2
+
+- Removed the texture-backed square behind update exclamation marks.
+- Changed the update mark itself from white to bright red.
+- Attached the pause-menu update mark directly to the upper-right edge of the Edit button so it follows the button's saved position.
+
 # v4.1.1
 
 - Replaced the large static loading-screen update banner with a compact top toast.

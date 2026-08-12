@@ -37,7 +37,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.1";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.2";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -1912,20 +1912,17 @@ private:
             return icon;
         };
         auto makeUpdateBadge = [](char const* id, CCPoint position) {
-            auto badge = CCScale9Sprite::create("square02_001.png");
-            badge->setID(id);
-            badge->setContentSize({15.f, 15.f});
-            badge->setPosition(position);
-            badge->setColor({225, 45, 55});
-            badge->setOpacity(255);
+            // A texture-backed plate can become a large black square under
+            // texture packs. The GD font already supplies a readable outline,
+            // so the notification is only a bright red exclamation mark.
             auto mark = Label::create("!", "bigFont.fnt");
-            mark->setPosition({7.5f, 7.5f});
-            mark->setScale(.38f);
-            mark->setColor(ccWHITE);
+            mark->setID(id);
+            mark->setPosition(position);
+            mark->setScale(.44f);
+            mark->setColor({255, 45, 55});
             mark->setOpacity(255);
-            badge->addChild(mark);
-            badge->setVisible(false);
-            return static_cast<CCNode*>(badge);
+            mark->setVisible(false);
+            return static_cast<CCNode*>(mark);
         };
 
         auto addPanelDepth = [](CCScale9Sprite* panel, CCSize panelSize) {
@@ -1953,7 +1950,7 @@ private:
             icon->setPosition({21.f, 21.f});
             toggleVisual->addChild(icon);
         }
-        m_toggleUpdateBadge = makeUpdateBadge("edit-updates-available-badge", {38.f, 40.f});
+        m_toggleUpdateBadge = makeUpdateBadge("edit-updates-available-badge", {35.f, 35.f});
         toggleVisual->addChild(m_toggleUpdateBadge, 8);
         m_toggle = CCMenuItemSpriteExtra::create(toggleVisual, this, menu_selector(PauseEditor::onToggle));
         m_toggle->setID("editor-toggle-button");
@@ -1990,7 +1987,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.1", "bigFont.fnt");
+        auto beta = Label::create("V4.1.2", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2074,7 +2071,7 @@ private:
         makeControl(m_historyMenu, layoutsIconFrame.c_str(), controlPositions[3], menu_selector(PauseEditor::onLayouts), "saved-layouts-button", 26.f, {76, 52, 128});
         m_updateButton = makeControl(m_historyMenu, downloadIconFrame.c_str(), controlPositions[4], menu_selector(PauseEditor::onUpdates), "updates-button", 26.f, {38, 118, 105});
         if (auto visual = m_updateButton ? m_updateButton->getNormalImage() : nullptr) {
-            m_updateBadge = makeUpdateBadge("updates-available-badge", {39.f, 43.f});
+            m_updateBadge = makeUpdateBadge("updates-available-badge", {39.f, 40.f});
             visual->addChild(m_updateBadge, 8);
         }
         refreshUpdateBadge();

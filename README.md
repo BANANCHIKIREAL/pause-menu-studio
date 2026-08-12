@@ -349,6 +349,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.2
+
+- Replaced the texture-sensitive update badge panel with a plain bright-red `!`.
+- Positioned the mark on the Edit button's upper-right edge so it moves together with the button.
+
 ### v4.1.1
 
 - Replaced the large loading-screen update banner with a compact animated toast at the top of the screen.
