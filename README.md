@@ -349,6 +349,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.4
+
+- The in-game updater now displays the selected GitHub Release's `What's New & Fixed` notes before downloading.
+- Release notes are readable in a dedicated scrollable window, with Markdown links and formatting converted to game-safe text.
+- The update is installed only after the player explicitly presses `DOWNLOAD`.
+
 ### v4.1.3
 
 - Editor shortcuts are now suspended while typing or while a modal dialog is open.

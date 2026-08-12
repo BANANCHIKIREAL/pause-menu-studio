@@ -15,6 +15,7 @@
 #include "HiddenBlocksPopup.hpp"
 #include "BlockIcons.hpp"
 #include "Sha256.hpp"
+#include "UpdatePopup.hpp"
 
 #include <algorithm>
 #include <array>
@@ -37,7 +38,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.3";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.4";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -53,6 +54,7 @@ struct UpdateCandidate {
     VersionInfo version;
     std::string url;
     std::string digest;
+    std::string releaseNotes;
 };
 
 template <class Releases>
@@ -85,7 +87,13 @@ std::optional<UpdateCandidate> latestUpdateCandidate(Releases const& releases) {
         }
         if (selectedURL.empty()) continue;
         if (!best || version.unwrap() > best->version) {
-            best = UpdateCandidate {version.unwrap(), std::move(selectedURL), std::move(selectedDigest)};
+            auto releaseNotes = release.template get<std::string>("body");
+            best = UpdateCandidate {
+                version.unwrap(),
+                std::move(selectedURL),
+                std::move(selectedDigest),
+                releaseNotes.isOk() ? releaseNotes.unwrap() : std::string()
+            };
         }
     }
     return best;
@@ -2022,7 +2030,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.3", "bigFont.fnt");
+        auto beta = Label::create("V4.1.4", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2574,17 +2582,20 @@ private:
         if (m_updateNotice) m_updateNotice->cancel();
         auto self = WeakRef<PauseEditor>(this);
         auto versionText = best->version.toVString();
-        createQuickPopup(
-            "Update available",
-            "Pause Menu Studio <cg>" + versionText + "</c> is available. Download and install it for the next restart?",
-            "Later", "Download",
-            [self, candidate = *best](FLAlertLayer*, bool download) {
-                if (!download) return;
+        auto candidate = *best;
+        if (auto popup = pause_menu_studio::UpdatePopup::create(
+            versionText,
+            candidate.releaseNotes,
+            [self, candidate = std::move(candidate)] {
                 if (auto editor = self.lock()) {
                     editor->startUpdateDownload(candidate.url, candidate.version, candidate.digest);
                 }
             }
-        );
+        )) {
+            popup->show();
+        } else {
+            failUpdate("Could not open the update details");
+        }
     }
 
     void onUpdates(CCObject*) {

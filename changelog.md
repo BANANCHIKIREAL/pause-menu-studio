@@ -1,3 +1,11 @@
+# v4.1.4
+
+- Added a dedicated update-details window to the in-game updater.
+- Update checks now read the selected GitHub Release's `body` field and show it under **WHAT'S NEW & FIXED** before downloading.
+- Added a scrollable release-notes panel so longer fix lists remain readable without covering the action buttons.
+- Converted common Markdown headings, bullets, links, emphasis, and inline code into game-safe text.
+- Kept the existing explicit **LATER** and **DOWNLOAD** choices; viewing release notes never starts a download by itself.
+
 # v4.1.3
 
 - Disabled Edit Mode keyboard shortcuts while a text input or modal popup is active.
