@@ -39,7 +39,9 @@ bool HiddenBlocksPopup::init(
     m_entries = std::move(entries);
     m_restoreCallback = std::move(restoreCallback);
     setTitle("Hidden blocks");
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     m_scroll = ScrollLayer::create({390.f, 220.f});
     m_scroll->setPosition({25.f, 31.f});

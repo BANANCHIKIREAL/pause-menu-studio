@@ -33,7 +33,10 @@ bool AdvancedTransformPopup::init(
     m_callback = std::move(callback);
     m_opacityAvailable = opacity.has_value();
     setTitle("Advanced transform");
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        // Geode replaces the sprite's existing scale unless it is passed here.
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     auto subtitle = Label::create("EDIT THE SELECTED BLOCK'S VISUAL TRANSFORM", "chatFont.fnt");
     subtitle->setPosition({m_size.width / 2.f, 160.f});

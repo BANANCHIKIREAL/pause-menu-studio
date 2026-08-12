@@ -58,6 +58,22 @@ CCNode* iconButton(
     float iconSize,
     ccColor3B color
 ) {
-    return labeledButton(iconName, "", size, iconSize, color);
+    auto visual = CCNode::create();
+    visual->setContentSize(size);
+
+    // Layout row actions are deliberately rounder than the wide text buttons.
+    // GJ_square02 keeps its corner radius even at the compact 30x26 size.
+    auto tile = CCScale9Sprite::create("GJ_square02.png");
+    tile->setContentSize(size);
+    tile->setPosition({size.width / 2.f, size.height / 2.f});
+    tile->setColor(color);
+    tile->setOpacity(210);
+    visual->addChild(tile, -1);
+
+    if (auto icon = create(iconName, iconSize)) {
+        icon->setPosition({size.width / 2.f, size.height / 2.f});
+        visual->addChild(icon);
+    }
+    return visual;
 }
 }

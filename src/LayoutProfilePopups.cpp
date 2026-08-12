@@ -64,7 +64,9 @@ bool LayoutNamePopup::init(
     if (!Popup::init(310.f, 155.f)) return false;
     m_callback = std::move(callback);
     setTitle(title.c_str());
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     m_input = TextInput::create(230.f, "Layout name");
     m_input->setCommonFilter(CommonFilter::Name);
@@ -130,7 +132,9 @@ bool SaveLayoutPopup::init(
     m_saveNewCallback = std::move(saveNewCallback);
     m_updateCallback = std::move(updateCallback);
     setTitle(title.c_str());
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     auto newLabel = Label::create("CREATE NEW", "bigFont.fnt");
     newLabel->setAnchorPoint({0.f, .5f});
@@ -305,7 +309,9 @@ bool LayoutListPopup::init(
     m_duplicateCallback = std::move(duplicateCallback);
     m_deleteCallback = std::move(deleteCallback);
     setTitle(title.c_str());
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     m_scroll = ScrollLayer::create({390.f, 235.f});
     m_scroll->setPosition({25.f, 25.f});
@@ -371,7 +377,7 @@ void LayoutListPopup::rebuildList() {
         row->addChild(apply);
 
         auto renameSprite = mod_icons::iconButton(
-            "rename-icon.png", {30.f, 26.f}, 18.f, {60, 52, 108}
+            "rename-icon.png", {30.f, 26.f}, 15.5f, {60, 52, 108}
         );
         auto rename = CCMenuItemSpriteExtra::create(renameSprite, this, menu_selector(LayoutListPopup::onRename));
         rename->setPosition({286.f, y - 17.f});

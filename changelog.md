@@ -1,3 +1,11 @@
+# v4.4.1
+
+- Rebuilt the updater changelog as compact rounded cards with a short colored title, white description, stable icon, and grouped word wrapping.
+- Fixed Shift+Esc level exit with Better Escape when the custom Jukebox song card was active by detaching that card from music-state callbacks before Geometry Dash resets FMOD.
+- Fixed custom 512x512 close icons being restored to scale 1 by Geode's Popup API and covering most of the screen.
+- Rebuilt Apply Layout and Update Layout as two distinct folder actions with clean transparent gaps around their inner arrow symbols.
+- Rounded the Rename, Copy, and Delete action tiles in saved-layout cards and reduced the Rename pencil size for consistent padding.
+
 # v4.4.0
 
 - Added a complete white-on-transparent action icon suite for the editor and its popups.

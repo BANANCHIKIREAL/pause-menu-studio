@@ -40,7 +40,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.4.0";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.4.1";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -628,6 +628,22 @@ void alignJukeboxSongBlock(CCNode* root) {
         57.f - bounds[1],
     });
     fixJukeboxDiscPosition(widget);
+}
+
+void detachSongCardDownloadDelegate(CCNode* root) {
+    if (!root) return;
+    auto widget = typeinfo_cast<CustomSongWidget*>(findByLogicalID(root, "song-card"));
+    if (!widget) return;
+
+    // PauseLayer::onQuit resets FMOD before the pause layer and its custom song
+    // card are destroyed. During that reset MusicDownloadManager broadcasts a
+    // song-state update, so a still-registered card can enter Jukebox while the
+    // PlayLayer is already being torn down. Detach only our song card before
+    // the real quit path; its destructor may safely repeat this removal later.
+    widget->stopAllActions();
+    if (auto manager = MusicDownloadManager::sharedState()) {
+        manager->removeMusicDownloadDelegate(widget);
+    }
 }
 
 bool hasAncestorWithLogicalID(CCNode* node, CCNode* owner, std::string_view wanted) {
@@ -2056,7 +2072,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.4.0", "bigFont.fnt");
+        auto beta = Label::create("V4.4.1", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -3951,7 +3967,13 @@ class $modify(PauseMenuStudioLayer, PauseLayer) {
         // tears down the pause UI and starts the exit transition. Calling the
         // PlayLayer directly leaves an orphan PauseLayer whose next Resume
         // action dereferences GameManager::m_playLayer after it became null.
+        detachSongCardDownloadDelegate(this);
         PauseLayer::onQuit(this);
+    }
+
+    void onQuit(CCObject* sender) {
+        detachSongCardDownloadDelegate(this);
+        PauseLayer::onQuit(sender);
     }
 
     void tryQuit(CCObject* sender) {

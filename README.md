@@ -354,6 +354,14 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.4.1
+
+- Replaced the long alternating-color updater text with compact rounded release-note cards.
+- Added a short title and grouped white description to every update item.
+- Fixed Shift+Esc exit crashes involving the custom Jukebox song card and NONGD music callbacks.
+- Fixed oversized custom close icons in every Pause Menu Studio popup.
+- Rebuilt the Apply Layout and Update Layout folder symbols and polished the saved-layout action buttons.
+
 ### v4.4.0
 
 - Replaced the remaining editor action icons with a unified white, transparent icon set instead of Geometry Dash sprite frames.

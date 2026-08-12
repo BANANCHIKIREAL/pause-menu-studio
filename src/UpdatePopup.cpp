@@ -31,9 +31,6 @@ std::string plainReleaseLine(std::string value) {
     value = trim(std::move(value));
     while (!value.empty() && value.front() == '#') value.erase(value.begin());
     value = trim(std::move(value));
-    if (value.starts_with("- ") || value.starts_with("* ")) {
-        value = "> " + value.substr(2);
-    }
 
     // Preserve the readable label from Markdown links and discard only the URL.
     size_t searchFrom = 0;
@@ -58,17 +55,16 @@ std::string plainReleaseLine(std::string value) {
     return trim(std::move(value));
 }
 
-std::vector<std::string> wrapLine(std::string const& line, size_t limit = 66) {
+std::vector<std::string> wrapLine(std::string const& line, size_t limit = 54) {
     if (line.size() <= limit) return {line};
     std::vector<std::string> result;
     std::istringstream words(line);
     std::string word;
     std::string current;
-    auto continuationPrefix = line.starts_with("> ") ? "  " : "";
     while (words >> word) {
         if (!current.empty() && current.size() + word.size() + 1 > limit) {
             result.push_back(current);
-            current = continuationPrefix + word;
+            current = word;
         } else {
             if (!current.empty()) current += ' ';
             current += word;
@@ -78,26 +74,37 @@ std::vector<std::string> wrapLine(std::string const& line, size_t limit = 66) {
     return result;
 }
 
-std::vector<std::string> displayLines(std::string const& releaseNotes) {
-    std::vector<std::string> result;
+struct ReleaseItem {
+    std::string title;
+    std::vector<std::string> lines;
+};
+
+std::vector<ReleaseItem> displayItems(std::string const& releaseNotes) {
+    std::vector<ReleaseItem> result;
     std::istringstream input(releaseNotes);
     std::string raw;
-    bool previousBlank = false;
     while (std::getline(input, raw)) {
         if (!raw.empty() && raw.back() == '\r') raw.pop_back();
+        auto original = trim(raw);
+        auto heading = original.starts_with('#');
+        auto bullet = original.starts_with("- ") || original.starts_with("* ");
+        if (heading || original.empty()) continue;
+        if (bullet) original.erase(0, 2);
+        raw = std::move(original);
         auto line = plainReleaseLine(std::move(raw));
-        if (line.empty()) {
-            if (!result.empty() && !previousBlank) result.emplace_back();
-            previousBlank = true;
-            continue;
+        if (line.empty()) continue;
+
+        ReleaseItem item;
+        if (auto colon = line.find(':'); colon != std::string::npos && colon <= 28) {
+            item.title = trim(line.substr(0, colon));
+            line = trim(line.substr(colon + 1));
         }
-        previousBlank = false;
-        auto wrapped = wrapLine(line);
-        result.insert(result.end(), wrapped.begin(), wrapped.end());
+        item.lines = wrapLine(line);
+        if (item.lines.empty()) item.lines.emplace_back("Update details available.");
+        result.push_back(std::move(item));
     }
-    while (!result.empty() && result.back().empty()) result.pop_back();
     if (result.empty()) {
-        result.emplace_back("Release notes were not provided for this update.");
+        result.push_back({"UPDATE", {"Release notes were not provided for this update."}});
     }
     return result;
 }
@@ -127,7 +134,9 @@ bool UpdatePopup::init(
     if (!Popup::init(440.f, 320.f)) return false;
     m_downloadCallback = std::move(downloadCallback);
     setTitle("Update available");
-    setCloseButtonSpr(mod_icons::create("close-icon.png", 24.f));
+    if (auto close = mod_icons::create("close-icon.png", 24.f)) {
+        setCloseButtonSpr(close, close->getScale());
+    }
 
     auto versionLabel = Label::create("PAUSE MENU STUDIO  " + version, "bigFont.fnt");
     versionLabel->setScale(.48f);
@@ -154,23 +163,68 @@ bool UpdatePopup::init(
     scroll->setID("update-release-notes");
     m_mainLayer->addChild(scroll);
 
-    auto lines = displayLines(releaseNotes);
-    constexpr float lineHeight = 14.f;
-    auto contentHeight = std::max(158.f, 14.f + static_cast<float>(lines.size()) * lineHeight);
+    auto items = displayItems(releaseNotes);
+    constexpr float lineHeight = 12.f;
+    float requiredHeight = 8.f;
+    for (auto const& item : items) {
+        requiredHeight += 12.f + static_cast<float>(item.lines.size()) * lineHeight;
+        if (!item.title.empty()) requiredHeight += 13.f;
+        requiredHeight += 5.f;
+    }
+    auto contentHeight = std::max(158.f, requiredHeight);
     auto content = scroll->m_contentLayer;
     content->setContentSize({374.f, contentHeight});
     content->setPositionY(158.f - contentHeight);
 
-    for (size_t index = 0; index < lines.size(); ++index) {
-        auto const& text = lines[index];
-        if (text.empty()) continue;
-        auto label = Label::create(text, "chatFont.fnt");
-        label->setAnchorPoint({0.f, .5f});
-        label->setScale(.58f);
-        label->setOpacity(235);
-        label->setPosition({8.f, contentHeight - 12.f - static_cast<float>(index) * lineHeight});
-        if (text.starts_with("> ")) label->setColor({255, 220, 105});
-        content->addChild(label);
+    float cursor = contentHeight - 5.f;
+    for (size_t index = 0; index < items.size(); ++index) {
+        auto const& item = items[index];
+        auto cardHeight = 12.f + static_cast<float>(item.lines.size()) * lineHeight;
+        if (!item.title.empty()) cardHeight += 13.f;
+
+        auto card = CCScale9Sprite::create("GJ_square02.png");
+        card->setContentSize({358.f, cardHeight});
+        card->setPosition({187.f, cursor - cardHeight / 2.f});
+        card->setColor(index % 2 == 0 ? ccColor3B {30, 26, 68} : ccColor3B {25, 31, 70});
+        card->setOpacity(205);
+        content->addChild(card);
+
+        auto accent = CCLayerColor::create(
+            index % 2 == 0 ? ccColor4B {80, 225, 255, 255} : ccColor4B {185, 135, 255, 255},
+            3.f, cardHeight - 8.f
+        );
+        accent->setPosition({12.f, cursor - cardHeight + 4.f});
+        content->addChild(accent, 2);
+
+        if (auto icon = mod_icons::create("done-icon.png", 14.f)) {
+            icon->setPosition({27.f, cursor - cardHeight / 2.f});
+            icon->setOpacity(235);
+            content->addChild(icon, 3);
+        }
+
+        auto textY = cursor - 9.f;
+        if (!item.title.empty()) {
+            auto title = Label::create(utils::string::toUpper(item.title), "bigFont.fnt");
+            title->setAnchorPoint({0.f, .5f});
+            title->setPosition({40.f, textY});
+            title->setScale(.30f);
+            title->setColor(index % 2 == 0 ? ccColor3B {80, 225, 255} : ccColor3B {205, 160, 255});
+            title->setLimitLabelWidth(315.f, .30f, .22f);
+            content->addChild(title, 3);
+            textY -= 14.f;
+        }
+
+        for (auto const& text : item.lines) {
+            auto label = Label::create(text, "chatFont.fnt");
+            label->setAnchorPoint({0.f, .5f});
+            label->setScale(.52f);
+            label->setColor({242, 240, 255});
+            label->setOpacity(245);
+            label->setPosition({40.f, textY});
+            content->addChild(label, 3);
+            textY -= lineHeight;
+        }
+        cursor -= cardHeight + 5.f;
     }
     scroll->scrollToTop();
 
