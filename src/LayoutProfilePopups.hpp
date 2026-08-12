@@ -76,6 +76,7 @@ private:
     geode::Function<bool(std::string, std::string)> m_duplicateCallback;
     geode::Function<void(std::string)> m_deleteCallback;
     geode::ScrollLayer* m_scroll = nullptr;
+    float m_listHeight = 72.f;
 
     bool init(
         std::vector<std::string> names,

@@ -3,10 +3,42 @@
 #include <Geode/ui/Label.hpp>
 
 #include <algorithm>
+#include <cmath>
+#include <numbers>
+#include <vector>
 
 using namespace geode::prelude;
 
 namespace pause_menu_studio::mod_icons {
+namespace {
+CCDrawNode* roundedStencil(CCSize size, float radius) {
+    auto stencil = CCDrawNode::create();
+    std::vector<CCPoint> points;
+    constexpr int cornerSegments = 6;
+
+    auto appendCorner = [&](CCPoint center, float startDegrees) {
+        for (int index = 0; index <= cornerSegments; ++index) {
+            auto degrees = startDegrees + 90.f * static_cast<float>(index) / cornerSegments;
+            auto radians = degrees * std::numbers::pi_v<float> / 180.f;
+            points.emplace_back(
+                center.x + std::cos(radians) * radius,
+                center.y + std::sin(radians) * radius
+            );
+        }
+    };
+
+    appendCorner({size.width - radius, radius}, -90.f);
+    appendCorner({size.width - radius, size.height - radius}, 0.f);
+    appendCorner({radius, size.height - radius}, 90.f);
+    appendCorner({radius, radius}, 180.f);
+    stencil->drawPolygon(
+        points.data(), static_cast<unsigned int>(points.size()),
+        {1.f, 1.f, 1.f, 1.f}, 0.f, {0.f, 0.f, 0.f, 0.f}
+    );
+    return stencil;
+}
+}
+
 CCSprite* create(std::string_view name, float maxSize) {
     auto path = Mod::get()->expandSpriteName(name);
     auto icon = CCSprite::create(path.c_str());
@@ -61,14 +93,18 @@ CCNode* iconButton(
     auto visual = CCNode::create();
     visual->setContentSize(size);
 
-    // Layout row actions are deliberately rounder than the wide text buttons.
-    // GJ_square02 keeps its corner radius even at the compact 30x26 size.
-    auto tile = CCScale9Sprite::create("GJ_square02.png");
+    // Keep the original compact action-tile texture. Clip only its outer corners;
+    // swapping to a different GD panel sprite distorts into strips at 30x26.
+    auto tile = CCScale9Sprite::create("square02_001.png");
     tile->setContentSize(size);
     tile->setPosition({size.width / 2.f, size.height / 2.f});
     tile->setColor(color);
     tile->setOpacity(210);
-    visual->addChild(tile, -1);
+    auto clip = CCClippingNode::create(roundedStencil(size, 4.5f));
+    clip->setAlphaThreshold(.05f);
+    clip->setContentSize(size);
+    clip->addChild(tile);
+    visual->addChild(clip, -1);
 
     if (auto icon = create(iconName, iconSize)) {
         icon->setPosition({size.width / 2.f, size.height / 2.f});

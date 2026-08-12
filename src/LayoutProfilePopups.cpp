@@ -301,7 +301,10 @@ bool LayoutListPopup::init(
     Function<bool(std::string, std::string)> duplicateCallback,
     Function<void(std::string)> deleteCallback
 ) {
-    if (!Popup::init(440.f, 310.f)) return false;
+    constexpr float rowHeight = 72.f;
+    auto visibleRows = std::clamp<size_t>(std::max<size_t>(names.size(), 1), 1, 3);
+    m_listHeight = static_cast<float>(visibleRows) * rowHeight;
+    if (!Popup::init(440.f, m_listHeight + 75.f)) return false;
     m_names = std::move(names);
     m_activeName = std::move(activeName);
     m_applyCallback = std::move(applyCallback);
@@ -313,7 +316,7 @@ bool LayoutListPopup::init(
         setCloseButtonSpr(close, close->getScale());
     }
 
-    m_scroll = ScrollLayer::create({390.f, 235.f});
+    m_scroll = ScrollLayer::create({390.f, m_listHeight});
     m_scroll->setPosition({25.f, 25.f});
     m_scroll->setID("layout-list");
     m_mainLayer->addChild(m_scroll);
@@ -325,15 +328,15 @@ void LayoutListPopup::rebuildList() {
     auto content = m_scroll->m_contentLayer;
     content->removeAllChildren();
     constexpr float rowHeight = 72.f;
-    auto height = std::max(235.f, static_cast<float>(m_names.size()) * rowHeight);
+    auto height = std::max(m_listHeight, static_cast<float>(m_names.size()) * rowHeight);
     content->setContentSize({390.f, height});
-    content->setPositionY(235.f - height);
+    content->setPositionY(m_listHeight - height);
 
     if (m_names.empty()) {
         auto empty = Label::create("No saved layouts", "bigFont.fnt");
         empty->setScale(.45f);
         empty->setOpacity(150);
-        empty->setPosition({195.f, height - 110.f});
+        empty->setPosition({195.f, height / 2.f});
         content->addChild(empty);
         return;
     }

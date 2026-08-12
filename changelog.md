@@ -1,3 +1,9 @@
+# v4.4.2
+
+- Restored the original compact Rename, Copy, and Delete button texture instead of the incompatible panel sprite that rendered as detached colored strips without a texture pack.
+- Rounded only the outer corners of those original action buttons, preserving their previous colors, proportions, icons, and spacing.
+- Made the Saved Layouts popup height adapt to one, two, or three visible profile rows instead of reserving a fixed three-row area and leaving most of the window empty.
+
 # v4.4.1
 
 - Rebuilt the updater changelog as compact rounded cards with a short colored title, white description, stable icon, and grouped word wrapping.

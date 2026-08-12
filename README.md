@@ -354,6 +354,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.4.2
+
+- Restored the original saved-layout action tiles after the replacement panel sprite rendered as detached strips without a texture pack.
+- Added rounded clipping to the original Rename, Copy, and Delete tiles without changing their colors, proportions, or icons.
+- Made the Saved Layouts window shrink to the number of visible profiles instead of leaving a large empty fixed-height area.
+
 ### v4.4.1
 
 - Replaced the long alternating-color updater text with compact rounded release-note cards.

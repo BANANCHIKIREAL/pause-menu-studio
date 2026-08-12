@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.4.1",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.4.1/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:06081e51f1fcce0c5c597f7e686bc1a2a9290927429dcea17f80a2928ed8c87d",
-  "release_notes": "## Cleaner update details\n\n- CHANGELOG: Compact rounded cards replace long wrapped text.\n- EXIT FIX: Shift+Esc no longer leaves the Jukebox card active.\n- POPUPS: Close icons keep their intended size.\n- LAYOUT ICONS: Apply and Update now have clear arrows.\n- POLISH: Layout actions are rounded and better spaced."
+  "version": "v4.4.2",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.4.2/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:1853c747c2afc54cc8adab02cd1586d9a56ce282d966f60cd880f010c7dafe69",
+  "release_notes": "## Saved Layouts UI repair\n\n- BUTTONS: Restored the original compact Rename, Copy, and Delete tiles.\n- CORNERS: Rounded only the outer corners without changing the old style.\n- POPUP SIZE: Saved Layouts now shrinks to the number of visible profiles.\n- TEXTURE-PACK FREE: Fixed detached colored strips when no texture pack is active."
 }
