@@ -349,6 +349,12 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.3
+
+- Editor shortcuts are now suspended while typing or while a modal dialog is open.
+- Layout names can safely contain `R` and other shortcut keys without changing the selected block.
+- Resized Geometry Dash buttons now retain their edited size after being clicked.
+
 ### v4.1.2
 
 - Replaced the texture-sensitive update badge panel with a plain bright-red `!`.

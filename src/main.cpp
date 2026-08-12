@@ -37,7 +37,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.2";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.3";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -322,6 +322,18 @@ bool setNodeOpacity(CCNode* node, int opacity) {
     return true;
 }
 
+void setEditableNodeScale(CCNode* node, float scaleX, float scaleY) {
+    if (!node) return;
+    node->setScaleX(scaleX);
+    node->setScaleY(scaleY);
+    if (auto button = typeinfo_cast<CCMenuItemSpriteExtra*>(node)) {
+        // CCMenuItemSpriteExtra::unselected restores m_baseScale after its
+        // press animation. Keep that internal value in sync with the editor,
+        // otherwise clicking a resized button restores its old size.
+        button->m_baseScale = scaleX;
+    }
+}
+
 bool isInformationCard(CCNode* node) {
     if (!node) return false;
     auto const id = node->getID();
@@ -382,8 +394,11 @@ void restorePositions(CCNode* node, CCNode* skip = nullptr) {
         });
     }
     if (mod->hasSavedValue(scaleXKey(node)) && mod->hasSavedValue(scaleYKey(node))) {
-        node->setScaleX(static_cast<float>(mod->getSavedValue<double>(scaleXKey(node))));
-        node->setScaleY(static_cast<float>(mod->getSavedValue<double>(scaleYKey(node))));
+        setEditableNodeScale(
+            node,
+            static_cast<float>(mod->getSavedValue<double>(scaleXKey(node))),
+            static_cast<float>(mod->getSavedValue<double>(scaleYKey(node)))
+        );
     }
     if (mod->hasSavedValue(rotationKey(node))) {
         node->setRotation(static_cast<float>(mod->getSavedValue<double>(rotationKey(node))));
@@ -914,6 +929,24 @@ CCScale9Sprite* panel(CCSize size) {
     return bg;
 }
 
+bool editorKeyboardShortcutsBlocked(CCNode* node) {
+    if (!node || !node->isVisible()) return false;
+    if (auto input = typeinfo_cast<CCTextInputNode*>(node); input && input->m_selected) {
+        return true;
+    }
+    // Popups are modal even when their TextInput has temporarily lost focus.
+    // Never let an editor command reach the pause menu behind an open dialog.
+    if (typeinfo_cast<FLAlertLayer*>(node)) return true;
+    for (auto child : CCArrayExt<CCNode*>(node->getChildren())) {
+        if (editorKeyboardShortcutsBlocked(child)) return true;
+    }
+    return false;
+}
+
+bool editorKeyboardShortcutsBlocked() {
+    return editorKeyboardShortcutsBlocked(CCDirector::sharedDirector()->getRunningScene());
+}
+
 void addLabel(CCNode* parent, std::string const& text, CCPoint pos, float scale, ccColor3B color = {255, 255, 255}) {
     auto label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
     label->setPosition(pos);
@@ -1159,7 +1192,7 @@ public:
         setTouchPriority(-1000);
         m_undoKey = KeyboardInputEvent(KEY_Z).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing || m_preview ||
+                !m_editing || m_preview || editorKeyboardShortcutsBlocked() ||
                 input.action != KeyboardInputData::Action::Press ||
                 !(input.modifiers & KeyboardModifier::Control)
             ) return false;
@@ -1168,7 +1201,7 @@ public:
         });
         m_redoKey = KeyboardInputEvent(KEY_Y).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing || m_preview ||
+                !m_editing || m_preview || editorKeyboardShortcutsBlocked() ||
                 input.action != KeyboardInputData::Action::Press ||
                 !(input.modifiers & KeyboardModifier::Control)
             ) return false;
@@ -1178,7 +1211,8 @@ public:
         auto bindArrow = [this](enumKeyCodes key, CCPoint delta) {
             return KeyboardInputEvent(key).listen([this, delta](KeyboardInputData& input) {
                 if (
-                    !m_editing || m_preview || !m_moveEnabled || m_selectedNodes.empty() ||
+                    !m_editing || m_preview || editorKeyboardShortcutsBlocked() ||
+                    !m_moveEnabled || m_selectedNodes.empty() ||
                     (input.action != KeyboardInputData::Action::Press &&
                      input.action != KeyboardInputData::Action::Repeat)
                 ) return false;
@@ -1193,7 +1227,8 @@ public:
         m_downKey = bindArrow(KEY_Down, {0.f, -1.f});
         m_resetKey = KeyboardInputEvent(KEY_R).listen([this](KeyboardInputData& input) {
             if (
-                !m_editing || m_preview || m_selectedNodes.empty() ||
+                !m_editing || m_preview || editorKeyboardShortcutsBlocked() ||
+                m_selectedNodes.empty() ||
                 input.action != KeyboardInputData::Action::Press
             ) return false;
             requestResetSelection();
@@ -1202,7 +1237,8 @@ public:
         auto bindRemove = [this](enumKeyCodes key) {
             return KeyboardInputEvent(key).listen([this](KeyboardInputData& input) {
                 if (
-                    !m_editing || m_preview || m_selectedNodes.empty() ||
+                    !m_editing || m_preview || editorKeyboardShortcutsBlocked() ||
+                    m_selectedNodes.empty() ||
                     input.action != KeyboardInputData::Action::Press
                 ) return false;
                 hideSelection();
@@ -1739,8 +1775,7 @@ private:
         for (auto const& state : states) {
             if (!state.node) continue;
             state.node->setPosition(state.position);
-            state.node->setScaleX(state.scaleX);
-            state.node->setScaleY(state.scaleY);
+            setEditableNodeScale(state.node, state.scaleX, state.scaleY);
             state.node->setRotation(state.rotation);
             if (state.opacity) setNodeOpacity(state.node, *state.opacity);
             state.node->setZOrder(state.zOrder);
@@ -1856,8 +1891,9 @@ private:
             if (largest <= .0001f) largest = 1.f;
             auto target = std::clamp(largest * factor, .15f, 3.5f);
             auto applied = target / largest;
-            node->setScaleX(node->getScaleX() * applied);
-            node->setScaleY(node->getScaleY() * applied);
+            setEditableNodeScale(
+                node, node->getScaleX() * applied, node->getScaleY() * applied
+            );
         }
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
@@ -1882,8 +1918,7 @@ private:
                 return remembered && remembered.data() == node;
             });
             if (found == m_initialPositions.end()) continue;
-            node->setScaleX(found->scaleX);
-            node->setScaleY(found->scaleY);
+            setEditableNodeScale(node, found->scaleX, found->scaleY);
         }
         keepSelectedGroupsReachable();
         auto after = captureStates(m_selectedNodes);
@@ -1987,7 +2022,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.2", "bigFont.fnt");
+        auto beta = Label::create("V4.1.3", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -2303,8 +2338,9 @@ private:
             auto largest = std::max(std::abs(node->getScaleX()), std::abs(node->getScaleY()));
             if (largest <= .0001f) largest = 1.f;
             auto factor = target / largest;
-            node->setScaleX(node->getScaleX() * factor);
-            node->setScaleY(node->getScaleY() * factor);
+            setEditableNodeScale(
+                node, node->getScaleX() * factor, node->getScaleY() * factor
+            );
             markTransformDirty(node);
         }
         keepSelectedGroupsReachable();
@@ -2873,8 +2909,7 @@ private:
         for (auto const& initial : m_initialPositions) {
             if (auto node = initial.node.lock()) {
                 node->setPosition(initial.position);
-                node->setScaleX(initial.scaleX);
-                node->setScaleY(initial.scaleY);
+                setEditableNodeScale(node.data(), initial.scaleX, initial.scaleY);
                 node->setRotation(initial.rotation);
                 if (initial.opacity) setNodeOpacity(node.data(), *initial.opacity);
                 node->setZOrder(initial.zOrder);
@@ -2904,8 +2939,7 @@ private:
             });
             if (found == m_initialPositions.end()) continue;
             node->setPosition(found->position);
-            node->setScaleX(found->scaleX);
-            node->setScaleY(found->scaleY);
+            setEditableNodeScale(node, found->scaleX, found->scaleY);
             node->setRotation(found->rotation);
             if (found->opacity) setNodeOpacity(node, *found->opacity);
             node->setZOrder(found->zOrder);
@@ -3029,8 +3063,7 @@ private:
             if (!node) continue;
             rememberInitialPosition(node);
             node->setPosition(member.position);
-            node->setScaleX(member.scaleX);
-            node->setScaleY(member.scaleY);
+            setEditableNodeScale(node, member.scaleX, member.scaleY);
             if (member.rotation) node->setRotation(*member.rotation);
             if (member.opacity) setNodeOpacity(node, *member.opacity);
             if (member.zOrder) node->setZOrder(*member.zOrder);
@@ -3238,8 +3271,13 @@ private:
             if (auto found = snapshot.find(nodePath(node)); found != snapshot.end()) {
                 rememberInitialPosition(node);
                 node->setPosition(found->second.position);
-                if (found->second.scaleX) node->setScaleX(*found->second.scaleX);
-                if (found->second.scaleY) node->setScaleY(*found->second.scaleY);
+                if (found->second.scaleX || found->second.scaleY) {
+                    setEditableNodeScale(
+                        node,
+                        found->second.scaleX.value_or(node->getScaleX()),
+                        found->second.scaleY.value_or(node->getScaleY())
+                    );
+                }
                 if (found->second.rotation) node->setRotation(*found->second.rotation);
                 if (found->second.opacity) setNodeOpacity(node, *found->second.opacity);
                 if (found->second.zOrder) node->_setZOrder(*found->second.zOrder);

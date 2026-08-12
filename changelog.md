@@ -1,3 +1,10 @@
+# v4.1.3
+
+- Disabled Edit Mode keyboard shortcuts while a text input or modal popup is active.
+- Typing layout names can no longer trigger Reset with `R`, remove blocks with `Delete`, move blocks with arrow keys, or run Undo/Redo with `Ctrl+Z` and `Ctrl+Y`.
+- Shortcuts resume automatically after the input dialog closes.
+- Kept `CCMenuItemSpriteExtra` press-animation base scales synchronized with editor scaling, so clicking a resized button no longer restores its previous size.
+
 # v4.1.2
 
 - Removed the texture-backed square behind update exclamation marks.
