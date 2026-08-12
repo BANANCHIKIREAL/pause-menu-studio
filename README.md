@@ -349,6 +349,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.1.1
+
+- Replaced the large loading-screen update banner with a compact animated toast at the top of the screen.
+- The toast slides in, remains visible briefly, and leaves upward without covering Geode's loading text.
+
 ### v4.1.0
 
 - Added optional mode-separated layouts for normal, platformer, creator, and creator-platformer pause menus.

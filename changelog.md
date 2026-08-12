@@ -1,3 +1,9 @@
+# v4.1.1
+
+- Replaced the large static loading-screen update banner with a compact top toast.
+- The toast slides down from above the screen, stays visible briefly, and smoothly returns upward without covering the loading status area.
+- Added a compact white download icon, rounded dark panel, cyan accent, and duplicate-display protection.
+
 # v4.1.0
 
 - Added the **Separate layouts by mode** setting. When enabled, normal, platformer, creator, and creator-platformer pause menus keep independent positions, active named layouts, generations, and Hidden Blocks; disabling it makes every mode use the normal layout namespace without deleting separated data.

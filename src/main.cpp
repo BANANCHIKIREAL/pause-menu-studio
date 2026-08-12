@@ -37,7 +37,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_RELEASES_URL =
     "https://api.github.com/repos/BANANCHIKIREAL/pause-menu-studio/releases?per_page=10";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.0";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.1.1";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -128,15 +128,48 @@ void showLoadingUpdateBanner(
         banner->setVisible(false);
         return;
     }
-    label->setString(fmt::format("PAUSE MENU STUDIO {} AVAILABLE!", version).c_str());
-    auto scale = .38f;
-    auto const availableWidth = banner->getContentWidth() - 18.f;
+    auto const message = fmt::format("UPDATE {} AVAILABLE", version);
+    // ensureStartupUpdateUI can run once from LoadingLayer::init and again when
+    // the mod attaches to an already active loading screen. Never restart the
+    // same toast or show it twice on that screen.
+    if (label->getString() == message) return;
+    label->setString(message.c_str());
+    auto scale = .30f;
+    auto const availableWidth = banner->getContentWidth() - 48.f;
     auto const textWidth = label->getContentWidth();
     if (textWidth * scale > availableWidth && textWidth > .001f) {
         scale = availableWidth / textWidth;
     }
     label->setScale(scale);
+
+    constexpr int toastActionTag = 0x504D54;
+    auto const screen = CCDirector::sharedDirector()->getWinSize();
+    auto const hiddenPosition = ccp(screen.width / 2.f, screen.height + banner->getContentHeight());
+    auto const shownPosition = ccp(
+        screen.width / 2.f,
+        screen.height - banner->getContentHeight() / 2.f - 5.f
+    );
+    banner->stopActionByTag(toastActionTag);
+    banner->setPosition(hiddenPosition);
+    banner->setScale(.96f);
     banner->setVisible(true);
+    auto action = CCSequence::create(
+        CCSpawn::create(
+            CCEaseBackOut::create(CCMoveTo::create(.42f, shownPosition)),
+            CCEaseSineOut::create(CCScaleTo::create(.42f, 1.f)),
+            nullptr
+        ),
+        CCDelayTime::create(3.2f),
+        CCSpawn::create(
+            CCEaseSineIn::create(CCMoveTo::create(.32f, hiddenPosition)),
+            CCEaseSineIn::create(CCScaleTo::create(.32f, .97f)),
+            nullptr
+        ),
+        CCHide::create(),
+        nullptr
+    );
+    action->setTag(toastActionTag);
+    banner->runAction(action);
 }
 
 std::string stableLevelName(PlayLayer* play, GJGameLevel* level);
@@ -1957,7 +1990,7 @@ private:
         brand->setColor(editorAccentColor());
         brand->setOpacity(255);
         m_bottomPanel->addChild(brand, 4);
-        auto beta = Label::create("V4.1.0", "bigFont.fnt");
+        auto beta = Label::create("V4.1.1", "bigFont.fnt");
         beta->setAnchorPoint({1.f, .5f});
         beta->setPosition({toolbarWidth - 10.f, 60.5f});
         beta->setScale(.20f);
@@ -3508,26 +3541,51 @@ public:
     void buildUpdateBanner() {
         if (m_fields->updateBanner && m_fields->updateBanner->getParent()) return;
         auto const screen = CCDirector::sharedDirector()->getWinSize();
-        auto const width = std::min(360.f, screen.width - 20.f);
+        auto const width = std::min(244.f, screen.width - 24.f);
+        constexpr float height = 24.f;
         auto banner = CCNode::create();
         banner->setID("pause-menu-studio-update-banner");
-        banner->setContentSize({width, 30.f});
+        banner->setContentSize({width, height});
         banner->setAnchorPoint({.5f, .5f});
-        banner->setPosition({screen.width / 2.f, 82.f});
+        banner->setPosition({screen.width / 2.f, screen.height + height});
         banner->setVisible(false);
 
-        auto border = CCLayerColor::create({70, 235, 255, 255}, width, 30.f);
-        banner->addChild(border);
-        auto background = CCLayerColor::create({25, 15, 55, 235}, width - 4.f, 26.f);
-        background->setPosition({2.f, 2.f});
+        auto shadow = CCScale9Sprite::create("square02_001.png");
+        shadow->setContentSize({width, height});
+        shadow->setPosition({width / 2.f + 1.5f, height / 2.f - 1.5f});
+        shadow->setColor({0, 0, 0});
+        shadow->setOpacity(125);
+        banner->addChild(shadow);
+
+        auto background = CCScale9Sprite::create("square02_001.png");
+        background->setContentSize({width, height});
+        background->setPosition({width / 2.f, height / 2.f});
+        background->setColor({18, 12, 37});
+        background->setOpacity(238);
         banner->addChild(background, 1);
+
+        auto accent = CCLayerColor::create({65, 230, 255, 255}, 3.f, height - 7.f);
+        accent->setPosition({5.f, 3.5f});
+        banner->addChild(accent, 2);
+
+        auto iconPath = Mod::get()->expandSpriteName("download-icon.png");
+        auto icon = CCSprite::create(iconPath.c_str());
+        if (icon) {
+            auto largest = std::max(icon->getContentWidth(), icon->getContentHeight());
+            if (largest > .001f) icon->setScale(13.f / largest);
+            icon->setPosition({21.f, height / 2.f});
+            icon->setColor(ccWHITE);
+            icon->setOpacity(245);
+            banner->addChild(icon, 3);
+        }
 
         auto label = CCLabelBMFont::create("", "bigFont.fnt");
         label->setID("pause-menu-studio-update-label");
-        label->setPosition({width / 2.f, 15.f});
-        label->setColor({255, 235, 75});
+        label->setAnchorPoint({0.f, .5f});
+        label->setPosition({34.f, height / 2.f});
+        label->setColor({245, 245, 255});
         label->setOpacity(255);
-        banner->addChild(label, 2);
+        banner->addChild(label, 3);
 
         m_fields->updateBanner = banner;
         m_fields->updateLabel = label;
