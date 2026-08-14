@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v4.4.2</c>
+# <cy>Pause Menu Studio</c> <cg>v4.5.0</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -99,7 +99,7 @@ If a newer release is available, the mod asks before downloading it, shows progr
 - <cy>Level name</c> - level title and creator. Disabled by default.
 - <cy>Music</c> - the real Jukebox/NONGD song widget. Disabled by default.
 - <cy>Coins</c> - native user-coin icons. Disabled by default.
-- <cy>Difficulty</c> - difficulty face and star count. Disabled by default.
+- <cy>Difficulty</c> - difficulty face, star count, and an optional live Globed player total. Disabled by default.
 - <cy>Demonlist position</c> - an available AREDL/Pemonlist rank when Integrated Demonlist provides it.
 
 The original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <cg>Stereo Madness</c> with the active NONG/cover title from Jukebox.
@@ -127,6 +127,7 @@ Each style uses its own saved positions.
 - GodlikeFaces >= 1.1.10
 - Better Volume >= 2.1.4
 - Better Escape >= 1.0.1
+- Globed >= 2.1.2
 
 Better Volume is handled as two complete blocks: <cg>Music</c> and <cg>SFX</c>. Jukebox uses the real CustomSongWidget, including its disc, MORE button, and delete button.
 

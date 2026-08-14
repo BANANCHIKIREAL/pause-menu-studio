@@ -183,7 +183,7 @@ Cards can be enabled separately in the mod settings.
 | **Level name** | Level title and creator | Off |
 | **Music** | The full song widget: title, artist, SongID, size, and available actions | Off |
 | **Coins** | Native user-coin icons | Off |
-| **Difficulty** | Geometry Dash or compatible difficulty face and native star icon | Off |
+| **Difficulty** | Geometry Dash or compatible difficulty face, native star icon, and optional live Globed player count | Off |
 | **Demonlist position** | An available AREDL/Pemonlist rank for an eligible demon | On when data is available |
 
 ## ⚙️ Settings
@@ -197,6 +197,7 @@ Cards can be enabled separately in the mod settings.
 | **Coins** | Shows the coin card | `Off` |
 | **Difficulty** | Shows the difficulty card | `Off` |
 | **Demonlist position** | Shows an available demonlist rank | `On` |
+| **Globed player count** | Shows the live total for the current Globed level session inside Difficulty | `On` |
 | **Edit mode on open** | Automatically enables the editor when the pause menu opens | `Off` |
 | **Snap to grid** | Rounds the released position to a 5-unit grid | `Off` |
 | **Separate layouts by mode** | Isolates positions, named layouts, active layouts, and Hidden Blocks for each pause-menu mode | `On` |
@@ -221,6 +222,7 @@ The minimum versions below come directly from [`mod.json`](mod.json).
 | **GodlikeFaces** | `adyagd.godlikefaces` | `1.1.10` | Compatible rating flames and difficulty faces |
 | **Better Volume** | `nwo5.better_volume` | `2.1.4` | Music and SFX are selected as two complete logical blocks |
 | **Better Escape** | `ecuet.better-escape` | `1.0.1` | Alternative exit behavior and `Shift + Esc` compatibility |
+| **Globed** | `dankmeme.globed2` | `2.1.2` | Live current-level player count inside the Difficulty card |
 
 > [!IMPORTANT]
 > Integrations depend on the node hierarchy and internal IDs of other mods. If another mod changes when a control is created, its ID, or its parent hierarchy, Pause Menu Studio may stop recognizing that block until compatibility is updated.
@@ -353,6 +355,12 @@ pause-menu-studio/
 ## 📜 Version history
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.5.0
+
+- Added a compact live Globed player-count badge to the Difficulty card.
+- Included the local player in the total and refresh the count every half second while the Globed level session is active.
+- Added an enabled-by-default **Globed player count** setting and kept Globed an optional dependency.
 
 ### v4.4.2
 

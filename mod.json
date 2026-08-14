@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.4.2",
+    "version": "v4.5.0",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -82,6 +82,10 @@
         "ecuet.better-escape": {
             "version": ">=v1.0.1",
             "required": false
+        },
+        "dankmeme.globed2": {
+            "version": ">=v2.1.2",
+            "required": false
         }
     },
     "settings": {
@@ -137,6 +141,13 @@
             "description": "Shows the AREDL or Pemonlist position for eligible demons when Integrated Demonlist is installed.",
             "default": true,
             "enable-if": "enabled"
+        },
+        "show-globed-player-count": {
+            "type": "bool",
+            "name": "Globed player count",
+            "description": "Shows the live number of Globed players in the current level inside the Difficulty card.",
+            "default": true,
+            "enable-if": "enabled && show-difficulty"
         },
         "editor-title": {
             "type": "title",

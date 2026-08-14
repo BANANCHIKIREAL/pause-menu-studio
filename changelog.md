@@ -1,3 +1,10 @@
+# v4.5.0
+
+- Added an optional live Globed player-count indicator to the Difficulty card.
+- The count uses Globed's supported soft-link API, includes the local player, and refreshes every half second while the Globed level session is active.
+- Added the **Globed player count** setting, enabled by default and available only when the Difficulty card is enabled.
+- Kept Globed optional: the indicator stays hidden instead of showing an incorrect zero when Globed is unavailable, outdated, disconnected, or inactive.
+
 # v4.4.2
 
 - Restored the original compact Rename, Copy, and Delete button texture instead of the incompatible panel sprite that rendered as detached colored strips without a texture pack.

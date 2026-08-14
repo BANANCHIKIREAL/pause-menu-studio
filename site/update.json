@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.4.2",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.4.2/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:1853c747c2afc54cc8adab02cd1586d9a56ce282d966f60cd880f010c7dafe69",
-  "release_notes": "## Saved Layouts UI repair\n\n- BUTTONS: Restored the original compact Rename, Copy, and Delete tiles.\n- CORNERS: Rounded only the outer corners without changing the old style.\n- POPUP SIZE: Saved Layouts now shrinks to the number of visible profiles.\n- TEXTURE-PACK FREE: Fixed detached colored strips when no texture pack is active."
+  "version": "v4.5.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:a1f6c343c1d0d63289127f44dfa7ce4d6b763e7c2a4df7ae2586c5c8eae72e50",
+  "release_notes": "## Live Globed player count\n\n- DIFFICULTY CARD: Added a compact live Globed player-count badge.\n- LIVE REFRESH: The total updates every half second while the level session is active.\n- ACCURATE TOTAL: The local player is included together with remote Globed players.\n- NEW SETTING: Globed player count is enabled by default and can be disabled independently.\n- OPTIONAL INTEGRATION: The badge hides when Globed is unavailable or disconnected instead of showing a false zero."
 }

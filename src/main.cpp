@@ -15,6 +15,7 @@
 #include "HiddenBlocks.hpp"
 #include "HiddenBlocksPopup.hpp"
 #include "BlockIcons.hpp"
+#include "GlobedPlayerCountNode.hpp"
 #include "Sha256.hpp"
 #include "UpdatePopup.hpp"
 #include "ModIcons.hpp"
@@ -40,7 +41,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.4.1";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.5.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -1158,6 +1159,13 @@ CCNode* createInfoCards(std::unordered_set<std::string> const& forcedCards = {})
         }
         icon->setPosition({54.f, 45.f});
         card->addChild(icon);
+
+        if (Mod::get()->getSettingValue<bool>("show-globed-player-count")) {
+            if (auto playerCount = pause_menu_studio::GlobedPlayerCountNode::create()) {
+                playerCount->setPosition({70.f, 51.f});
+                card->addChild(playerCount, 2);
+            }
+        }
 
         auto stars = CCLabelBMFont::create(std::to_string(level->m_stars.value()).c_str(), "bigFont.fnt");
         stars->setID("star-count");
