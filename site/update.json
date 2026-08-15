@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.5.1",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.1/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:73e937a7b033356f5162ed780fec6fd255939f0b8fb8065c3a861e196adee1a8",
-  "release_notes": "## Gradient description and optional integrations\n\n- GEODE DESCRIPTION: Added a smooth cyan-to-mint-to-purple title gradient.\n- NO REQUIRED BADGE MOD: Removed the unused Developer Badges dependency.\n- OPTIONAL JUKEBOX: The Music card works with Geometry Dash's standard song widget and receives Jukebox enhancements automatically when Jukebox is installed.\n- COMPATIBILITY: Pause Menu Studio now has no required third-party mods."
+  "version": "v4.5.2",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.2/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:c10c623fcd3f621ca8580fc8c694b94e76aa690a92bafbd63967db3100565bba",
+  "release_notes": "## Correct toolbar version\n\n- VERSION LABEL: Fixed the editor toolbar showing the obsolete hardcoded version v4.4.1.\n- FUTURE-PROOF: The toolbar now reads the installed version directly from the mod metadata, so future releases update the label automatically."
 }
