@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.5.4",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.4/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:76aa9a227f56f171922d351faf71e829f3959225a49c614f52fb8d3ce09817e0",
-  "release_notes": "## Transparent Globed player count\n\n- BACKGROUND: Removed the visible dark rectangle behind the live Globed player count in the Difficulty card.\n- PRESERVED: Kept the cyan player total, Globed person icon, half-second refresh, and count-change animation unchanged."
+  "version": "v4.6.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:c7b2bb8c55b70c6a61e9a3de51cce5b1247e74c1b34f4981f8a8eec6134f496c",
+  "release_notes": "## Global Demonlist integration\n\n- GLOBAL: Added Global Demonlist Rank v1.2.0 placement to the Difficulty card through its public cache and event API.\n- SOURCES: Shows AREDL/Pemonlist in gold and Global Demonlist in cyan in one fitted row.\n- OPTIONAL: Existing AREDL/Pemonlist behavior continues when Global Demonlist Rank is not installed."
 }
