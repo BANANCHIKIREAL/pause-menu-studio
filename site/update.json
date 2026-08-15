@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.5.3",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.3/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:fa15aaae246e4b338ecc3d97867a9ca0fd67106dcc83929d287c662991966a3c",
-  "release_notes": "## Gradient documentation refresh\n\n- README: Added a custom cyan-to-mint-to-purple hero and glowing accents across every major section.\n- ABOUT: Added true multi-color headings and gradient emphasis for important controls and modes.\n- CHANGELOG: Restyled the complete in-game version history with gradient titles and a readable pastel flow.\n- SAFE UPDATE: Editor behavior and saved-layout data are unchanged."
+  "version": "v4.5.4",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.5.4/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:76aa9a227f56f171922d351faf71e829f3959225a49c614f52fb8d3ce09817e0",
+  "release_notes": "## Transparent Globed player count\n\n- BACKGROUND: Removed the visible dark rectangle behind the live Globed player count in the Difficulty card.\n- PRESERVED: Kept the cyan player total, Globed person icon, half-second refresh, and count-change animation unchanged."
 }
