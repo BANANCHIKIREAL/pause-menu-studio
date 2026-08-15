@@ -385,6 +385,10 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.5.4
+
+- Removed the visible dark rectangle behind the live Globed player count while keeping its label, icon, refresh, and animation.
+
 ### v4.5.3
 
 - Rebuilt the GitHub README around a custom cyan-to-mint-to-purple hero and matching section accents.
