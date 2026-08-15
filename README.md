@@ -121,12 +121,11 @@ for a newer stable or prerelease version.
 3. Install the package for your platform:
    - **Windows:** place it in `Geometry Dash/geode/mods`.
    - **Android:** place it in `/storage/emulated/0/Android/media/com.geode.launcher/game/geode/mods/`, or import it through Geode's mod installer.
-4. Make sure the required **NONGD/Jukebox** dependency (`fleym.nongd >= 3.6.2`) is installed.
-5. Fully restart Geometry Dash.
-6. Open any level and pause the game.
-7. Press **EDIT**, select an element, enable **MOVE**, and drag it.
-8. Press **DONE** to apply the current editing session.
-9. Press **SAVE** if you want to store a named layout.
+4. Fully restart Geometry Dash.
+5. Open any level and pause the game.
+6. Press **EDIT**, select an element, enable **MOVE**, and drag it.
+7. Press **DONE** to apply the current editing session.
+8. Press **SAVE** if you want to store a named layout.
 
 > [!TIP]
 > If one block is hidden behind another, click the same point repeatedly without moving the cursor. Selection cycles through the logical blocks under that point.
@@ -214,7 +213,7 @@ The minimum versions below come directly from [`mod.json`](mod.json).
 
 | Mod | ID | Minimum version | Integration |
 |---|---|---:|---|
-| **NONGD / Jukebox** | `fleym.nongd` | `3.6.2` | Required dependency; uses the mod's real music widget |
+| **NONGD / Jukebox** | `fleym.nongd` | `3.6.2` | Optional; adds its disc, NONG metadata, and song-selection popup to the standard music widget |
 | **Gold User Coins** | `colon.gold_user_coins` | `2.0.4` | Compatible colored/gold user coins |
 | **Demons in Between** | `hiimjustin000.demons_in_between` | `1.7.0` | Additional difficulty faces |
 | **GDDP Integration** | `minemaker0430.gddp_integration` | `1.1.16` | Additional demon progression visuals |

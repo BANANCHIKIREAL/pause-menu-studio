@@ -1,3 +1,10 @@
+# v4.5.1
+
+- Added a smooth cyan-to-mint-to-purple title gradient to the in-game Geode description.
+- Removed Developer Badges as a dependency because Pause Menu Studio does not use its API.
+- Made NONGD / Jukebox optional; without it, the Music card uses Geometry Dash's standard song widget.
+- Updated the README and in-game compatibility notes to state that Pause Menu Studio has no required third-party mods.
+
 # v4.5.0
 
 - Added an optional live Globed player-count indicator to the Difficulty card.

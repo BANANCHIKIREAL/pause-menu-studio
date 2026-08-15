@@ -1,4 +1,4 @@
-# <cy>Pause Menu Studio</c> <cg>v4.5.0</c>
+# <c-C6F6FF>P</c><c-B7F7FB>a</c><c-A7F8F6>u</c><c-96FAEF>s</c><c-82FCE5>e</c> <c-75FFDA>M</c><c-72F6D4>e</c><c-71EACF>n</c><c-73DDCC>u</c> <c-7ACECF>S</c><c-84BDD8>t</c><c-91ACE3>u</c><c-A19AED>d</c><c-B287F7>i</c><c-C276FF>o</c> <c-72F6D4>v</c><c-84BDD8>4</c><c-A19AED>.</c><c-B287F7>5</c><c-C276FF>.</c><c-D06CFF>1</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
@@ -97,7 +97,7 @@ If a newer release is available, the mod asks before downloading it, shows progr
 ## <cl>INFORMATION CARDS</c>
 
 - <cy>Level name</c> - level title and creator. Disabled by default.
-- <cy>Music</c> - the real Jukebox/NONGD song widget. Disabled by default.
+- <cy>Music</c> - Geometry Dash's standard song widget, enhanced automatically when Jukebox/NONGD is installed. Disabled by default.
 - <cy>Coins</c> - native user-coin icons. Disabled by default.
 - <cy>Difficulty</c> - difficulty face, star count, and an optional live Globed player total. Disabled by default.
 - <cy>Demonlist position</c> - an available AREDL/Pemonlist rank when Integrated Demonlist provides it.
@@ -114,11 +114,13 @@ Each style uses its own saved positions.
 
 ## <cp>MOD COMPATIBILITY</c>
 
-### <cy>Required mod</c>
+### <cg>Required mods</c>
 
-- NONGD / Jukebox: <cy>fleym.nongd >= 3.6.2</c>
+- <cg>None.</c> Pause Menu Studio works without a badge mod or Jukebox.
 
 ### <cy>Optional integrations</c>
+
+- NONGD / Jukebox: <cy>fleym.nongd >= 3.6.2</c> - adds its disc, NONG metadata, and song-selection popup to the standard music widget.
 
 - Gold User Coins >= 2.0.4
 - Demons in Between >= 1.7.0
