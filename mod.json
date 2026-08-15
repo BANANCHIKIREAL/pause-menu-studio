@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.5.0",
+    "version": "v4.5.1",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -47,13 +47,9 @@
         ]
     },
     "dependencies": {
-        "bananchikireal.developer-badges": {
-            "version": ">=v1.2.4",
-            "required": true
-        },
         "fleym.nongd": {
             "version": ">=3.6.2",
-            "required": true
+            "required": false
         },
         "colon.gold_user_coins": {
             "version": ">=v2.0.4",
