@@ -22,14 +22,6 @@ bool GlobedPlayerCountNode::init() {
     setID("globed-player-count");
     setContentSize({36.f, 15.f});
 
-    auto background = CCScale9Sprite::create("square02_001.png");
-    background->setID("background");
-    background->setContentSize(getContentSize());
-    background->setPosition({18.f, 7.5f});
-    background->setColor({12, 70, 82});
-    background->setOpacity(205);
-    addChild(background, -1);
-
     m_label = CCLabelBMFont::create("", "bigFont.fnt");
     m_label->setID("count");
     m_label->setAnchorPoint({1.f, .5f});

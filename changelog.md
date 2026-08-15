@@ -1,3 +1,8 @@
+# <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>5</c><c-A19AED>.</c><c-D06CFF>4</c>
+
+- <c-C6F6FF>Removed the visible dark rectangle behind the live Globed player count in the Difficulty card.</c>
+- <c-ACF8F3>Kept the cyan player total, Globed person icon, half-second refresh, and update animation unchanged.</c>
+
 # <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>5</c><c-A19AED>.</c><c-D06CFF>3</c>
 
 - <c-C6F6FF>Rebuilt the GitHub README with a custom cyan-to-mint-to-purple hero, glowing gradient dividers, and consistent visual accents across every major section.</c>
