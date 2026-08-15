@@ -1,4 +1,4 @@
-# <c-C6F6FF>P</c><c-B7F7FB>a</c><c-A7F8F6>u</c><c-96FAEF>s</c><c-82FCE5>e</c> <c-75FFDA>M</c><c-72F6D4>e</c><c-71EACF>n</c><c-73DDCC>u</c> <c-7ACECF>S</c><c-84BDD8>t</c><c-91ACE3>u</c><c-A19AED>d</c><c-B287F7>i</c><c-C276FF>o</c> <c-72F6D4>v</c><c-84BDD8>4</c><c-A19AED>.</c><c-B287F7>5</c><c-C276FF>.</c><c-D06CFF>1</c>
+# <c-C6F6FF>P</c><c-B7F7FB>a</c><c-A7F8F6>u</c><c-96FAEF>s</c><c-82FCE5>e</c> <c-75FFDA>M</c><c-72F6D4>e</c><c-71EACF>n</c><c-73DDCC>u</c> <c-7ACECF>S</c><c-84BDD8>t</c><c-91ACE3>u</c><c-A19AED>d</c><c-B287F7>i</c><c-C276FF>o</c> <c-72F6D4>v</c><c-84BDD8>4</c><c-A19AED>.</c><c-B287F7>5</c><c-C276FF>.</c><c-D06CFF>2</c>
 
 <cp>A complete visual pause-menu editor for Geometry Dash, built directly into the game.</c>
 
