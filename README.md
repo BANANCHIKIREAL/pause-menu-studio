@@ -195,7 +195,7 @@ Cards can be enabled separately in the mod settings.
 | **Music** | The full song widget: title, artist, SongID, size, and available actions | Off |
 | **Coins** | Native user-coin icons | Off |
 | **Difficulty** | Geometry Dash or compatible difficulty face, native star icon, and optional live Globed player count | Off |
-| **Demonlist position** | An available AREDL/Pemonlist rank for an eligible demon | On when data is available |
+| **Demonlist position** | Available AREDL/Pemonlist and Global Demonlist ranks for an eligible demon | On when data is available |
 
 ## ⚙️ Settings
 
@@ -234,6 +234,7 @@ The minimum versions below come directly from [`mod.json`](mod.json).
 | **Demons in Between** | `hiimjustin000.demons_in_between` | `1.7.0` | Additional difficulty faces |
 | **GDDP Integration** | `minemaker0430.gddp_integration` | `1.1.16` | Additional demon progression visuals |
 | **Integrated Demonlist** | `hiimjustin000.integrated_demonlist` | `1.7.13` | AREDL/Pemonlist placement for eligible demons |
+| **Global Demonlist Rank** | `bananchikireal.global-demonlist-rank` | `1.2.0` | Cached and live Global Demonlist placement through its public API |
 | **GodlikeFaces** | `adyagd.godlikefaces` | `1.1.10` | Compatible rating flames and difficulty faces |
 | **Better Volume** | `nwo5.better_volume` | `2.1.4` | Music and SFX are selected as two complete logical blocks |
 | **Better Escape** | `ecuet.better-escape` | `1.0.1` | Alternative exit behavior and `Shift + Esc` compatibility |
@@ -384,6 +385,11 @@ pause-menu-studio/
 <p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.6.0
+
+- Added the Global Demonlist placement to the Difficulty card through Global Demonlist Rank's public API.
+- Fits AREDL and Global ranks into one row and keeps both integrations optional.
 
 ### v4.5.4
 

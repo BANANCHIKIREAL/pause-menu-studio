@@ -16,6 +16,7 @@
 #include "HiddenBlocksPopup.hpp"
 #include "BlockIcons.hpp"
 #include "GlobedPlayerCountNode.hpp"
+#include "GlobalDemonlistRankAPI.hpp"
 #include "Sha256.hpp"
 #include "UpdatePopup.hpp"
 #include "ModIcons.hpp"
@@ -41,7 +42,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.5.0";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.6.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -995,18 +996,94 @@ public:
 
 private:
     TaskHolder<web::WebResponse> m_request;
-    CCLabelBMFont* m_label = nullptr;
+    ListenerHandle m_globalListener;
+    CCLabelBMFont* m_aredlLabel = nullptr;
+    CCLabelBMFont* m_globalLabel = nullptr;
+    std::optional<int> m_aredlPosition;
+    std::optional<int> m_globalPosition;
+    std::string m_aredlSource = "AREDL";
+    int m_levelID = 0;
+
+    void refreshLabels() {
+        auto const hasAredl = m_aredlPosition.has_value();
+        auto const hasGlobal = m_globalPosition.has_value();
+        m_aredlLabel->setVisible(hasAredl);
+        m_globalLabel->setVisible(hasGlobal);
+        if (!hasAredl && !hasGlobal) return;
+
+        if (hasAredl) {
+            m_aredlLabel->setString(fmt::format(
+                "#{} {}", *m_aredlPosition, m_aredlSource
+            ).c_str());
+        }
+        if (hasGlobal) {
+            m_globalLabel->setString(fmt::format("#{} GLOBAL", *m_globalPosition).c_str());
+        }
+
+        auto const aredlWidth = hasAredl ? m_aredlLabel->getContentWidth() : 0.f;
+        auto const globalWidth = hasGlobal ? m_globalLabel->getContentWidth() : 0.f;
+        constexpr float maxScale = .55f;
+        constexpr float gap = 3.f;
+        auto const availableWidth = getContentWidth() - 6.f;
+        auto const rawWidth = aredlWidth + globalWidth;
+        auto const scale = std::min(maxScale, availableWidth / std::max(rawWidth, 1.f));
+        auto const actualGap = hasAredl && hasGlobal ? gap : 0.f;
+        auto const totalWidth = rawWidth * scale + actualGap;
+        auto x = (getContentWidth() - totalWidth) / 2.f;
+
+        if (hasAredl) {
+            auto const width = aredlWidth * scale;
+            m_aredlLabel->setScale(scale);
+            m_aredlLabel->setPosition({ x + width / 2.f, 5.f });
+            x += width + actualGap;
+        }
+        if (hasGlobal) {
+            auto const width = globalWidth * scale;
+            m_globalLabel->setScale(scale);
+            m_globalLabel->setPosition({ x + width / 2.f, 5.f });
+        }
+    }
+
+    void applyGlobalResult(
+        bananchikireal::global_demonlist_rank::PlacementResult const& result
+    ) {
+        if (result.levelID != m_levelID) return;
+        using bananchikireal::global_demonlist_rank::PlacementState;
+        if (result.state == PlacementState::Listed && result.placement) {
+            m_globalPosition = *result.placement;
+        }
+        else if (result.state == PlacementState::Unlisted || result.state == PlacementState::Error) {
+            m_globalPosition.reset();
+        }
+        refreshLabels();
+    }
 
     bool init(GJGameLevel* level) {
         if (!CCNode::init() || !level) return false;
         setID("demonlist-rank");
         setContentSize({108.f, 10.f});
 
-        m_label = CCLabelBMFont::create("", "chatFont.fnt");
-        m_label->setPosition({54.f, 5.f});
-        m_label->setScale(.55f);
-        m_label->setColor({255, 210, 80});
-        addChild(m_label);
+        m_levelID = level->m_levelID.value();
+        m_aredlLabel = CCLabelBMFont::create("", "chatFont.fnt");
+        m_aredlLabel->setColor({255, 210, 80});
+        m_aredlLabel->setVisible(false);
+        addChild(m_aredlLabel);
+
+        m_globalLabel = CCLabelBMFont::create("", "chatFont.fnt");
+        m_globalLabel->setColor({90, 220, 255});
+        m_globalLabel->setVisible(false);
+        addChild(m_globalLabel);
+
+        if (Loader::get()->isModLoaded("bananchikireal.global-demonlist-rank")) {
+            using namespace bananchikireal::global_demonlist_rank;
+            m_globalListener = PlacementUpdateEvent().listen([this](PlacementResult const& result) {
+                applyGlobalResult(result);
+                return ListenerResult::Propagate;
+            });
+            if (auto cached = getCachedPlacement(m_levelID)) {
+                applyGlobalResult(*cached);
+            }
+        }
 
         auto integrated = Loader::get()->getLoadedMod("hiimjustin000.integrated_demonlist");
         if (!integrated || !integrated->getSettingValue<bool>("enable-rank")) return true;
@@ -1019,7 +1096,7 @@ private:
             (platformer ? (demonDifficulty == 0 || demonDifficulty >= 5) : demonDifficulty >= 6);
         if (!eligible) return true;
 
-        auto const levelID = level->m_levelID.value();
+        auto const levelID = m_levelID;
         auto const url = platformer
             ? fmt::format("https://pemonlist.com/api/level/{}?version=2", levelID)
             : fmt::format("https://api.aredl.net/v2/api/aredl/levels/{}", levelID);
@@ -1030,9 +1107,11 @@ private:
             if (!json.isOk()) return;
             auto position = json.unwrap().get<int>(platformer ? "placement" : "position");
             if (!position.isOk() || (platformer && position.unwrap() > 150)) return;
-            m_label->setString(fmt::format(
-                "#{} {}", position.unwrap(), platformer ? "Pemonlist" : "AREDL"
-            ).c_str());
+            m_aredlPosition = position.unwrap();
+            if (platformer) {
+                m_aredlSource = "Pemonlist";
+            }
+            refreshLabels();
         });
         return true;
     }
