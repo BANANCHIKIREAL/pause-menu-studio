@@ -1,3 +1,8 @@
+# v4.5.2
+
+- Fixed the editor toolbar showing the obsolete hardcoded version `v4.4.1`.
+- The toolbar now reads the installed version directly from the mod metadata, so future updates cannot leave this label behind.
+
 # v4.5.1
 
 - Added a smooth cyan-to-mint-to-purple title gradient to the in-game Geode description.
