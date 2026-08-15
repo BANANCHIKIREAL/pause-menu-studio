@@ -1,13 +1,15 @@
 <p align="center">
-  <img src="logo.png" width="190" alt="Pause Menu Studio logo">
+  <img src="docs/readme-hero.svg" width="100%" alt="Pause Menu Studio — build the pause menu you want">
 </p>
 
-<h1 align="center">Pause Menu Studio</h1>
-
 <p align="center">
-  <strong>A complete Geometry Dash pause-menu editor built directly into the game.</strong><br>
+  <strong>✨ A complete Geometry Dash pause-menu editor built directly into the game. ✨</strong><br>
   Move, resize, group, and hide controls, save named layouts,<br>
   and add configurable cards for the level, music, coins, and difficulty.
+</p>
+
+<p align="center">
+  <img src="docs/gradient-line.svg" width="100%" alt="">
 </p>
 
 <p align="center">
@@ -31,6 +33,8 @@
 > **Pause Menu Studio is experimental.** It is usable, but the pause menu is also modified by many other mods and texture packs. Some combinations may cause visual glitches, moved controls, or saved node paths that no longer match. Save a named layout before updating mods or making a large redesign.
 
 ## ✨ Features
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 ### 🎨 Visual editor
 
@@ -116,6 +120,8 @@ for a newer stable or prerelease version.
 
 ## 🚀 Quick start
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 1. Install [Geode](https://geode-sdk.org/) for Geometry Dash.
 2. Download the `.geode` file from [Releases](https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/latest).
 3. Install the package for your platform:
@@ -131,6 +137,8 @@ for a newer stable or prerelease version.
 > If one block is hidden behind another, click the same point repeatedly without moving the cursor. Selection cycles through the logical blocks under that point.
 
 ## ⌨️ Controls
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 | Action | Key / button | Notes |
 |---|---|---|
@@ -163,6 +171,8 @@ for a newer stable or prerelease version.
 
 ## 🖼️ Menu styles
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 Three base styles are available:
 
 | Style | Intended use |
@@ -175,6 +185,8 @@ Each style uses its own saved positions. With **Separate layouts by mode** enabl
 
 ## 🪪 Information cards
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 Cards can be enabled separately in the mod settings.
 
 | Card | Content | Default |
@@ -186,6 +198,8 @@ Cards can be enabled separately in the mod settings.
 | **Demonlist position** | An available AREDL/Pemonlist rank for an eligible demon | On when data is available |
 
 ## ⚙️ Settings
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 | Setting | Purpose | Default |
 |---|---|---|
@@ -208,6 +222,8 @@ Cards can be enabled separately in the mod settings.
 | **Update badges** | Shows a red `!` above Edit and Updates | `On` |
 
 ## 🤝 Compatibility
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 The minimum versions below come directly from [`mod.json`](mod.json).
 
@@ -232,6 +248,8 @@ Pause Menu Studio attempts to move outer button containers without overwriting t
 
 ## 🗃️ Layout and Hidden Blocks storage
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 - Position, scale, rotation, supported opacity, and drawing layer are stored using a node path inside `PauseLayer`.
 - Position keys include the selected menu style, gameplay mode, and applied-layout generation. Existing normal-mode keys retain their legacy format.
 - A named layout stores the complete supported transform, hidden state, and known information-card presence.
@@ -245,6 +263,8 @@ This reduces lost controls, but it cannot guarantee a path match after another m
 
 ## ⚠️ Known limitations
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 Pause Menu Studio is intentionally marked **experimental**.
 
 1. **Every mod combination cannot be covered.** Integrations are written for the IDs and minimum versions declared in `mod.json`, but I cannot confirm every possible combination. Newer versions may change their internal UI.
@@ -256,6 +276,8 @@ Pause Menu Studio is intentionally marked **experimental**.
 7. **Extreme scale and overlap remain the user's choice.** The editor helps select overlapping blocks but intentionally does not prohibit unusual designs.
 
 ## 🧯 Troubleshooting
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 ### A block disappeared
 
@@ -285,6 +307,8 @@ Create a [Bug report](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues
 
 ## 🐞 Reporting a bug
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 Before creating an issue:
 
 1. Fully restart Geometry Dash and reproduce the problem again.
@@ -296,6 +320,8 @@ Before creating an issue:
 [![Report a bug](https://img.shields.io/badge/Report%20a%20bug-GitHub%20Issues-ef4444?style=for-the-badge&logo=github)](https://github.com/BANANCHIKIREAL/pause-menu-studio/issues/new?template=bug-report.yml)
 
 ## 🛠️ Building from source
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 ### Requirements
 
@@ -335,6 +361,8 @@ The packages are created in `build-android32` and `build-android64`. The reposit
 
 ## 🧱 Project structure
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 ```text
 pause-menu-studio/
 ├── src/
@@ -353,7 +381,15 @@ pause-menu-studio/
 
 ## 📜 Version history
 
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
+
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.5.3
+
+- Rebuilt the GitHub README around a custom cyan-to-mint-to-purple hero and matching section accents.
+- Applied true multi-color gradients to the in-game About headings and important interface terms.
+- Restyled the complete in-game changelog with gradient version headers and a readable pastel flow across release entries.
 
 ### v4.5.0
 
@@ -557,6 +593,8 @@ The complete history is available in [`changelog.md`](changelog.md).
 - Audits Hidden Blocks and preserves temporarily unavailable dynamic nodes.
 
 ## 🤍 Author
+
+<p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 Developed by **BANANCHIKIREAL**<br>
 GitHub: [@BANANCHIKIREAL](https://github.com/BANANCHIKIREAL)
