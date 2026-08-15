@@ -1,4 +1,4 @@
-# <c-C6F6FF>P</c><c-B7F7FB>a</c><c-A7F8F6>u</c><c-96FAEF>s</c><c-82FCE5>e</c> <c-75FFDA>M</c><c-72F6D4>e</c><c-71EACF>n</c><c-73DDCC>u</c> <c-7ACECF>S</c><c-84BDD8>t</c><c-91ACE3>u</c><c-A19AED>d</c><c-B287F7>i</c><c-C276FF>o</c> <c-72F6D4>v</c><c-84BDD8>4</c><c-A19AED>.</c><c-B287F7>5</c><c-C276FF>.</c><c-D06CFF>4</c>
+# <c-C6F6FF>P</c><c-B7F7FB>a</c><c-A7F8F6>u</c><c-96FAEF>s</c><c-82FCE5>e</c> <c-75FFDA>M</c><c-72F6D4>e</c><c-71EACF>n</c><c-73DDCC>u</c> <c-7ACECF>S</c><c-84BDD8>t</c><c-91ACE3>u</c><c-A19AED>d</c><c-B287F7>i</c><c-C276FF>o</c> <c-72F6D4>v</c><c-84BDD8>4</c><c-A19AED>.</c><c-B287F7>6</c><c-C276FF>.</c><c-D06CFF>0</c>
 
 <c-C6F6FF>A</c> <c-C6F6FF>c</c><c-C6F6FF>o</c><c-B7F7FB>m</c><c-B7F7FB>p</c><c-B7F7FB>l</c><c-B7F7FB>e</c><c-B7F7FB>t</c><c-A7F8F6>e</c> <c-A7F8F6>v</c><c-A7F8F6>i</c><c-A7F8F6>s</c><c-96FAEF>u</c><c-96FAEF>a</c><c-96FAEF>l</c> <c-96FAEF>p</c><c-96FAEF>a</c><c-82FCE5>u</c><c-82FCE5>s</c><c-82FCE5>e</c><c-82FCE5>-</c><c-82FCE5>m</c><c-75FFDA>e</c><c-75FFDA>n</c><c-75FFDA>u</c> <c-75FFDA>e</c><c-75FFDA>d</c><c-72F6D4>i</c><c-72F6D4>t</c><c-72F6D4>o</c><c-72F6D4>r</c> <c-71EACF>f</c><c-71EACF>o</c><c-71EACF>r</c> <c-71EACF>G</c><c-71EACF>e</c><c-73DDCC>o</c><c-73DDCC>m</c><c-73DDCC>e</c><c-73DDCC>t</c><c-73DDCC>r</c><c-7ACECF>y</c> <c-7ACECF>D</c><c-7ACECF>a</c><c-7ACECF>s</c><c-84BDD8>h</c><c-84BDD8>,</c> <c-84BDD8>b</c><c-84BDD8>u</c><c-84BDD8>i</c><c-91ACE3>l</c><c-91ACE3>t</c> <c-91ACE3>d</c><c-91ACE3>i</c><c-91ACE3>r</c><c-A19AED>e</c><c-A19AED>c</c><c-A19AED>t</c><c-A19AED>l</c><c-A19AED>y</c> <c-B287F7>i</c><c-B287F7>n</c><c-B287F7>t</c><c-B287F7>o</c> <c-C276FF>t</c><c-C276FF>h</c><c-C276FF>e</c> <c-C276FF>g</c><c-C276FF>a</c><c-D06CFF>m</c><c-D06CFF>e</c><c-D06CFF>.</c>
 
@@ -100,7 +100,7 @@ If a newer release is available, the mod asks before downloading it, shows progr
 - <c-C6F6FF>M</c><c-82FCE5>u</c><c-73DDCC>s</c><c-91ACE3>i</c><c-D06CFF>c</c> - Geometry Dash's standard song widget, enhanced automatically when Jukebox/NONGD is installed. Disabled by default.
 - <c-C6F6FF>C</c><c-82FCE5>o</c><c-73DDCC>i</c><c-91ACE3>n</c><c-D06CFF>s</c> - native user-coin icons. Disabled by default.
 - <c-C6F6FF>D</c><c-A7F8F6>i</c><c-96FAEF>f</c><c-75FFDA>f</c><c-71EACF>i</c><c-73DDCC>c</c><c-84BDD8>u</c><c-A19AED>l</c><c-B287F7>t</c><c-D06CFF>y</c> - difficulty face, star count, and an optional live Globed player total. Disabled by default.
-- <c-C6F6FF>D</c><c-B7F7FB>e</c><c-A7F8F6>m</c><c-96FAEF>o</c><c-82FCE5>n</c><c-75FFDA>l</c><c-72F6D4>i</c><c-71EACF>s</c><c-73DDCC>t</c> <c-73DDCC>p</c><c-7ACECF>o</c><c-84BDD8>s</c><c-91ACE3>i</c><c-A19AED>t</c><c-B287F7>i</c><c-C276FF>o</c><c-D06CFF>n</c> - an available AREDL/Pemonlist rank when Integrated Demonlist provides it.
+- <c-C6F6FF>D</c><c-B7F7FB>e</c><c-A7F8F6>m</c><c-96FAEF>o</c><c-82FCE5>n</c><c-75FFDA>l</c><c-72F6D4>i</c><c-71EACF>s</c><c-73DDCC>t</c> <c-73DDCC>p</c><c-7ACECF>o</c><c-84BDD8>s</c><c-91ACE3>i</c><c-A19AED>t</c><c-B287F7>i</c><c-C276FF>o</c><c-D06CFF>n</c> - available AREDL/Pemonlist and Global Demonlist ranks through optional integrations.
 
 The original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <c-C6F6FF>S</c><c-B7F7FB>t</c><c-A7F8F6>e</c><c-82FCE5>r</c><c-75FFDA>e</c><c-72F6D4>o</c> <c-73DDCC>M</c><c-7ACECF>a</c><c-84BDD8>d</c><c-91ACE3>n</c><c-A19AED>e</c><c-C276FF>s</c><c-D06CFF>s</c> with the active NONG/cover title from Jukebox.
 
@@ -126,6 +126,7 @@ Each style uses its own saved positions.
 - Demons in Between >= 1.7.0
 - GDDP Integration >= 1.1.16
 - Integrated Demonlist >= 1.7.13
+- Global Demonlist Rank >= 1.2.0
 - GodlikeFaces >= 1.1.10
 - Better Volume >= 2.1.4
 - Better Escape >= 1.0.1

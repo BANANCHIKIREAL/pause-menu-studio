@@ -1,3 +1,10 @@
+# <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>0</c>
+
+- <c-C6F6FF>Added Global Demonlist placement to the Difficulty card through Global Demonlist Rank's public API.</c>
+- <c-ACF8F3>Shows AREDL and Global placements together in one fitted row, with gold and cyan source colors.</c>
+- <c-91F9E4>Reads cached Global placements and listens for live API updates without duplicating the Global Demonlist network request.</c>
+- <c-7CEFD9>Keeps Global Demonlist Rank fully optional; the existing AREDL/Pemonlist integration continues to work without it.</c>
+
 # <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>5</c><c-A19AED>.</c><c-D06CFF>4</c>
 
 - <c-C6F6FF>Removed the visible dark rectangle behind the live Globed player count in the Difficulty card.</c>

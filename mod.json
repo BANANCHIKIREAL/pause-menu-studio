@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.5.4",
+    "version": "v4.6.0",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -65,6 +65,10 @@
         },
         "hiimjustin000.integrated_demonlist": {
             "version": ">=v1.7.13",
+            "required": false
+        },
+        "bananchikireal.global-demonlist-rank": {
+            "version": ">=v1.2.0",
             "required": false
         },
         "adyagd.godlikefaces": {
@@ -134,7 +138,7 @@
         "show-demon-rank": {
             "type": "bool",
             "name": "Demonlist position",
-            "description": "Shows the AREDL or Pemonlist position for eligible demons when Integrated Demonlist is installed.",
+            "description": "Shows available AREDL, Pemonlist, and Global Demonlist positions through their optional integrations.",
             "default": true,
             "enable-if": "enabled"
         },
