@@ -868,7 +868,15 @@ CCSprite* createGDDPDifficulty(GJGameLevel* level) {
     ratingEffect->setOpacity(0);
     ratingEffect->setID("gddp-rating-effect");
     auto const faceSize = customFace->getContentSize();
-    ratingEffect->setPosition({faceSize.width / 2.f, faceSize.height / 2.f});
+    // GDDP places its custom face at nativePosition + { 0.25, 30 } with
+    // anchor { 0.5, 1 }. Reproduce that exact relationship inside our face
+    // sprite so the native rating fire wraps the visible GDDP face instead of
+    // floating six points above it (GDDP faces are 43x48 logical points).
+    ratingEffect->setAnchorPoint({.5f, .5f});
+    ratingEffect->setPosition({
+        faceSize.width / 2.f - .25f,
+        faceSize.height - 30.f,
+    });
     customFace->addChild(ratingEffect, -1);
     customFace->setID("gddp-difficulty");
     return customFace;
