@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.6.0",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.0/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:c7b2bb8c55b70c6a61e9a3de51cce5b1247e74c1b34f4981f8a8eec6134f496c",
-  "release_notes": "## Global Demonlist integration\n\n- GLOBAL: Added Global Demonlist Rank v1.2.0 placement to the Difficulty card through its public cache and event API.\n- SOURCES: Shows AREDL/Pemonlist in gold and Global Demonlist in cyan in one fitted row.\n- OPTIONAL: Existing AREDL/Pemonlist behavior continues when Global Demonlist Rank is not installed."
+  "version": "v4.6.1",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.1/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:8004dd7d303d9bbc3ef491356288642cfbf3d8abb48394b66bf68bd62d82559a",
+  "release_notes": "## GDDP rating-fire compatibility\n\n- FIXED: Featured, Epic, Legendary, and Mythic rating fire now stays visible when the Difficulty card uses a GDDP demon face.\n- EXACT FACE: The card keeps GDDP's own difficulty sprite while using Geometry Dash's native rating-fire layer behind it.\n- GDDP PLUS: Replace Epic Fire faces remain clean and do not receive a duplicated Epic effect."
 }
