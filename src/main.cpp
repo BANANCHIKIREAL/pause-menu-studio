@@ -815,6 +815,15 @@ private:
     CCNode* m_owner = nullptr;
 };
 
+GJFeatureState featureStateForLevel(GJGameLevel* level) {
+    if (!level) return GJFeatureState::None;
+    if (level->m_isEpic >= 3) return GJFeatureState::Mythic;
+    if (level->m_isEpic == 2) return GJFeatureState::Legendary;
+    if (level->m_isEpic == 1) return GJFeatureState::Epic;
+    if (level->m_featured >= 1) return GJFeatureState::Featured;
+    return GJFeatureState::None;
+}
+
 CCSprite* createGDDPDifficulty(GJGameLevel* level) {
     auto gddp = Loader::get()->getLoadedMod("minemaker0430.gddp_integration");
     if (!gddp || !level || !gddp->getSettingValue<bool>("custom-difficulty-faces")) return nullptr;
@@ -830,18 +839,39 @@ CCSprite* createGDDPDifficulty(GJGameLevel* level) {
 
     auto const difficulty = data["level-data"][levelID]["difficulty"].as<int>().unwrapOr(0);
     auto spriteName = data["main"][difficulty]["sprite"].asString().unwrapOr("DP_Unknown");
-    if (
+    auto usesGDDPPlusFire =
         level->m_isEpic == 1 &&
-        gddp->getSettingValue<bool>("replace-epic")
-    ) {
-        spriteName = data["main"][difficulty]["plusSprite"].asString().unwrapOr(spriteName);
+        gddp->getSettingValue<bool>("replace-epic");
+    if (usesGDDPPlusFire) {
+        auto const plusSprite = data["main"][difficulty]["plusSprite"].asString().unwrapOr("");
+        if (plusSprite.empty()) usesGDDPPlusFire = false;
+        else spriteName = plusSprite;
     }
     if (spriteName == "DP_Invisible") return nullptr;
 
     auto const frame = gddp->expandSpriteName(spriteName + ".png");
-    auto sprite = CCSprite::createWithSpriteFrameName(frame.data());
-    if (sprite) sprite->setID("gddp-difficulty");
-    return sprite;
+    auto customFace = CCSprite::createWithSpriteFrameName(frame.data());
+    if (!customFace) return nullptr;
+
+    auto nativeDifficulty = GJGameLevel::demonIconForDifficulty(
+        static_cast<DemonDifficultyType>(level->m_demonDifficulty)
+    );
+    auto ratingEffect = GJDifficultySprite::create(nativeDifficulty, GJDifficultyName::Short);
+    if (!ratingEffect) return nullptr;
+
+    // Match GDDP's own LevelInfoLayer composition: hide the native face while
+    // keeping its non-cascading Featured/Epic/Legendary/Mythic child effect,
+    // then render GDDP's exact face above it. Plus frames already contain fire.
+    ratingEffect->updateFeatureState(
+        usesGDDPPlusFire ? GJFeatureState::None : featureStateForLevel(level)
+    );
+    ratingEffect->setOpacity(0);
+    ratingEffect->setID("gddp-rating-effect");
+    auto const faceSize = customFace->getContentSize();
+    ratingEffect->setPosition({faceSize.width / 2.f, faceSize.height / 2.f});
+    customFace->addChild(ratingEffect, -1);
+    customFace->setID("gddp-difficulty");
+    return customFace;
 }
 
 CCSprite* createDIBDifficulty(GJGameLevel* level) {
@@ -902,12 +932,9 @@ CCNode* createDifficultyVisual(GJGameLevel* level) {
         );
     }
     auto icon = GJDifficultySprite::create(difficulty, GJDifficultyName::Short);
-    auto const featureState = level->m_featured != 0
-        ? static_cast<GJFeatureState>(level->m_isEpic + 1)
-        : GJFeatureState::None;
     // Call updateFeatureState directly: GodlikeFaces hooks this exact method
     // to swap its Legendary/Mythic face while GD creates the matching fire.
-    icon->updateFeatureState(featureState);
+    icon->updateFeatureState(featureStateForLevel(level));
     return icon;
 }
 

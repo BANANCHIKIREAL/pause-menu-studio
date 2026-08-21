@@ -1,3 +1,9 @@
+# <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>1</c>
+
+- <c-C6F6FF>Fixed Featured, Epic, Legendary, and Mythic rating fire disappearing from GDDP demon difficulty faces in the pause menu.</c>
+- <c-ACF8F3>The card now keeps Geometry Dash's native rating effect while replacing only the face with GDDP's exact custom sprite.</c>
+- <c-91F9E4>Preserved GDDP's Replace Epic Fire setting without stacking a second Epic effect over its Plus face.</c>
+
 # <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>0</c>
 
 - <c-C6F6FF>Added Global Demonlist placement to the Difficulty card through Global Demonlist Rank's public API.</c>

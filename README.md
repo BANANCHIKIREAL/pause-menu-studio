@@ -386,6 +386,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.6.1
+
+- Fixed Featured, Epic, Legendary, and Mythic rating fire on GDDP custom demon difficulty faces.
+- Preserved GDDP's own Plus fire when its `Replace Epic Fire` setting is enabled.
+
 ### v4.6.0
 
 - Added the Global Demonlist placement to the Difficulty card through Global Demonlist Rank's public API.
