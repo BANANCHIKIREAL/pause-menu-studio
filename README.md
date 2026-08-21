@@ -386,6 +386,11 @@ pause-menu-studio/
 
 The complete history is available in [`changelog.md`](changelog.md).
 
+### v4.6.2
+
+- Aligned GDDP custom demon faces with Geometry Dash's native rating fire using GDDP's exact face offset.
+- Preserved GDDP Plus and `Replace Epic Fire` behavior without duplicate effects.
+
 ### v4.6.1
 
 - Fixed Featured, Epic, Legendary, and Mythic rating fire on GDDP custom demon difficulty faces.

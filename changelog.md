@@ -1,3 +1,9 @@
+# <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>2</c>
+
+- <c-C6F6FF>Fixed GDDP demon faces sitting too low inside Featured, Epic, Legendary, and Mythic rating fire.</c>
+- <c-ACF8F3>Matched GDDP's exact native-to-custom face offset so every fire effect wraps the face correctly.</c>
+- <c-91F9E4>Kept GDDP Plus faces and the Replace Epic Fire behavior unchanged without adding a duplicate effect.</c>
+
 # <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>1</c>
 
 - <c-C6F6FF>Fixed Featured, Epic, Legendary, and Mythic rating fire disappearing from GDDP demon difficulty faces in the pause menu.</c>
