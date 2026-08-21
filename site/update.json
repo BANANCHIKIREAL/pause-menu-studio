@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.6.1",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.1/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:8004dd7d303d9bbc3ef491356288642cfbf3d8abb48394b66bf68bd62d82559a",
-  "release_notes": "## GDDP rating-fire compatibility\n\n- FIXED: Featured, Epic, Legendary, and Mythic rating fire now stays visible when the Difficulty card uses a GDDP demon face.\n- EXACT FACE: The card keeps GDDP's own difficulty sprite while using Geometry Dash's native rating-fire layer behind it.\n- GDDP PLUS: Replace Epic Fire faces remain clean and do not receive a duplicated Epic effect."
+  "version": "v4.6.2",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.2/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:cad29482d17654f8eebf039ec55a637b25418544cffcee97126835e213e21610",
+  "release_notes": "## GDDP fire alignment\n\n- FIXED: GDDP demon faces no longer sit too low inside Featured, Epic, Legendary, or Mythic rating fire.\n- EXACT OFFSET: The Difficulty card now matches GDDP v1.1.16's native-to-custom face position.\n- GDDP PLUS: Replace Epic Fire faces remain unchanged and do not receive a duplicated effect."
 }
