@@ -1,3 +1,11 @@
+# <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>7</c><c-A19AED>.</c><c-D06CFF>0</c>
+
+- <c-C6F6FF>Added mod settings for the EDIT button's horizontal offset, vertical offset, and size.</c>
+- <c-ACF8F3>Kept in-editor EDIT-button transforms independent from the new base settings, preventing scale multiplication when reopening the pause menu.</c>
+- <c-91F9E4>Stopped the Difficulty card from showing `0` and a star icon on unrated levels.</c>
+- <c-7CEFD9>Added optional More Difficulties v1.9.3 compatibility for Casual, Tough, Cruel, Legacy, Legendary, Mythic, and its two special level faces.</c>
+- <c-73DDCC>Made Globed totals 14, 25, 42, 52, 67, and 69 animate through rainbow colors, with an immediate return to cyan when the total changes.</c>
+
 # <c-C6F6FF>v</c><c-96FAEF>4</c><c-72F6D4>.</c><c-7ACECF>6</c><c-A19AED>.</c><c-D06CFF>2</c>
 
 - <c-C6F6FF>Fixed GDDP demon faces sitting too low inside Featured, Epic, Legendary, and Mythic rating fire.</c>

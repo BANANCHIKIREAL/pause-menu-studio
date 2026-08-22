@@ -3,10 +3,66 @@
 #include <dankmeme.globed2/include/globed/soft-link/API.hpp>
 
 #include <algorithm>
+#include <cmath>
 
 using namespace geode::prelude;
 
 namespace pause_menu_studio {
+namespace {
+constexpr ccColor3B PLAYER_COUNT_COLOR = {90, 255, 225};
+
+bool usesRainbowPlayerCount(size_t count) {
+    switch (count) {
+        case 14:
+        case 25:
+        case 42:
+        case 52:
+        case 67:
+        case 69:
+            return true;
+        default:
+            return false;
+    }
+}
+
+ccColor3B rainbowColor(float hue) {
+    hue = std::fmod(hue, 1.f);
+    if (hue < 0.f) hue += 1.f;
+
+    auto const sector = hue * 6.f;
+    auto const x = 1.f - std::fabs(std::fmod(sector, 2.f) - 1.f);
+    float red = 0.f;
+    float green = 0.f;
+    float blue = 0.f;
+
+    if (sector < 1.f) {
+        red = 1.f;
+        green = x;
+    } else if (sector < 2.f) {
+        red = x;
+        green = 1.f;
+    } else if (sector < 3.f) {
+        green = 1.f;
+        blue = x;
+    } else if (sector < 4.f) {
+        green = x;
+        blue = 1.f;
+    } else if (sector < 5.f) {
+        red = x;
+        blue = 1.f;
+    } else {
+        red = 1.f;
+        blue = x;
+    }
+
+    return {
+        static_cast<GLubyte>(std::round(red * 255.f)),
+        static_cast<GLubyte>(std::round(green * 255.f)),
+        static_cast<GLubyte>(std::round(blue * 255.f)),
+    };
+}
+}
+
 GlobedPlayerCountNode* GlobedPlayerCountNode::create() {
     auto ret = new GlobedPlayerCountNode();
     if (ret && ret->init()) {
@@ -27,12 +83,13 @@ bool GlobedPlayerCountNode::init() {
     m_label->setAnchorPoint({1.f, .5f});
     m_label->setPosition({23.f, 7.5f});
     m_label->setScale(.27f);
-    m_label->setColor({90, 255, 225});
+    m_label->setColor(PLAYER_COUNT_COLOR);
     addChild(m_label);
 
     ensureIcon();
     refresh(0.f);
     schedule(schedule_selector(GlobedPlayerCountNode::refresh), .5f);
+    schedule(schedule_selector(GlobedPlayerCountNode::updateRainbow));
     return true;
 }
 
@@ -72,11 +129,22 @@ void GlobedPlayerCountNode::refresh(float) {
     m_displayedCount = count;
     m_label->setString(std::to_string(count).c_str());
     m_label->limitLabelWidth(19.f, .27f, .18f);
+    if (!usesRainbowPlayerCount(count)) {
+        m_rainbowHue = 0.f;
+        m_label->setColor(PLAYER_COUNT_COLOR);
+    }
 
     if (!firstValue) {
         m_label->stopAllActions();
         m_label->setScale(.34f);
         m_label->runAction(CCEaseSineOut::create(CCScaleTo::create(.16f, .27f)));
     }
+}
+
+void GlobedPlayerCountNode::updateRainbow(float dt) {
+    if (!m_label || !isVisible() || !usesRainbowPlayerCount(m_displayedCount)) return;
+
+    m_rainbowHue = std::fmod(m_rainbowHue + dt * .32f, 1.f);
+    m_label->setColor(rainbowColor(m_rainbowHue));
 }
 }

@@ -99,7 +99,7 @@ If a newer release is available, the mod asks before downloading it, shows progr
 - <c-C6F6FF>L</c><c-A7F8F6>e</c><c-82FCE5>v</c><c-72F6D4>e</c><c-73DDCC>l</c> <c-7ACECF>n</c><c-91ACE3>a</c><c-B287F7>m</c><c-D06CFF>e</c> - level title and creator. Disabled by default.
 - <c-C6F6FF>M</c><c-82FCE5>u</c><c-73DDCC>s</c><c-91ACE3>i</c><c-D06CFF>c</c> - Geometry Dash's standard song widget, enhanced automatically when Jukebox/NONGD is installed. Disabled by default.
 - <c-C6F6FF>C</c><c-82FCE5>o</c><c-73DDCC>i</c><c-91ACE3>n</c><c-D06CFF>s</c> - native user-coin icons. Disabled by default.
-- <c-C6F6FF>D</c><c-A7F8F6>i</c><c-96FAEF>f</c><c-75FFDA>f</c><c-71EACF>i</c><c-73DDCC>c</c><c-84BDD8>u</c><c-A19AED>l</c><c-B287F7>t</c><c-D06CFF>y</c> - difficulty face, star count, and an optional live Globed player total. Disabled by default.
+- <c-C6F6FF>D</c><c-A7F8F6>i</c><c-96FAEF>f</c><c-75FFDA>f</c><c-71EACF>i</c><c-73DDCC>c</c><c-84BDD8>u</c><c-A19AED>l</c><c-B287F7>t</c><c-D06CFF>y</c> - difficulty face, rated star count, and an optional live Globed player total. Unrated levels do not show a fake `0`-star reward. Globed totals 14, 25, 42, 52, 67, and 69 animate through rainbow colors; every other total uses the normal cyan color. Disabled by default.
 - <c-C6F6FF>D</c><c-B7F7FB>e</c><c-A7F8F6>m</c><c-96FAEF>o</c><c-82FCE5>n</c><c-75FFDA>l</c><c-72F6D4>i</c><c-71EACF>s</c><c-73DDCC>t</c> <c-73DDCC>p</c><c-7ACECF>o</c><c-84BDD8>s</c><c-91ACE3>i</c><c-A19AED>t</c><c-B287F7>i</c><c-C276FF>o</c><c-D06CFF>n</c> - available AREDL/Pemonlist and Global Demonlist ranks through optional integrations.
 
 The original level name is captured when PlayLayer starts. Reopening the pause menu should no longer replace <c-C6F6FF>S</c><c-B7F7FB>t</c><c-A7F8F6>e</c><c-82FCE5>r</c><c-75FFDA>e</c><c-72F6D4>o</c> <c-73DDCC>M</c><c-7ACECF>a</c><c-84BDD8>d</c><c-91ACE3>n</c><c-A19AED>e</c><c-C276FF>s</c><c-D06CFF>s</c> with the active NONG/cover title from Jukebox.
@@ -125,6 +125,7 @@ Each style uses its own saved positions.
 - Gold User Coins >= 2.0.4
 - Demons in Between >= 1.7.0
 - GDDP Integration >= 1.1.16
+- More Difficulties >= 1.9.3
 - Integrated Demonlist >= 1.7.13
 - Global Demonlist Rank >= 1.2.0
 - GodlikeFaces >= 1.1.10

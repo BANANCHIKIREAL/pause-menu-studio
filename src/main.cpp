@@ -42,7 +42,7 @@ constexpr char const* EDITOR_ID = "pause-menu-editor";
 constexpr char const* CARDS_ID = "pause-menu-cards";
 constexpr char const* UPDATE_MANIFEST_URL =
     "https://pause-menu-studio.vercel.app/update.json";
-constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.6.0";
+constexpr char const* UPDATE_USER_AGENT = "Pause-Menu-Studio-Updater/4.7.0";
 constexpr char const* UPDATE_CACHE_KEY = "available-update-version";
 constexpr float GRID = 5.f;
 constexpr int LAYOUT_SCHEMA = 2;
@@ -911,6 +911,65 @@ CCSprite* createDIBDifficulty(GJGameLevel* level) {
     return sprite;
 }
 
+CCSprite* createMoreDifficultiesDifficulty(GJGameLevel* level) {
+    auto moreDifficulties = Loader::get()->getLoadedMod("uproxide.more_difficulties");
+    if (!moreDifficulties || !level) return nullptr;
+
+    std::string spriteName;
+    auto const levelID = level->m_levelID.value();
+    if (levelID == 79669868) {
+        spriteName = "MD_DifficultyCP.png";
+    } else if (levelID == 137147681) {
+        spriteName = "MD_DifficultyYO.png";
+    } else {
+        auto const ratedStars = level->m_stars.value();
+        auto const displayedStars = ratedStars != 0 ? ratedStars : level->m_starsRequested;
+        if (displayedStars != 4 && displayedStars != 7 && displayedStars != 9) return nullptr;
+
+        auto const enabled = displayedStars == 4
+            ? moreDifficulties->getSavedValue<bool>("casual", true)
+            : displayedStars == 7
+                ? moreDifficulties->getSavedValue<bool>("tough", true)
+                : moreDifficulties->getSavedValue<bool>("cruel", true);
+        if (!enabled) return nullptr;
+
+        std::string suffix;
+        auto const legacy = moreDifficulties->getSettingValue<bool>("legacy-difficulties");
+        auto const godlike = moreDifficulties->getSettingValue<bool>("godlike-faces");
+        if (legacy && !godlike) {
+            suffix = "_Legacy";
+        } else if (!legacy && godlike) {
+            if (level->m_isEpic == 2) suffix = "_Legendary";
+            else if (level->m_isEpic == 3) suffix = "_Mythic";
+        }
+        spriteName = fmt::format("MD_Difficulty0{}{}.png", displayedStars, suffix);
+    }
+
+    auto const frame = moreDifficulties->expandSpriteName(spriteName);
+    auto customFace = CCSprite::createWithSpriteFrameName(frame.data());
+    if (!customFace) return nullptr;
+
+    // More Difficulties replaces only the native face in LevelInfoLayer. Keep
+    // GD's hidden difficulty node behind the exact custom frame so its
+    // Featured/Epic/Legendary/Mythic effect remains visible in our card too.
+    auto nativeDifficulty = level->getAverageDifficulty();
+    if (static_cast<int>(level->m_demon) != 0) {
+        nativeDifficulty = GJGameLevel::demonIconForDifficulty(
+            static_cast<DemonDifficultyType>(level->m_demonDifficulty)
+        );
+    }
+    auto ratingEffect = GJDifficultySprite::create(nativeDifficulty, GJDifficultyName::Short);
+    if (ratingEffect) {
+        ratingEffect->updateFeatureState(featureStateForLevel(level));
+        ratingEffect->setOpacity(0);
+        ratingEffect->setID("more-difficulties-rating-effect");
+        ratingEffect->setPosition(customFace->getContentSize() / 2.f);
+        customFace->addChild(ratingEffect, -1);
+    }
+    customFace->setID("more-difficulties-sprite");
+    return customFace;
+}
+
 CCNode* createDifficultyVisual(GJGameLevel* level) {
     auto gddp = createGDDPDifficulty(level);
     auto dibMod = Loader::get()->getLoadedMod("hiimjustin000.demons_in_between");
@@ -919,6 +978,7 @@ CCNode* createDifficultyVisual(GJGameLevel* level) {
     if (gddp && !dibOverridesGDDP) return gddp;
     if (auto dib = createDIBDifficulty(level)) return dib;
     if (gddp) return gddp;
+    if (auto moreDifficulties = createMoreDifficultiesDifficulty(level)) return moreDifficulties;
 
     auto difficulty = level->getAverageDifficulty();
     if (
@@ -1281,19 +1341,22 @@ CCNode* createInfoCards(std::unordered_set<std::string> const& forcedCards = {})
             }
         }
 
-        auto stars = CCLabelBMFont::create(std::to_string(level->m_stars.value()).c_str(), "bigFont.fnt");
-        stars->setID("star-count");
-        stars->setAnchorPoint({1.f, .5f});
-        stars->setPosition({53.f, 15.f});
-        stars->setScale(.3f);
-        card->addChild(stars);
+        auto const ratedStars = level->m_stars.value();
+        if (ratedStars > 0) {
+            auto stars = CCLabelBMFont::create(std::to_string(ratedStars).c_str(), "bigFont.fnt");
+            stars->setID("star-count");
+            stars->setAnchorPoint({1.f, .5f});
+            stars->setPosition({53.f, 15.f});
+            stars->setScale(.3f);
+            card->addChild(stars);
 
-        auto starIcon = CCSprite::createWithSpriteFrameName("GJ_starsIcon_001.png");
-        starIcon->setID("star-icon");
-        starIcon->setAnchorPoint({0.f, .5f});
-        starIcon->setPosition({57.f, 15.f});
-        starIcon->setScale(.3f);
-        card->addChild(starIcon);
+            auto starIcon = CCSprite::createWithSpriteFrameName("GJ_starsIcon_001.png");
+            starIcon->setID("star-icon");
+            starIcon->setAnchorPoint({0.f, .5f});
+            starIcon->setPosition({57.f, 15.f});
+            starIcon->setScale(.3f);
+            card->addChild(starIcon);
+        }
 
         if (Mod::get()->getSettingValue<bool>("show-demon-rank")) {
             if (auto rank = DemonRankNode::create(level)) {
@@ -2144,7 +2207,23 @@ private:
 
         m_toggleMenu = CCMenu::create();
         m_toggleMenu->setID("editor-controls");
-        m_toggleMenu->setPosition({size.width - 35.f, size.height - 25.f});
+        auto const editOffsetX = static_cast<float>(
+            Mod::get()->getSettingValue<int64_t>("edit-button-offset-x")
+        );
+        auto const editOffsetY = static_cast<float>(
+            Mod::get()->getSettingValue<int64_t>("edit-button-offset-y")
+        );
+        auto const editButtonScale = static_cast<float>(
+            Mod::get()->getSettingValue<double>("edit-button-scale")
+        );
+        m_toggleMenu->setPosition({
+            size.width - 35.f + editOffsetX,
+            size.height - 25.f + editOffsetY,
+        });
+        // Apply the settings to the stable parent. The editor may still save a
+        // local transform on the child button without multiplying the setting
+        // again every time the pause menu is reopened.
+        m_toggleMenu->setScale(editButtonScale);
         auto toggleVisual = CCNode::create();
         toggleVisual->setContentSize({42.f, 42.f});
         // Keep the pause-menu EDIT button as the original GD icon. A stretched

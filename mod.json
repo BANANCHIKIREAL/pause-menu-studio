@@ -6,7 +6,7 @@
     },
     "id": "bananchikireal.pause-menu-studio",
     "name": "Pause Menu Studio",
-    "version": "v4.6.2",
+    "version": "v4.7.0",
     "developer": "BANANCHIKIREAL",
     "description": "Move pause-menu elements, save named layouts, and add configurable level, song, coin, and difficulty cards.",
     "links": {
@@ -86,6 +86,10 @@
         "dankmeme.globed2": {
             "version": ">=v2.1.2",
             "required": false
+        },
+        "uproxide.more_difficulties": {
+            "version": ">=v1.9.3",
+            "required": false
         }
     },
     "settings": {
@@ -159,6 +163,60 @@
             "description": "Opens the pause menu in drag mode. You can also use the EDIT button in the pause menu.",
             "default": false,
             "enable-if": "enabled"
+        },
+        "edit-button-offset-x": {
+            "type": "int",
+            "name": "EDIT button X offset",
+            "description": "Moves the EDIT button horizontally from its default top-right position.",
+            "default": 0,
+            "min": -400,
+            "max": 400,
+            "enable-if": "enabled",
+            "control": {
+                "arrows": true,
+                "arrow-step": 5,
+                "big-arrows": true,
+                "big-arrow-step": 25,
+                "slider": true,
+                "slider-step": 5,
+                "input": true
+            }
+        },
+        "edit-button-offset-y": {
+            "type": "int",
+            "name": "EDIT button Y offset",
+            "description": "Moves the EDIT button vertically from its default top-right position.",
+            "default": 0,
+            "min": -300,
+            "max": 300,
+            "enable-if": "enabled",
+            "control": {
+                "arrows": true,
+                "arrow-step": 5,
+                "big-arrows": true,
+                "big-arrow-step": 25,
+                "slider": true,
+                "slider-step": 5,
+                "input": true
+            }
+        },
+        "edit-button-scale": {
+            "type": "float",
+            "name": "EDIT button size",
+            "description": "Changes the EDIT button size without affecting saved block layouts.",
+            "default": 1.0,
+            "min": 0.4,
+            "max": 2.0,
+            "enable-if": "enabled",
+            "control": {
+                "arrows": true,
+                "arrow-step": 0.05,
+                "big-arrows": true,
+                "big-arrow-step": 0.25,
+                "slider": true,
+                "slider-step": 0.05,
+                "input": true
+            }
         },
         "snap-grid": {
             "type": "bool",

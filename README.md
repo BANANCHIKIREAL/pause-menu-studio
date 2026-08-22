@@ -212,6 +212,9 @@ Cards can be enabled separately in the mod settings.
 | **Demonlist position** | Shows an available demonlist rank | `On` |
 | **Globed player count** | Shows the live total for the current Globed level session inside Difficulty | `On` |
 | **Edit mode on open** | Automatically enables the editor when the pause menu opens | `Off` |
+| **EDIT button X offset** | Moves EDIT horizontally from its default top-right position | `0` |
+| **EDIT button Y offset** | Moves EDIT vertically from its default top-right position | `0` |
+| **EDIT button size** | Multiplies the base size independently from its saved editor transform | `1.00` |
 | **Snap to grid** | Rounds the released position to a 5-unit grid | `Off` |
 | **Separate layouts by mode** | Isolates positions, named layouts, active layouts, and Hidden Blocks for each pause-menu mode | `On` |
 | **Advanced transform controls** | Adds rotation, opacity, and drawing-layer editing | `On` |
@@ -233,6 +236,7 @@ The minimum versions below come directly from [`mod.json`](mod.json).
 | **Gold User Coins** | `colon.gold_user_coins` | `2.0.4` | Compatible colored/gold user coins |
 | **Demons in Between** | `hiimjustin000.demons_in_between` | `1.7.0` | Additional difficulty faces |
 | **GDDP Integration** | `minemaker0430.gddp_integration` | `1.1.16` | Additional demon progression visuals |
+| **More Difficulties** | `uproxide.more_difficulties` | `1.9.3` | Casual, Tough, Cruel, Legacy, Legendary, Mythic, and special level faces |
 | **Integrated Demonlist** | `hiimjustin000.integrated_demonlist` | `1.7.13` | AREDL/Pemonlist placement for eligible demons |
 | **Global Demonlist Rank** | `bananchikireal.global-demonlist-rank` | `1.2.0` | Cached and live Global Demonlist placement through its public API |
 | **GodlikeFaces** | `adyagd.godlikefaces` | `1.1.10` | Compatible rating flames and difficulty faces |
@@ -385,6 +389,13 @@ pause-menu-studio/
 <p align="center"><img src="docs/gradient-line.svg" width="100%" alt=""></p>
 
 The complete history is available in [`changelog.md`](changelog.md).
+
+### v4.7.0
+
+- Added separate X offset, Y offset, and size settings for the pause-menu EDIT button.
+- Hid the `0` and star icon when the current level is unrated.
+- Added optional More Difficulties v1.9.3 support using its exact enabled face and style settings.
+- Added an animated rainbow Globed player count for totals 14, 25, 42, 52, 67, and 69; every other total immediately returns to the normal cyan color.
 
 ### v4.6.2
 

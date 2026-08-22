@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "version": "v4.6.2",
-  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.6.2/bananchikireal.pause-menu-studio.geode",
-  "digest": "sha256:cad29482d17654f8eebf039ec55a637b25418544cffcee97126835e213e21610",
-  "release_notes": "## GDDP fire alignment\n\n- FIXED: GDDP demon faces no longer sit too low inside Featured, Epic, Legendary, or Mythic rating fire.\n- EXACT OFFSET: The Difficulty card now matches GDDP v1.1.16's native-to-custom face position.\n- GDDP PLUS: Replace Epic Fire faces remain unchanged and do not receive a duplicated effect."
+  "version": "v4.7.0",
+  "url": "https://github.com/BANANCHIKIREAL/pause-menu-studio/releases/download/v4.7.0/bananchikireal.pause-menu-studio.geode",
+  "digest": "sha256:132606b904b8c9c497dbaa504d059d097368b5044c4a58b5af9cf8e4fc7255ae",
+  "release_notes": "## Difficulty and editor controls\n\n- FIXED: Unrated levels no longer display a fake 0-star reward.\n- NEW: Globed totals 14, 25, 42, 52, 67, and 69 animate through rainbow colors and return to cyan for every other total.\n- NEW: The pause-menu EDIT button has independent X offset, Y offset, and size settings.\n- COMPATIBILITY: Added More Difficulties v1.9.3 faces and rating effects."
 }
